@@ -49,7 +49,7 @@ private:
     QRectF GetMapBoundingRect() const;
     void InitializeTextures();
     QPixmap TintPixmap(const QPixmap& Source, qreal Strength = 0.4);
-
+    QPixmap GetUnitTexture(UnitType type, bool isHeroOnHex);
 
 public:
     HexWidget(int NRadius, QWidget* parent = nullptr);

@@ -9,43 +9,53 @@ UnitFabric::~UnitFabric()
     Units.clear();
 }
 
-Unit *UnitFabric::Create(string Class, double level, double hp, double mana)
+Unit* UnitFabric::Create(UnitType type, double level, QPoint pos)
 {
-    unique_ptr<Unit> newUnit = nullptr;
-    double finalHp = hp;
-    double finalMana = mana;
-    const double FORMULA_BASE_HP = 200.0;
-    const double FORMULA_BASE_MANA = 100.0;
-    if (Class == "MainHero") {
+    std::unique_ptr<Unit> newUnit = nullptr;
 
-    } else if (Class == "Enemy") {
-        newUnit = std::make_unique<Enemy>();
-    }else if (Class == "Wizard") {
-        newUnit = std::make_unique<Wizard>();
-        finalHp = (0.8 + level / 5.0) * FORMULA_BASE_HP;
-        finalMana = (1.3 + level / 0.8) * FORMULA_BASE_MANA;
+    switch(type)
+    {
+    case UnitType::MainHero:
+        newUnit = std::make_unique<MainHero>(pos);
+        if(level > 1)
+        {
+            newUnit->SetLevel(level);
+            newUnit->RecalculateStats();
+            newUnit->SetHP(newUnit->GetMaxHP());
+            newUnit->SetMana(newUnit->GetMaxMana());
+        }
+        break;
 
-    }else if (Class == "Barbarian") {
-        newUnit = std::make_unique<Barbarian>();
-        finalHp = (5.0 + level / 4.5) * FORMULA_BASE_HP;
-        finalMana = (1.2 + level / 6.0) * FORMULA_BASE_MANA;
+    case UnitType::Wizard:
+        newUnit = std::make_unique<Wizard>(level);
+        break;
 
+    case UnitType::Barbarian:
+        newUnit = std::make_unique<Barbarian>(level);
+        break;
 
-    }else if (Class == "Warrior") {
-        newUnit = std::make_unique<Warrior>();
-        finalHp = (2.5 + level / 4) * FORMULA_BASE_HP;
-        finalMana = (1.3 + level / 5.0) * FORMULA_BASE_MANA;
+    case UnitType::Warrior:
+        newUnit = std::make_unique<Warrior>(level);
+        break;
 
-    } else if (Class == "Friend") {
+    case UnitType::Friend:
         newUnit = std::make_unique<Friend>();
-    } else if (Class == "StructBreak") {
+        break;
+
+    case UnitType::StructBreak:
         newUnit = std::make_unique<StructBreak>();
-    } else if (Class == "StructUnBreak") {
+        break;
+
+    case UnitType::StructUnBreak:
         newUnit = std::make_unique<StructUnBreak>();
-    } else if (Class == "Campfire") {
+        break;
+
+    case UnitType::CampfireUnit:
         newUnit = std::make_unique<CampfireUnit>();
-    } else {
-        std::cerr << "Unknown class: " << Class << std::endl;
+        break;
+
+    default:
+        std::cerr << "Unknown UnitType!" << std::endl;
         return nullptr;
     }
 
@@ -53,18 +63,15 @@ Unit *UnitFabric::Create(string Class, double level, double hp, double mana)
         return nullptr;
     }
 
-    newUnit->Level = level;
-    newUnit->SetInitialHp(finalHp);
-    newUnit->SetInitialMana(finalMana);
-
-    Units.push_back(move(newUnit));
+    newUnit->SetPosition(pos);
+    Units.push_back(std::move(newUnit));
     return Units.back().get();
 }
 
 Unit *UnitFabric::Get(int pos)
 {
     if (pos < 0 || pos >= Units.size()) {
-        cerr << "Out of bounds: " << pos << endl;
+        std::cerr << "Out of bounds: " << pos << std::endl;
         return NULL;
     }
     return Units[pos].get();
@@ -73,7 +80,7 @@ Unit *UnitFabric::Get(int pos)
 void UnitFabric::Remove(int pos)
 {
     if (pos < 0 || pos >= Units.size()) {
-        cerr << "Out of bounds: " << pos << endl;
+        std::cerr << "Out of bounds: " << pos << std::endl;
         return;
     }
     Units.erase(Units.begin() + pos);

@@ -3,21 +3,22 @@
 #include "Unit.h"
 #include <memory>
 #include <vector>
-using namespace std;
+#include <QPoint>
+
 class UnitFabric
 {
 private:
-    vector<unique_ptr<Unit>> Units;
+    std::vector<std::unique_ptr<Unit>> Units;
 
 public:
     UnitFabric();
     ~UnitFabric();
 
-    Unit *Create(string Class, double level, double hp, double mana);
-    Unit *Get(int pos);
+    Unit* Create(UnitType type, double level, QPoint pos = QPoint(0, 0));
+    Unit* Get(int pos);
     int HowMany();
     void Remove(int pos);
     void ClearAll();
 };
 
-#endif
+#endif //UNITFABRIC_H_INCLUDE

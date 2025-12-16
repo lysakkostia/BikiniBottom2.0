@@ -15,6 +15,7 @@ QPointF Hex::GetCenter() const
 std::vector<QPointF> Hex::GetCorners() const
 {
     std::vector<QPointF> Corners;
+    Corners.reserve(6);
     QPointF Center = GetCenter();
 
     for(int i = 0; i < 6; i++)
@@ -32,14 +33,14 @@ bool Hex::IsNeighbor(const Hex& OHex) const
 {
     int dq = OHex.q - q;
     int dr = OHex.r - r;
-    const std::vector<QPoint> Directions = {
+    static const std::vector<std::pair<int, int>> Directions = {
         {1,0},{1,-1},{0,-1},
         {-1,0},{-1,1},{0,1}
     };
 
     for(const auto& Dir : Directions)
     {
-        if(dq == Dir.x() && dr == Dir.y())
+        if(dq == Dir.first && dr == Dir.second)
             return true;
     }
     return false;

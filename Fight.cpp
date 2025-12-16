@@ -1,5 +1,6 @@
 #include "Fight.h"
 #include "ui_Fight.h"
+#include "RandomGenerator.h"
 #include <QLabel>
 #include <QResizeEvent>
 #include <QVBoxLayout>
@@ -83,25 +84,28 @@ Fight::Fight(const QPixmap& enemyTexture, MainHero* hero, Unit* enemy, QWidget *
         qWarning("Fight.cpp: ui->escapeButton is null! Please define it in Fight.ui.");
     }
 
-
-    // Відображаємо початкове здоров'я та ману
-    displayInitialHealth();
-    displayInitialMana();
     determineFirstTurn();
 
+    if (ui->spellListWidget) {
+        populatePlayerSpellList();
+        ui->spellListWidget->setEnabled(isPlayerTurn);
+    }
+    if (ui->btn_escape) {
+        ui->btn_escape->setEnabled(isPlayerTurn);
+    }
 
-    //Бій
+    // Логіка старту бою
     if (isPlayerTurn) {
         appendToCombatLog(tr("Хід Гравця. Оберіть заклинання:"));
-        populatePlayerSpellList();
-        if (ui->spellListWidget) ui->spellListWidget->setEnabled(true);
-        if (ui->btn_escape) ui->btn_escape->setEnabled(true);
     } else {
         appendToCombatLog(tr("Хід Ворога."));
-        if (ui->spellListWidget) ui->spellListWidget->setEnabled(false);
-        if (ui->btn_escape) ui->btn_escape->setEnabled(false);
-        QTimer::singleShot(2000, this, &Fight::executeAiTurn);
+        // Даємо ворогу час на подумати
+        QTimer::singleShot(1500, this, &Fight::executeAiTurn);
     }
+
+    // Відображення статів
+    displayInitialHealth();
+    displayInitialMana();
 }
 
 Fight::~Fight()
@@ -182,12 +186,19 @@ void Fight::updateStatsDisplay() {
 
 //заповнення списку
 void Fight::populatePlayerSpellList() {
-    if (!ui->spellListWidget || !fightingHero || !fightingHero->ai) {
+    if (!ui->spellListWidget || !fightingHero) {
         qWarning("Не вдалося заповнити список заклинань: відсутній spellListWidget або герой/АІ героя.");
         return;
     }
+
+    AI* heroAI = fightingHero->GetAI();
+    if (!heroAI) {
+        qWarning("Hero has no AI module!");
+        return;
+    }
+
     ui->spellListWidget->clear();
-    const std::vector<Spell>& spells = fightingHero->ai->GetSpells();
+    const std::vector<Spell>& spells = heroAI->GetSpells();
 
     for (size_t i = 0; i < spells.size(); ++i) {
         const Spell& spell = spells[i];
@@ -217,13 +228,39 @@ void Fight::appendToCombatLog(const QString& message) {
 
 //хто перший
 void Fight::determineFirstTurn() {
-    if (!fightingHero || !fightingHero->ai || !currentEnemy || !currentEnemy->ai) {
-        qWarning("Не вдалося визначити перший хід: не встановлені юніти або їх АІ.");
+    if (!fightingHero || !currentEnemy) {
         isPlayerTurn = true;
         return;
     }
-    // Вищий TurnOver ходить першим
-    isPlayerTurn = (fightingHero->ai->TurnOver >= currentEnemy->ai->TurnOver);
+
+    AI* heroAI = fightingHero->GetAI();
+    AI* enemyAI = currentEnemy->GetAI();
+
+    if (!heroAI || !enemyAI) {
+        isPlayerTurn = true;
+        return;
+    }
+
+    int diceRollHero = RandGenerator::RandIntInInterval(0, 20);
+    int diceRollEnemy = RandGenerator::RandIntInInterval(0, 20);
+
+    int levelBonusHero = fightingHero->GetLevel() * 2;
+    int levelBonusEnemy = currentEnemy->GetLevel() * 2;
+
+    int heroScore = heroAI->TurnOver + diceRollHero + levelBonusHero;
+    int enemyScore = enemyAI->TurnOver + diceRollEnemy + levelBonusEnemy;
+
+    isPlayerTurn = (heroScore >= enemyScore);
+
+    qDebug() << "Initiative Check:";
+    qDebug() << "Hero:" << heroScore << "(Base:" << heroAI->TurnOver << "+ Roll:" << diceRollHero << "+ LvlBonus:" << levelBonusHero << ")";
+    qDebug() << "Enemy:" << enemyScore << "(Base:" << enemyAI->TurnOver << "+ Roll:" << diceRollEnemy << "+ LvlBonus:" << levelBonusEnemy << ")";
+
+    if (isPlayerTurn) {
+        qDebug() << "Result: Player goes first!";
+    } else {
+        qDebug() << "Result: Enemy goes first!";
+    }
 }
 
 
@@ -231,23 +268,26 @@ void Fight::determineFirstTurn() {
 
 //каст спелу
 void Fight::playerSpellClicked(QListWidgetItem *item) {
-    if (!isPlayerTurn || !item || !fightingHero || !fightingHero->ai || (fightingHero->GetHP() <= 0) || (currentEnemy->GetHP() <= 0) ) {
-        return;
-    }
+    if (!isPlayerTurn || !item || !fightingHero || !currentEnemy) return;
+
+    // Перевірка на смерть
+    if (fightingHero->GetHP() <= 0 || currentEnemy->GetHP() <= 0) return;
+
+    AI* heroAI = fightingHero->GetAI();
+    if (!heroAI) return;
 
     bool ok;
     int spellIndex = item->data(Qt::UserRole).toInt(&ok);
-    const std::vector<Spell>& heroSpells = fightingHero->ai->GetSpells();
+    const std::vector<Spell>& heroSpells = heroAI->GetSpells();
 
     if (!ok || spellIndex < 0 || static_cast<size_t>(spellIndex) >= heroSpells.size()) {
-        qWarning("Некоректний індекс заклинання.");
         return;
     }
 
     const Spell& selectedSpell = heroSpells.at(spellIndex);
 
     if (fightingHero->CanUseMana(selectedSpell.manacost)) {
-        if (ui->spellListWidget) ui->spellListWidget->setEnabled(false); // Блокуємо список на час обробки
+        if (ui->spellListWidget) ui->spellListWidget->setEnabled(false);
         executePlayerTurn(selectedSpell);
     } else {
         appendToCombatLog(tr("Герой: недостатньо мани для '%1'!").arg(QString::fromStdString(selectedSpell.name)));
@@ -293,7 +333,12 @@ if (!fightingHero || !currentEnemy || !isPlayerTurn) return;
 
 //хід ШІ
 void Fight::executeAiTurn() {
-    if (isPlayerTurn || !currentEnemy || !currentEnemy->ai || !fightingHero || checkForEndOfBattle()) {
+    if (isPlayerTurn || !currentEnemy || !fightingHero || checkForEndOfBattle()) return;
+
+    AI* enemyAI = currentEnemy->GetAI();
+    if (!enemyAI) {
+        appendToCombatLog(tr("Ворог не діє."));
+        isPlayerTurn = true;
         return;
     }
 
@@ -301,7 +346,7 @@ void Fight::executeAiTurn() {
 
     // Отримуємо поточну ману ворога
     double enemyCurrentMana = currentEnemy->GetMana();
-    const Spell* chosenSpell = currentEnemy->ai->ChooseBestSpell(enemyCurrentMana);
+    const Spell* chosenSpell = enemyAI->ChooseBestSpell(enemyCurrentMana);
 
     if (chosenSpell) {
 
@@ -393,7 +438,7 @@ void Fight::onEscapeButtonClicked()
 
         if(currentEnemy)
         {
-            currentEnemy->SetHp(currentEnemy->GetMaxHp());
+            currentEnemy->SetHP(currentEnemy->GetMaxHP());
             currentEnemy->SetMana(currentEnemy->GetMaxMana());
             appendToCombatLog(tr("Ворог відновив сили після втечі!"));
         }

@@ -10,6 +10,8 @@ HexWidget::HexWidget(int NRadius, QWidget* parent) :
     setMouseTracking(true);
     InitializeTextures();
     Initialized = false;
+
+    Map.UpdateVisibility(Hero.GetPosition());
 }
 
 void HexWidget::InitializeTextures()
@@ -232,6 +234,33 @@ QPixmap HexWidget::TintPixmap(const QPixmap& Source, qreal Strength)
     return TintedPixmap;
 }
 
+QPixmap HexWidget::GetUnitTexture(UnitType type, bool isHeroOnHex)
+{
+    if (isHeroOnHex) {
+        switch (type) {
+        case UnitType::Barbarian: return HeroWithBarbarianTexture;
+        case UnitType::Warrior:   return HeroWithWarriorTexture;
+        case UnitType::Wizard:    return HeroWithWizardTexture;
+        case UnitType::Friend:    return HeroWithFriendTexture;
+        case UnitType::StructBreak: return HeroWithStructTexture;
+        case UnitType::CampfireUnit:  return HeroWithCampfireTexture;
+        default: return HeroPixmap;
+        }
+    } else {
+        switch (type) {
+        case UnitType::Barbarian: return BarbarianTexture;
+        case UnitType::Warrior:   return WarriorTexture;
+        case UnitType::Wizard:    return WizardTexture;
+        case UnitType::Friend:    return FriendTexture;
+        case UnitType::StructBreak: return StructBreakTexture;
+        case UnitType::StructUnBreak: return StructUnBreakTexture;
+        case UnitType::CampfireUnit:  return CampfireTexture;
+        case UnitType::MainHero: return HeroPixmap;
+        default: return QPixmap();
+        }
+    }
+}
+
 void HexWidget::paintEvent(QPaintEvent*)
 {
     QPainter Painter(this);
@@ -304,51 +333,15 @@ void HexWidget::paintEvent(QPaintEvent*)
                 QPixmap UnitTexture;
                 bool IsHeroOnHex = (QPoint(Hex_.GetQR().first, Hex_.GetQR().second) == Hero.GetPosition());
 
-
-                if(IsHeroOnHex)
-                {
-                    if(Hex_.HaveUnit() && Hex_.GetUnit() != nullptr)
-                    {
-                        CurrentUnit = Hex_.GetUnit();
-                        std::string UnitType = CurrentUnit->GetSaveType();
-
-                        if(UnitType == "Barbarian")
-                            UnitTexture = HeroWithBarbarianTexture;
-                        else if(UnitType == "Warrior")
-                            UnitTexture = HeroWithWarriorTexture;
-                        else if(UnitType == "Wizard")
-                            UnitTexture = HeroWithWizardTexture;
-                        else if(UnitType == "Friend")
-                            UnitTexture = HeroWithFriendTexture;
-                        else if(UnitType == "StructBreak")
-                            UnitTexture = HeroWithStructTexture;
-                        else if(UnitType == "Campfire")
-                            UnitTexture = HeroWithCampfireTexture;
-                    }
-                    else
-                    {
+                if (IsHeroOnHex) {
+                    // Якщо герой тут, перевіряємо чи є під ним інший юніт (наприклад, багаття)
+                    if (Hex_.HaveUnit()) {
+                        UnitTexture = GetUnitTexture(Hex_.GetUnit()->GetType(), true);
+                    } else {
                         UnitTexture = HeroPixmap;
                     }
-                }
-                else if(Hex_.HaveUnit())
-                {
-                    CurrentUnit = Hex_.GetUnit();
-                    std::string UnitType = CurrentUnit->GetSaveType();
-
-                    if(UnitType == "Barbarian")
-                        UnitTexture = BarbarianTexture;
-                    else if(UnitType == "Warrior")
-                        UnitTexture = WarriorTexture;
-                    else if(UnitType == "Wizard")
-                        UnitTexture = WizardTexture;
-                    else if(UnitType == "Friend")
-                        UnitTexture = FriendTexture;
-                    else if(UnitType == "StructBreak")
-                        UnitTexture = StructBreakTexture;
-                    else if(UnitType == "StructUnBreak")
-                        UnitTexture = StructUnBreakTexture;
-                    else if(UnitType == "Campfire")
-                        UnitTexture = CampfireTexture;
+                } else if (Hex_.HaveUnit()) {
+                    UnitTexture = GetUnitTexture(Hex_.GetUnit()->GetType(), false);
                 }
 
                 if(!UnitTexture.isNull())
@@ -366,16 +359,30 @@ void HexWidget::paintEvent(QPaintEvent*)
                     Painter.drawPixmap(topLeft, FinalUnitTexture);
                     Painter.restore();
                 }
-                if (CurrentUnit && CurrentUnit->IsEnemy && (IsHexVisible||IsHexExplored))
-                {
-                    QPen textPen(Qt::white);
-                    Painter.setPen(textPen);
-                    QFont font = Painter.font();
-                    font.setPointSize(14);
-                    font.setBold(true);
-                    Painter.setFont(font);
-                    QString levelText = QString("LVL: %1").arg(CurrentUnit->GetLevel());
-                    Painter.drawText(center.x() - 30, center.y() - Hex::HexSize / 2 - 5, levelText);
+                if (Hex_.HaveUnit()) {
+                    Unit* u = Hex_.GetUnit();
+                    // Переконуємось, що це ворог і гекс видимий (або розвіданий, якщо хочемо бачити "пам'ять" про рівень)
+                    if (u && u->IsEnemy() && (Hex_.VisibilityState() || Hex_.ExplorationState())) {
+
+                        QString levelText = QString("Lvl %1").arg(u->GetLevel());
+
+                        // Налаштування шрифту
+                        QFont f = Painter.font();
+                        f.setBold(true);
+                        f.setPointSize(14); // Трохи менший шрифт, щоб влазив
+                        Painter.setFont(f);
+
+                        // Координати тексту (над головою юніта)
+                        QPointF textPos(center.x() - 15, center.y() - Hex::HexSize / 2);
+
+                        // Малюємо чорну підкладку (тінь) для читабельності
+                        Painter.setPen(Qt::black);
+                        Painter.drawText(textPos + QPointF(1, 1), levelText);
+
+                        // Малюємо основний текст (червоний для ворогів)
+                        Painter.setPen(QColor(255, 255, 255)); // Яскраво-червоний
+                        Painter.drawText(textPos, levelText);
+                    }
                 }
             }
 
@@ -391,7 +398,7 @@ void HexWidget::paintEvent(QPaintEvent*)
                     if(Hex_.HaveUnit())
                     {
                         Unit* Unit_ = Hex_.GetUnit();
-                        if(Unit_ && Unit_->GetSaveType() == "StructUnBreak")
+                        if(Unit_ && Unit_->GetType() == UnitType::StructUnBreak)
                         {
                             IsBlocked = true;
                         }
@@ -514,31 +521,33 @@ void HexWidget::mousePressEvent(QMouseEvent* event)
             if(TargetHex.HaveUnit())
             {
                 Unit* Unit_ = TargetHex.GetUnit();
-                if(Unit_ && Unit_->GetSaveType() == "StructUnBreak")
+                if(Unit_ && Unit_->GetType() == UnitType::StructUnBreak)
                     return;
             }
 
             if(CurrHex.IsNeighbor(TargetHex))
             {
                 QPoint PrevHeroPos = HeroCurrPos;
-                Hero.MoveTo(HexCord);
+                Hero.SetPosition(HexCord);
 
                 const Hex& heroIsOnThisHex = Map.GetQPointLoc(Hero.GetPosition());
 
                 if(heroIsOnThisHex.HaveUnit())
                 {
                     Unit* unitOnCurrentHex = heroIsOnThisHex.GetUnit();
-                    if(unitOnCurrentHex && (unitOnCurrentHex->GetSaveType() == "Barbarian" || unitOnCurrentHex->GetSaveType() == "Warrior" || unitOnCurrentHex->GetSaveType() == "Wizard"))
+                    if(unitOnCurrentHex && (unitOnCurrentHex->GetType() == UnitType::Barbarian ||
+                                             unitOnCurrentHex->GetType() == UnitType::Warrior ||
+                                             unitOnCurrentHex->GetType() == UnitType::Wizard))
                     {
                         qWarning("Hero moved onto an enemy hex! Starting fight.");
 
                         QPixmap enemyDisplayTexture;
 
-                        if(unitOnCurrentHex->GetSaveType() == "Barbarian")
+                        if(unitOnCurrentHex->GetType() == UnitType::Barbarian)
                             enemyDisplayTexture = this->BarbarianTexture;
-                        else if(unitOnCurrentHex->GetSaveType() == "Warrior")
+                        else if(unitOnCurrentHex->GetType() == UnitType::Warrior)
                             enemyDisplayTexture = this->WarriorTexture;
-                        else if(unitOnCurrentHex->GetSaveType() == "Wizard")
+                        else if(unitOnCurrentHex->GetType() == UnitType::Wizard)
                             enemyDisplayTexture = this->WizardTexture;
 
                         if(enemyDisplayTexture.isNull())
@@ -586,21 +595,21 @@ void HexWidget::mousePressEvent(QMouseEvent* event)
                             {
                                 // Якщо HP героя > 0, це була втеча
                                 qDebug("Hero escaped");
-                                Hero.MoveTo(PrevHeroPos);
+                                Hero.SetPosition(PrevHeroPos);
                             }
                             else
                             {
                                 qDebug("Dialog was closed");
-                                Hero.MoveTo(PrevHeroPos);
+                                Hero.SetPosition(PrevHeroPos);
 
                             }
                         }
                     }
 
-                    else if (unitOnCurrentHex->GetSaveType() == "Friend")
+                    else if (unitOnCurrentHex->GetType() == UnitType::Friend)
                     {
-                        if (unitOnCurrentHex->ai) {
-                            Friendly* friendlyAI = dynamic_cast<Friendly*>(unitOnCurrentHex->ai);
+                        if (unitOnCurrentHex->GetAI()) {
+                            Friendly* friendlyAI = dynamic_cast<Friendly*>(unitOnCurrentHex->GetAI());
                             if (friendlyAI)
                             {
                                 std::string greeting = friendlyAI->getGreeting();
@@ -618,13 +627,13 @@ void HexWidget::mousePressEvent(QMouseEvent* event)
                     }
 
                     //Багаття
-                    else if (unitOnCurrentHex->GetSaveType()  == "Campfire")
+                    else if (unitOnCurrentHex->GetType() == UnitType::CampfireUnit)
                     {
                         qDebug("Hero stepped on a campfire.");
                         CampfireUnit* campfireUnit = dynamic_cast<CampfireUnit*>(unitOnCurrentHex);
-                        if (campfireUnit && campfireUnit->ai)
+                        if (campfireUnit && campfireUnit->GetAI())
                         {
-                            Campfire* campfireAI = dynamic_cast<Campfire*>(campfireUnit->ai);
+                            Campfire* campfireAI = dynamic_cast<Campfire*>(campfireUnit->GetAI());
                             if (campfireAI) {
                                     double oldHP = Hero.GetHP();
                                     double oldMana = Hero.GetMana();
@@ -639,8 +648,8 @@ void HexWidget::mousePressEvent(QMouseEvent* event)
 
 
                                     currentCampfireHp = campfireUnit->GetHP();
-                                    campfireUnit->SetHp(currentCampfireHp - 1);
-                                    qDebug() << "[CAMPFIRE_DEBUG] After SetHp(" << currentCampfireHp - 1 << "): ID=" << campfireUnit << "HP=" << campfireUnit->GetHP() << "MaxHP=" << campfireUnit->GetMaxHp();
+                                    campfireUnit->SetHP(currentCampfireHp - 1);
+                                    qDebug() << "[CAMPFIRE_DEBUG] After SetHp(" << currentCampfireHp - 1 << "): ID=" << campfireUnit << "HP=" << campfireUnit->GetHP() << "MaxHP=" << campfireUnit->GetMaxHP();
 
 
                                     if (campfireUnit->GetHP() <= 0)
@@ -661,7 +670,7 @@ void HexWidget::mousePressEvent(QMouseEvent* event)
                             qWarning("HexWidget: Campfire unit is null or has a null AI pointer.");
                         }
                     }
-                    else if(unitOnCurrentHex->GetSaveType() == "StructBreak")
+                    else if(unitOnCurrentHex->GetType() == UnitType::StructBreak)
                     {
                         QMessageBox::information(this, tr("Сундук зі скарбами"),tr("Ти знайшов сундук, рівень підвищено!"));
                         Hero.LevelUp();
@@ -826,10 +835,11 @@ bool HexWidget::LoadMapFromFile(const QString& filePath)
 
     if(Success)
     {
-        Hero.MoveTo(heroPos);
-        Hero.SetHp(LoadedHeroHP);
-        Hero.SetMana(LoadedHeroMP);
+        Hero.SetPosition(heroPos);
         Hero.SetLevel(LoadedHeroLVL);
+        Hero.RecalculateStats();
+        Hero.SetHP(LoadedHeroHP);
+        Hero.SetMana(LoadedHeroMP);
         Map.UpdateVisibility(Hero.GetPosition());
         Initialized = false;
         update();

@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent)
     player->setAudioOutput(audioOutput);
     player->setSource(QUrl::fromLocalFile("adventure.mp3"));
     player->setLoops(QMediaPlayer::Infinite);
-    audioOutput->setVolume(50);
+    audioOutput->setVolume(0);
     player->play();
 
 }

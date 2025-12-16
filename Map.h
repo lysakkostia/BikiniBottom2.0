@@ -5,6 +5,10 @@
 #include "UnitFabric.h"
 #include <iostream>
 #include <vector>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QFile>
 
 class HexMap
 {
@@ -12,12 +16,18 @@ private:
     int Radius;
     std::vector<std::vector<Hex>> MapGrid;
     UnitFabric UnitFabric_;
+    int EnemyCounter=0;
+
     int GetHexDistance(int q, int r) const;
     Hex& GetChangeableLocation(int q, int r);
     Hex& GetChangeableQPointLoc(const QPoint& OHex);
     void GenerateUnits();
 
-     int EnemyCounter=0;
+    void PlaceGuaranteedCampfire();
+    void SpawnUnitInHex(Hex& hex, const QPoint& protectedPos);
+    int CalculateZoneLevel(int distance) const;
+    UnitType ChooseRandomUnitType() const;
+    UnitType ChooseRandomEnemyType() const;
 
 public:
     HexMap(int radius);

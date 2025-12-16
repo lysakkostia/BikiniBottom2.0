@@ -3,23 +3,32 @@
 
 #include <iostream>
 #include <vector>
-#include "RandomGenerator.h"
-using namespace std;
-class Spell;
+#include <string>
+
 class Unit;
+
+class Spell
+{
+public:
+    Spell(std::string name, double manacost, double damage);
+    std::string name;
+    double manacost;
+    double damage;
+};
+
 class AI
 {
 public:
     AI();
-    virtual ~AI();
+    virtual ~AI() = default;
 
-    int TurnOver; //у кого більше, той і перший атакує
+    int TurnOver;
+
     virtual const Spell* ChooseBestSpell(double currentMana) const;
-
-    virtual const vector<Spell> &GetSpells() const;
+    virtual const std::vector<Spell> &GetSpells() const;
 
 protected:
-    vector<Spell> Spells;
+    std::vector<Spell> Spells;
 };
 
 
@@ -29,8 +38,7 @@ protected:
 class Aggresive : public AI
 {
 public:
-    int TurnOver = 100;
-    virtual ~Aggresive();
+    Aggresive();
 };
 
 
@@ -39,9 +47,8 @@ public:
 class Confused : public AI
 {
 public:
-    int TurnOver = 1000;
+    Confused();
     const Spell* ChooseBestSpell(double currentMana) const override;
-    virtual ~Confused();
 };
 
 
@@ -49,14 +56,12 @@ public:
 class Intelligent : public AI
 {
 private:
-    vector<Spell> UpgradedSpells;
+    std::vector<Spell> UpgradedSpells;
 
 public:
-    int TurnOver = 75;
     Intelligent();
     void UpgradeSpells();
-    const vector<Spell> &GetSpells() const override;
-    virtual ~Intelligent();
+    const std::vector<Spell> &GetSpells() const override;
 };
 
 
@@ -66,23 +71,11 @@ class MainCharacter : public AI
 {
 public:
     MainCharacter();
-    int TurnOver = 50;
-
     void updateSpellStats(int playerLevel);
-    const vector<Spell>& GetSpells() const override;
-    virtual ~MainCharacter();
-protected:
-    vector<Spell> HeroSpells;
-private:
-    struct BaseSpellDefinition {
-        std::string name;
-        double baseManacost;
-        double baseDamage;
+    const std::vector<Spell>& GetSpells() const override;
 
-        double percDamageBonusPerLevel;
-        double percManacostChangePerLevel;
-    };
-    std::vector<BaseSpellDefinition> heroBaseSpellDefinitions;
+protected:
+    std::vector<Spell> HeroSpells;
 };
 
 
@@ -91,9 +84,8 @@ private:
 class Friendly : public AI
 {
 public:
-
+    Friendly();
     std::string getGreeting() const;
-    virtual ~Friendly();
 };
 
 
@@ -102,19 +94,6 @@ class Campfire: public AI{
     public:
     Campfire();
     void Heal(Unit* target);
-
-   virtual ~Campfire();
-};
-
-
-//
-class Spell
-{
-public:
-    Spell(string name, double manacost, double damage);
-    string name;
-    double manacost;
-    double damage;
 };
 
 
