@@ -10,7 +10,7 @@ Spell::Spell(std::string name, double manacost, double damage)
 AI::AI() : TurnOver(0)
 {
     for (const auto& data : GlobalConst::Spells::BaseSpells) {
-        if (data.damage > 200.0) continue;
+        if (data.name == "TestImba bolt") continue;
         Spells.emplace_back(data.name, data.manaCost, data.damage);
     }
 }
