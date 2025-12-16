@@ -18,11 +18,9 @@ class Fight : public QDialog
     Q_OBJECT
 
 private slots:
-    //каст спелів
-    void playerSpellClicked(QListWidgetItem *item);
-
-    //кнопка втечі
+    void onPlayerSpellClicked(QListWidgetItem *item);
     void onEscapeButtonClicked();
+    void onAiTurnTimeout();
 
 public:
 
@@ -39,39 +37,25 @@ private:
     QPixmap currentEnemyTexture;
     MainHero* fightingHero;
     Unit* currentEnemy;
-
-    // Чий зараз хід
     bool isPlayerTurn;
-
-    //перевірка втечі
     bool playerEscaped = false;
 
-    // Оновлює відображення HP та MP
+    void initUI();
+    void setupConnections();
+    void startBattle();
+
     void updateStatsDisplay();
-
-    // Заповнює список заклинань гравця
     void populatePlayerSpellList();
+    void logMessage(const QString& message);
+    void logCombatAction(const QString& actorName, const QString& actionName, int damage, int manaCost);
 
-    // Додає повідомлення в лог бою
-    void appendToCombatLog(const QString& message);
-
-    // Визначає, хто ходить першим
     void determineFirstTurn();
-
-    // Обробляє хід гравця
     void executePlayerTurn(const Spell& spell);
-
-    // Обробляє хід ШІ
+    void prepareAiTurn();
     void executeAiTurn();
 
-    // Перевіряє, чи не закінчився бій
-    bool checkForEndOfBattle();
-
-     // Завершує бій
+    bool isBattleOver();
     void endBattle(bool playerWon);
-
-    void displayInitialHealth();
-    void displayInitialMana();
 };
 
 #endif // FIGHT_H

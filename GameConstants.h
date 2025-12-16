@@ -105,6 +105,12 @@ namespace GlobalConst
         //Wizard 20%
         }
     }
+
+    namespace FightAI
+    {
+        constexpr int AI_THINK_DELAY_MS = 1500;
+        constexpr int AI_AFTER_PLAYER_DELAY_MS = 1000;
+    }
 }
 
 #endif // GAMECONSTANTS_H
