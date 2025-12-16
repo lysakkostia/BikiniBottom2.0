@@ -10,9 +10,6 @@
 #include <QMessageBox>
 #include <QListWidget>
 
-
-
-
 Fight::Fight(const QPixmap& enemyTexture, MainHero* hero, Unit* enemy, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::Fight)
@@ -33,17 +30,13 @@ Fight::Fight(const QPixmap& enemyTexture, MainHero* hero, Unit* enemy, QWidget *
         "    border-image: none;"
         "}"
         );
-//
 
 // Відображення текстури ворога
     if (ui->enemyImageLabel) {
         ui->enemyImageLabel->setAlignment(Qt::AlignCenter);
         if (!currentEnemyTexture.isNull()) {
-
             ui->enemyImageLabel->setPixmap(currentEnemyTexture);
-
         } else {
-
             QPixmap placeholder(200, 150);
 
             placeholder.fill(Qt::gray);
@@ -67,10 +60,8 @@ Fight::Fight(const QPixmap& enemyTexture, MainHero* hero, Unit* enemy, QWidget *
         }
     }
 
-
     //список спелів
     if (ui->spellListWidget) {
-
         connect(ui->spellListWidget, &QListWidget::itemClicked, this, &Fight::playerSpellClicked);
     } else {
         qWarning("Fight.cpp: ui->spellListWidget is null! Please define it in Fight.ui.");
@@ -113,10 +104,8 @@ Fight::~Fight()
     delete ui; //
 }
 
-
 //Перевірка на успішну втечу
 bool Fight::didPlayerEscaped() const { return playerEscaped; }
-
 
 //Скейл картинки
 void Fight::resizeEvent(QResizeEvent* event)
@@ -160,7 +149,6 @@ void Fight::displayInitialMana()
         return;
     }
 
-
     if (ui->Hero_Mana) {
         ui->Hero_Mana->setText(tr("MP Героя: %1").arg(fightingHero->GetMana()));
     } else {
@@ -181,8 +169,6 @@ void Fight::updateStatsDisplay() {
     displayInitialHealth(); // Оновлює HP
     displayInitialMana();   // Оновлює MP
 }
-
-
 
 //заповнення списку
 void Fight::populatePlayerSpellList() {
@@ -212,7 +198,6 @@ void Fight::populatePlayerSpellList() {
     }
 }
 
-
 //текст в лозі
 void Fight::appendToCombatLog(const QString& message) {
     if (ui->combatLogTextEdit) {
@@ -221,10 +206,6 @@ void Fight::appendToCombatLog(const QString& message) {
         qDebug() << "[LOG_БИТВИ]" << message;
     }
 }
-
-
-
-
 
 //хто перший
 void Fight::determineFirstTurn() {
@@ -263,9 +244,6 @@ void Fight::determineFirstTurn() {
     }
 }
 
-
-
-
 //каст спелу
 void Fight::playerSpellClicked(QListWidgetItem *item) {
     if (!isPlayerTurn || !item || !fightingHero || !currentEnemy) return;
@@ -294,8 +272,6 @@ void Fight::playerSpellClicked(QListWidgetItem *item) {
     }
 }
 
-
-
 //хід гравця
 void Fight::executePlayerTurn(const Spell& spell) {
 
@@ -310,13 +286,11 @@ if (!fightingHero || !currentEnemy || !isPlayerTurn) return;
                           .arg(spell.damage)
                           .arg(spell.manacost));
 
-
     updateStatsDisplay();
 
     if (checkForEndOfBattle()) {
         return; // Бій закінчено
     }
-
 
     isPlayerTurn = false;
     if (ui->spellListWidget) ui->spellListWidget->setEnabled(false);
@@ -324,12 +298,6 @@ if (!fightingHero || !currentEnemy || !isPlayerTurn) return;
     appendToCombatLog(tr("Хід Ворога."));
     QTimer::singleShot(1000 + RandGenerator::RandIntInInterval(0,1000), this, &Fight::executeAiTurn);
 }
-
-
-
-
-
-
 
 //хід ШІ
 void Fight::executeAiTurn() {
@@ -380,10 +348,6 @@ void Fight::executeAiTurn() {
     if (ui->btn_escape) ui->btn_escape->setEnabled(true);
 }
 
-
-
-
-
 //перевірка на кінець битви
 bool Fight::checkForEndOfBattle() {
     if (fightingHero && fightingHero->GetHP() <= 0) {
@@ -398,8 +362,6 @@ bool Fight::checkForEndOfBattle() {
     return false;
 }
 
-
-
 //кінець битви
 void Fight::endBattle(bool playerWon) {
     if (ui->spellListWidget) ui->spellListWidget->setEnabled(false); // Блокуємо подальші дії
@@ -412,7 +374,6 @@ void Fight::endBattle(bool playerWon) {
         reject();
     }
 }
-
 
 //втеча
 void Fight::onEscapeButtonClicked()
@@ -459,5 +420,3 @@ void Fight::onEscapeButtonClicked()
         QTimer::singleShot(1000 + RandGenerator::RandIntInInterval(0, 1000), this, &Fight::executeAiTurn);
     }
 }
-
-

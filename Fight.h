@@ -9,7 +9,6 @@ class Unit;
 class MainHero;
 class Spell;
 
-
 namespace Ui {
 class Fight;
 }
@@ -24,7 +23,6 @@ private slots:
 
     //кнопка втечі
     void onEscapeButtonClicked();
-
 
 public:
 
@@ -42,13 +40,11 @@ private:
     MainHero* fightingHero;
     Unit* currentEnemy;
 
-
     // Чий зараз хід
     bool isPlayerTurn;
 
     //перевірка втечі
     bool playerEscaped = false;
-
 
     // Оновлює відображення HP та MP
     void updateStatsDisplay();
@@ -73,8 +69,6 @@ private:
 
      // Завершує бій
     void endBattle(bool playerWon);
-
-
 
     void displayInitialHealth();
     void displayInitialMana();

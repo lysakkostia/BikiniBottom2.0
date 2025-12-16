@@ -74,6 +74,37 @@ namespace GlobalConst
         const double INTEL_DMG_MULT = 1.40;
         const double INTEL_MANA_MULT = 0.70;
     }
+
+    namespace TextureScale{
+        constexpr double HERO = 2.0;
+        constexpr double UNIT = 1.7;
+        constexpr double MOUNTAIN = 1.9;
+        constexpr double STANDART_HEX = 2.0;
+    }
+
+    namespace MapGeneration
+    {
+        constexpr double SPAWN_CHANCE = 0.15;
+
+        namespace Zones {
+        constexpr double ZONE_1_RATIO = 0.5;
+        constexpr double ZONE_2_RATIO = 0.7;
+        }
+
+        namespace UnitProbabilities {
+        constexpr double THRESHOLD_ENEMY = 0.60;
+        constexpr double THRESHOLD_UNBREAK = 0.85;
+        constexpr double THRESHOLD_BREAK = 0.92;
+        constexpr double THRESHOLD_FRIEND = 0.99;
+        //Campfire 1%
+        }
+
+        namespace EnemyTypes {
+        constexpr double CHANCE_BARBARIAN = 0.4;
+        constexpr double CHANCE_WARRIOR = 0.8;
+        //Wizard 20%
+        }
+    }
 }
 
 #endif // GAMECONSTANTS_H

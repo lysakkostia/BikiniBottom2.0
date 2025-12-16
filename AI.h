@@ -31,19 +31,12 @@ protected:
     std::vector<Spell> Spells;
 };
 
-
-
-
-//методи Aggresive
 class Aggresive : public AI
 {
 public:
     Aggresive();
 };
 
-
-
-//Методи Confused
 class Confused : public AI
 {
 public:
@@ -51,8 +44,6 @@ public:
     const Spell* ChooseBestSpell(double currentMana) const override;
 };
 
-
-//Методи Intelligent
 class Intelligent : public AI
 {
 private:
@@ -64,9 +55,6 @@ public:
     const std::vector<Spell> &GetSpells() const override;
 };
 
-
-
-//Методи MainCharacter
 class MainCharacter : public AI
 {
 public:
@@ -78,9 +66,6 @@ protected:
     std::vector<Spell> HeroSpells;
 };
 
-
-
-//Методи Friendly
 class Friendly : public AI
 {
 public:
@@ -88,13 +73,10 @@ public:
     std::string getGreeting() const;
 };
 
-
-//Методи Campfire
 class Campfire: public AI{
     public:
     Campfire();
     void Heal(Unit* target);
 };
-
 
 #endif

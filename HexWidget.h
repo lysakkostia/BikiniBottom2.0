@@ -19,12 +19,13 @@ private:
     float Scale = 1.0;
     float OffsetX = 0.0;
     float OffsetY = 0.0;
-    QPoint SelectedHex = {-1, -1};
     bool IsDragging = false;
-    QPoint LastMousePos;
     bool Initialized = false;
+    QPoint LastMousePos;
+    QPoint SelectedHex = {-1, -1};
     QPoint CenterHex = QPoint(0, 0);
     QPoint HoveredHex = QPoint(INT_MAX, INT_MAX);
+
     QPixmap HeroPixmap;
     QPixmap StandartVisibleHexTexture;
     QPixmap StandartExploredHexTexture;
@@ -43,13 +44,27 @@ private:
     QPixmap HeroWithStructTexture;
     QPixmap HeroWithCampfireTexture;
 
+    QPixmap loadTexture(const QString &fileName, double scaleFactor);
+    void drawHexTerrain(QPainter& painter, const Hex& hex, const QPolygonF& polygon);
+    void drawUnitAndUI(QPainter& painter, const Hex& hex, const QPolygonF& polygon);
+    QPen getHexOutlinePen(const Hex& hex, const Hex& heroHex);
+    void drawLevelBadge(QPainter& painter, const QPointF& center, int level);
+    void InitializeTextures();
+
+    void handleLeftClick(const QPointF& pos);
+    bool tryMoveHeroTo(const QPoint& targetHexCoords);
+    void interactWithContentOnHex(const Hex& hex, const QPoint& previousPos);
+    void processCombat(Unit* enemy, const QPoint& previousPos);
+    void processCampfire(Unit* campfireUnit);
+    void processFriendly(Unit* friendUnit);
+    void processTreasure(Unit* treasureUnit);
 
     QPoint PixelToHex(QPointF p) const;
     QPoint CubeToAxial(float qc, float rc) const;
     QRectF GetMapBoundingRect() const;
-    void InitializeTextures();
     QPixmap TintPixmap(const QPixmap& Source, qreal Strength = 0.4);
     QPixmap GetUnitTexture(UnitType type, bool isHeroOnHex);
+    QPixmap getEnemyTexture(UnitType type);
 
 public:
     HexWidget(int NRadius, QWidget* parent = nullptr);

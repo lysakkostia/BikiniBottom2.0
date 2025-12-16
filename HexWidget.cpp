@@ -1,7 +1,10 @@
 #include "HexWidget.h"
 #include "Fight.h"
+#include "GameConstants.h"
 #include <QPainterPath>
 #include <QMessageBox>
+
+namespace Const_Scale = GlobalConst::TextureScale;
 
 HexWidget::HexWidget(int NRadius, QWidget* parent) :
     QWidget(parent), Map(NRadius > 0 ? NRadius : 10), Hero(QPoint(0,0))
@@ -14,209 +17,41 @@ HexWidget::HexWidget(int NRadius, QWidget* parent) :
     Map.UpdateVisibility(Hero.GetPosition());
 }
 
+QPixmap HexWidget::loadTexture(const QString &fileName, double scaleFactor)
+{
+    QPixmap originalPixmap(fileName);
+
+    if (originalPixmap.isNull()) {
+        qWarning() << "Failed to load texture:" << fileName;
+        return QPixmap();
+    }
+
+    return originalPixmap.scaled(
+        QSizeF(scaleFactor * Hex::HexSize, scaleFactor * Hex::HexSize).toSize(),
+        Qt::KeepAspectRatio, Qt::SmoothTransformation);
+}
+
 void HexWidget::InitializeTextures()
 {
-    QPixmap HeroOriginalPixmap("NPC5Texture.png");
-    if(!HeroOriginalPixmap.isNull())
-    {
-        this->HeroPixmap = HeroOriginalPixmap.scaled(
-            QSizeF(2 * Hex::HexSize, 2 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
+    this->HeroPixmap = loadTexture("NPC5Texture.png", Const_Scale::HERO);
+    this->FogTexture = loadTexture("FogTexture.png", Const_Scale::STANDART_HEX);
+    this->BarbarianTexture = loadTexture("NPC4Texture.png", Const_Scale::UNIT);
+    this->WarriorTexture = loadTexture("NPC1Texture.png", Const_Scale::UNIT);
+    this->WizardTexture = loadTexture("NPC7Texture.png", Const_Scale::UNIT);
+    this->FriendTexture = loadTexture("NPC2Texture.png", Const_Scale::UNIT);
+    this->StructBreakTexture = loadTexture("NPC3Texture.png", Const_Scale::UNIT);
+    this->StructUnBreakTexture = loadTexture("MountainTexture.png", Const_Scale::MOUNTAIN);
+    this->CampfireTexture = loadTexture("NPC6Texture.png", Const_Scale::UNIT);
+    this->HeroWithWarriorTexture = loadTexture("HeroWithEnemyTexture.png", Const_Scale::UNIT);
+    this->HeroWithBarbarianTexture = loadTexture("HeroWithCocosikTexture.png", Const_Scale::UNIT);
+    this->HeroWithWizardTexture = loadTexture("HeroWithWizardTexture.png", Const_Scale::UNIT);
+    this->HeroWithFriendTexture = loadTexture("HeroWithFriendTexture.png", Const_Scale::UNIT);
+    this->HeroWithStructTexture = loadTexture("HeroWithStructTexture.png", Const_Scale::UNIT);
+    this->HeroWithCampfireTexture = loadTexture("HeroWithCampfireTexture.png", Const_Scale::UNIT);
 
-    QPixmap FogOriginalPixmap("FogTexture.png");
-    if(!FogOriginalPixmap.isNull())
-    {
-        this->FogTexture = FogOriginalPixmap.scaled(
-            QSizeF(2 * Hex::HexSize, 2 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
-
-    QPixmap BarbarianOriginalPixmap("NPC4Texture.png");
-    if(!BarbarianOriginalPixmap.isNull())
-    {
-        this->BarbarianTexture = BarbarianOriginalPixmap.scaled(
-            QSizeF(1.7 * Hex::HexSize, 1.7 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
-
-    QPixmap WarriorOriginalPixmap("NPC1Texture.png");
-    if(!WarriorOriginalPixmap.isNull())
-    {
-        this->WarriorTexture = WarriorOriginalPixmap.scaled(
-            QSizeF(1.7 * Hex::HexSize, 1.7 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
-
-    QPixmap WizardOriginalPixmap("NPC7Texture.png");
-    if(!WizardOriginalPixmap.isNull())
-    {
-        this->WizardTexture = WizardOriginalPixmap.scaled(
-            QSizeF(1.7 * Hex::HexSize, 1.7 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
-
-    QPixmap FriendOriginalPixmap("NPC2Texture.png");
-    if(!FriendOriginalPixmap.isNull())
-    {
-        this->FriendTexture = FriendOriginalPixmap.scaled(
-            QSizeF(1.7 * Hex::HexSize, 1.7 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
-
-    QPixmap StructBreakOriginalPixmap("NPC3Texture.png");
-    if(!StructBreakOriginalPixmap.isNull())
-    {
-        this->StructBreakTexture = StructBreakOriginalPixmap.scaled(
-            QSizeF(1.7 * Hex::HexSize, 1.7 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
-
-    QPixmap StructUnBreakOriginalPixmap("MountainTexture.png");
-    if(!StructUnBreakOriginalPixmap.isNull())
-    {
-        this->StructUnBreakTexture = StructUnBreakOriginalPixmap.scaled(
-            QSizeF(1.9 * Hex::HexSize, 1.9 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
-
-    QPixmap CampfireOriginalPixmap("NPC6Texture.png");
-    if(!CampfireOriginalPixmap.isNull())
-    {
-         this->CampfireTexture = CampfireOriginalPixmap.scaled(
-            QSizeF(1.7 * Hex::HexSize, 1.7 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
-
-    QPixmap StandartHexOriginalPixmap("StandartHex.jpg");
-    if(!StandartHexOriginalPixmap.isNull())
-    {
-        this->StandartVisibleHexTexture = StandartHexOriginalPixmap.scaled(
-            QSizeF(2 * Hex::HexSize, 2 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
+    this->StandartVisibleHexTexture = loadTexture("StandartHex.jpg", Const_Scale::STANDART_HEX);
+    if (!this->StandartVisibleHexTexture.isNull()) {
         this->StandartExploredHexTexture = TintPixmap(this->StandartVisibleHexTexture, 0.4);
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
-
-    QPixmap HeroWithWarrioryOriginalPixmap("HeroWithEnemyTexture.png");
-    if(!HeroWithWarrioryOriginalPixmap.isNull())
-    {
-        this->HeroWithWarriorTexture = HeroWithWarrioryOriginalPixmap.scaled(
-            QSizeF(1.7 * Hex::HexSize, 1.7 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-
-
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
-
-    QPixmap HeroWithBarbarianOriginalPixmap("HeroWithCocosikTexture.png");
-    if(!HeroWithBarbarianOriginalPixmap.isNull())
-    {
-        this->HeroWithBarbarianTexture = HeroWithBarbarianOriginalPixmap.scaled(
-            QSizeF(1.7 * Hex::HexSize, 1.7 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-
-
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
-
-    QPixmap HeroWithWizardOriginalPixmap("HeroWithWizardTexture.png");
-    if(!HeroWithWizardOriginalPixmap.isNull())
-    {
-        this->HeroWithWizardTexture = HeroWithWizardOriginalPixmap.scaled(
-            QSizeF(1.7 * Hex::HexSize, 1.7 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-
-
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
-
-    QPixmap HeroWithFriendOriginalPixmap("HeroWithFriendTexture.png");
-    if(!HeroWithFriendOriginalPixmap.isNull())
-    {
-        this->HeroWithFriendTexture = HeroWithFriendOriginalPixmap.scaled(
-            QSizeF(1.7 * Hex::HexSize, 1.7 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
-
-    QPixmap HeroWithStructOriginalPixmap("HeroWithStructTexture.png");
-    if(!HeroWithStructOriginalPixmap.isNull())
-    {
-        this->HeroWithStructTexture = HeroWithStructOriginalPixmap.scaled(
-            QSizeF(1.7 * Hex::HexSize, 1.7 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-    else
-    {
-        qWarning("Failed to load texture");
-    }
-
-    QPixmap HeroWithCampfireOriginalPixmap("HeroWithCampfireTexture.png");
-    if(!HeroWithCampfireOriginalPixmap.isNull())
-    {
-        this->HeroWithCampfireTexture = HeroWithCampfireOriginalPixmap.scaled(
-            QSizeF(1.7 * Hex::HexSize, 1.7 * Hex::HexSize).toSize(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-    else
-    {
-        qWarning("Failed to load texture");
     }
 }
 
@@ -261,220 +96,192 @@ QPixmap HexWidget::GetUnitTexture(UnitType type, bool isHeroOnHex)
     }
 }
 
+void HexWidget::drawHexTerrain(QPainter& painter, const Hex& hex, const QPolygonF& polygon)
+{
+    QPixmap baseHexTexture;
+
+    if (hex.VisibilityState()) {
+        baseHexTexture = StandartVisibleHexTexture;
+    } else if (hex.ExplorationState()) {
+        baseHexTexture = StandartExploredHexTexture;
+    } else {
+        baseHexTexture = FogTexture;
+    }
+
+    QPainterPath hexClipPath;
+    hexClipPath.addPolygon(polygon);
+
+    painter.save();
+    painter.setClipPath(hexClipPath);
+
+    if (!baseHexTexture.isNull()) {
+        QPointF center = hex.GetCenter();
+        QPointF topLeft = center - QPointF(baseHexTexture.width() / 2.0, baseHexTexture.height() / 2.0);
+        painter.drawPixmap(topLeft, baseHexTexture);
+    } else {
+        QColor color = Qt::black;
+        if (hex.VisibilityState()) color = Qt::white;
+        else if (hex.ExplorationState()) color = Qt::darkGray;
+
+        painter.fillPath(hexClipPath, color);
+    }
+    painter.restore();
+}
+
+void HexWidget::drawUnitAndUI(QPainter& painter, const Hex& hex, const QPolygonF& polygon)
+{
+    if (!hex.VisibilityState() && !hex.ExplorationState()) return;
+
+    QPixmap unitTexture;
+    bool isHeroOnHex = (QPoint(hex.GetQR().first, hex.GetQR().second) == Hero.GetPosition());
+
+    if (isHeroOnHex) {
+        if (hex.HaveUnit()) {
+            unitTexture = GetUnitTexture(hex.GetUnit()->GetType(), true);
+        } else {
+            unitTexture = HeroPixmap;
+        }
+    } else if (hex.HaveUnit()) {
+        unitTexture = GetUnitTexture(hex.GetUnit()->GetType(), false);
+    }
+
+    if (unitTexture.isNull()) return;
+
+    QPointF center = hex.GetCenter();
+    QPointF topLeft = center - QPointF(unitTexture.width() / 2.0, unitTexture.height() / 2.0);
+
+    QPainterPath hexClipPath;
+    hexClipPath.addPolygon(polygon);
+
+    painter.save();
+    painter.setClipPath(hexClipPath);
+    painter.drawPixmap(topLeft, unitTexture);
+
+    if (!hex.VisibilityState() && hex.ExplorationState()) {
+        painter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
+        painter.fillRect(QRectF(topLeft, unitTexture.size()), QColor(0, 0, 0, 100));
+    }
+
+    painter.restore();
+
+    Unit* u = hex.GetUnit();
+    if (u && u->IsEnemy() && (hex.VisibilityState() || hex.ExplorationState())) {
+        drawLevelBadge(painter, center, u->GetLevel());
+    }
+}
+
+void HexWidget::drawLevelBadge(QPainter& painter, const QPointF& center, int level)
+{
+    QString levelText = QString("Lvl %1").arg(level);
+
+    QFont f = painter.font();
+    f.setBold(true);
+    f.setPointSize(14);
+    painter.setFont(f);
+
+    QPointF textPos(center.x() - 15, center.y() - Hex::HexSize / 2);
+
+    painter.setPen(Qt::black);
+    painter.drawText(textPos + QPointF(1, 1), levelText);
+
+    painter.setPen(Qt::white);
+    painter.drawText(textPos, levelText);
+}
+
+QPen HexWidget::getHexOutlinePen(const Hex& hex, const Hex& heroHex)
+{
+    QPoint currHexPoint(hex.GetQR().first, hex.GetQR().second);
+    QPoint heroPoint(heroHex.GetQR().first, heroHex.GetQR().second);
+
+    QPen pen(Qt::black, 1);
+
+    if (currHexPoint == heroPoint) return pen;
+
+    if (heroHex.IsNeighbor(hex)) {
+        bool isBlocked = false;
+        if (hex.HaveUnit()) {
+            Unit* u = hex.GetUnit();
+            if (u && u->GetType() == UnitType::StructUnBreak) {
+                isBlocked = true;
+            }
+        }
+
+        if (isBlocked) {
+            pen.setColor(Qt::red);
+            pen.setWidthF(2.0);
+        } else {
+            pen.setColor(QColor(255, 215, 0));
+            pen.setWidthF(2.0);
+        }
+    }
+
+    return pen;
+}
+
 void HexWidget::paintEvent(QPaintEvent*)
 {
     QPainter Painter(this);
     Painter.setRenderHint(QPainter::Antialiasing);
-
     Painter.translate(OffsetX, OffsetY);
     Painter.scale(Scale, Scale);
 
     const auto& Grid = Map.GetMap();
     const Hex& HeroCurrHex = Map.GetQPointLoc(Hero.GetPosition());
 
-    QHash<QPoint, QPen> HexOutlines;
-    QHash<QPoint, QPolygonF> HexPolygons;
+    QVector<QPair<QPolygonF, QPen>> GoldHexes;
+    QVector<QPair<QPolygonF, QPen>> RedHexes;
 
-    for(const auto& Col : Grid)
+    for (const auto& Col : Grid)
     {
-        for(const auto& Hex_ : Col)
+        for (const auto& Hex_ : Col)
         {
-            QPoint CurrHexQPoint(Hex_.GetQR().first, Hex_.GetQR().second);
-            auto Corners = Hex_.GetCorners();
-
             QPolygonF Polygon;
-            for(const auto& c : Corners)
+            for (const auto& c : Hex_.GetCorners()) {
                 Polygon << c;
-
-            HexPolygons[CurrHexQPoint] = Polygon;
-
-            QPainterPath HexClipPath;
-            HexClipPath.addPolygon(Polygon);
-
-            QPixmap BaseHexTexture;
-            bool IsHexVisible = Hex_.VisibilityState();
-            bool IsHexExplored = Hex_.ExplorationState();
-            QPointF center = Hex_.GetCenter();
-            Unit* CurrentUnit = NULL;
-            if(IsHexVisible)
-                BaseHexTexture = StandartVisibleHexTexture;
-            else if(IsHexExplored)
-                BaseHexTexture = StandartExploredHexTexture;
-            else
-                BaseHexTexture = FogTexture;
-
-            if(!BaseHexTexture.isNull())
-            {
-                QPointF topLeft = center - QPointF(BaseHexTexture.width() / 2.0, BaseHexTexture.height() / 2.0);
-
-                Painter.save();
-                Painter.setClipPath(HexClipPath);
-                Painter.drawPixmap(topLeft, BaseHexTexture);
-                Painter.restore();
-            }
-            else
-            {
-                QBrush Brush;
-                if(IsHexVisible)
-                    Brush = Qt::white;
-                else if(IsHexExplored)
-                    Brush = Qt::darkGray;
-                else
-                    Brush = Qt::black;
-
-                Painter.save();
-                Painter.setClipPath(HexClipPath);
-                Painter.fillPath(HexClipPath, Brush);
-                Painter.restore();
             }
 
-            if(IsHexVisible || IsHexExplored)
+            drawHexTerrain(Painter, Hex_, Polygon);
+            drawUnitAndUI(Painter, Hex_, Polygon);
+
+            QPoint currentHexPos(Hex_.GetQR().first, Hex_.GetQR().second);
+
+            if (currentHexPos == HoveredHex)
             {
-                QPixmap UnitTexture;
-                bool IsHeroOnHex = (QPoint(Hex_.GetQR().first, Hex_.GetQR().second) == Hero.GetPosition());
-
-                if (IsHeroOnHex) {
-                    // Якщо герой тут, перевіряємо чи є під ним інший юніт (наприклад, багаття)
-                    if (Hex_.HaveUnit()) {
-                        UnitTexture = GetUnitTexture(Hex_.GetUnit()->GetType(), true);
-                    } else {
-                        UnitTexture = HeroPixmap;
-                    }
-                } else if (Hex_.HaveUnit()) {
-                    UnitTexture = GetUnitTexture(Hex_.GetUnit()->GetType(), false);
-                }
-
-                if(!UnitTexture.isNull())
+                if (Hex_.VisibilityState() || Hex_.ExplorationState())
                 {
-                    QPixmap FinalUnitTexture = UnitTexture;
-
-                    if(!IsHexVisible && IsHexExplored)
-                        FinalUnitTexture = TintPixmap(UnitTexture, 0.4);
-
-                    QPointF center = Hex_.GetCenter();
-                    QPointF topLeft = center - QPointF(FinalUnitTexture.width() / 2.0, FinalUnitTexture.height() / 2.0);
-
                     Painter.save();
-                    Painter.setClipPath(HexClipPath);
-                    Painter.drawPixmap(topLeft, FinalUnitTexture);
+                    Painter.setPen(Qt::NoPen);
+                    Painter.setBrush(QColor(255, 255, 255, 60));
+                    Painter.drawPolygon(Polygon);
                     Painter.restore();
                 }
-                if (Hex_.HaveUnit()) {
-                    Unit* u = Hex_.GetUnit();
-                    // Переконуємось, що це ворог і гекс видимий (або розвіданий, якщо хочемо бачити "пам'ять" про рівень)
-                    if (u && u->IsEnemy() && (Hex_.VisibilityState() || Hex_.ExplorationState())) {
-
-                        QString levelText = QString("Lvl %1").arg(u->GetLevel());
-
-                        // Налаштування шрифту
-                        QFont f = Painter.font();
-                        f.setBold(true);
-                        f.setPointSize(14); // Трохи менший шрифт, щоб влазив
-                        Painter.setFont(f);
-
-                        // Координати тексту (над головою юніта)
-                        QPointF textPos(center.x() - 15, center.y() - Hex::HexSize / 2);
-
-                        // Малюємо чорну підкладку (тінь) для читабельності
-                        Painter.setPen(Qt::black);
-                        Painter.drawText(textPos + QPointF(1, 1), levelText);
-
-                        // Малюємо основний текст (червоний для ворогів)
-                        Painter.setPen(QColor(255, 255, 255)); // Яскраво-червоний
-                        Painter.drawText(textPos, levelText);
-                    }
-                }
             }
 
-            QPen OutlinePen(Qt::black, 1);
+            QPen OutlinePen = getHexOutlinePen(Hex_, HeroCurrHex);
 
-            if(CurrHexQPoint != Hero.GetPosition())
-            {
-                bool IsNeighborToHero = HeroCurrHex.IsNeighbor(Hex_);
-
-                if(IsNeighborToHero)
-                {
-                    bool IsBlocked = false;
-                    if(Hex_.HaveUnit())
-                    {
-                        Unit* Unit_ = Hex_.GetUnit();
-                        if(Unit_ && Unit_->GetType() == UnitType::StructUnBreak)
-                        {
-                            IsBlocked = true;
-                        }
-                    }
-
-                    if(IsBlocked)
-                    {
-                        OutlinePen.setColor(Qt::red);
-                        OutlinePen.setWidthF(2.0);
-                    }
-                    else
-                    {
-                        OutlinePen.setColor(QColor(255, 215, 0));
-                        OutlinePen.setWidthF(2.0);
-                    }
-                }
-            }
-            HexOutlines[CurrHexQPoint] = OutlinePen;
-        }
-    }
-
-    QHashIterator<QPoint, QPolygonF> IterPolygons(HexPolygons);
-    while(IterPolygons.hasNext())
-    {
-        IterPolygons.next();
-        const QPoint& CurrHexQPoint = IterPolygons.key();
-        const QPolygonF& Polygon = IterPolygons.value();
-
-        if(HexOutlines.contains(CurrHexQPoint))
-        {
-            const QPen& CurrPen = HexOutlines[CurrHexQPoint];
-            if(CurrPen.color() == Qt::black)
-            {
+            if (OutlinePen.color() == Qt::black) {
                 Painter.setBrush(Qt::NoBrush);
-                Painter.setPen(CurrPen);
+                Painter.setPen(OutlinePen);
                 Painter.drawPolygon(Polygon);
+            }
+            else if (OutlinePen.color() == Qt::red) {
+                RedHexes.append({Polygon, OutlinePen});
+            }
+            else {
+                GoldHexes.append({Polygon, OutlinePen});
             }
         }
     }
 
-    QHashIterator<QPoint, QPolygonF> IterPolygonsGold(HexPolygons);
-    while(IterPolygonsGold.hasNext())
-    {
-        IterPolygonsGold.next();
-        const QPoint& CurrHexQPoint = IterPolygonsGold.key();
-        const QPolygonF& Polygon = IterPolygonsGold.value();
-
-        if(HexOutlines.contains(CurrHexQPoint))
-        {
-            const QPen& CurrPen = HexOutlines[CurrHexQPoint];
-            if(CurrPen.color() == QColor(255, 215, 0))
-            {
-                Painter.setBrush(Qt::NoBrush);
-                Painter.setPen(CurrPen);
-                Painter.drawPolygon(Polygon);
-            }
-        }
+    Painter.setBrush(Qt::NoBrush);
+    for (const auto& item : GoldHexes) {
+        Painter.setPen(item.second);
+        Painter.drawPolygon(item.first);
     }
 
-    QHashIterator<QPoint, QPolygonF> IterPolygonsRed(HexPolygons);
-    while(IterPolygonsRed.hasNext())
-    {
-        IterPolygonsRed.next();
-        const QPoint& CurrHexQPoint = IterPolygonsRed.key();
-        const QPolygonF& Polygon = IterPolygonsRed.value();
-
-        if(HexOutlines.contains(CurrHexQPoint))
-        {
-            const QPen& CurrPen = HexOutlines[CurrHexQPoint];
-            if(CurrPen.color() == Qt::red)
-            {
-                Painter.setBrush(Qt::NoBrush);
-                Painter.setPen(CurrPen);
-                Painter.drawPolygon(Polygon);
-            }
-        }
+    for (const auto& item : RedHexes) {
+        Painter.setPen(item.second);
+        Painter.drawPolygon(item.first);
     }
 }
 
@@ -497,200 +304,177 @@ void HexWidget::wheelEvent(QWheelEvent* event)
     update();
 }
 
+void HexWidget::handleLeftClick(const QPointF& pos)
+{
+    QPointF Cord = (pos - QPointF(OffsetX, OffsetY)) / Scale;
+    QPoint HexCord = PixelToHex(Cord);
+
+    if (Map.ContainsHex(HexCord.x(), HexCord.y()))
+    {
+        if (tryMoveHeroTo(HexCord))
+        {
+            Map.UpdateVisibility(Hero.GetPosition());
+            update();
+            emit heroStatsChanged();
+        }
+    }
+}
+
+bool HexWidget::tryMoveHeroTo(const QPoint& targetHexCoords)
+{
+    QPoint currentPos = Hero.GetPosition();
+    const Hex& currentHex = Map.GetQPointLoc(currentPos);
+    const Hex& targetHex = Map.GetQPointLoc(targetHexCoords);
+
+    if (!currentHex.IsNeighbor(targetHex)) return false;
+
+    if (targetHex.HaveUnit()) {
+        Unit* u = targetHex.GetUnit();
+        if (u && u->GetType() == UnitType::StructUnBreak) return false;
+    }
+
+    Hero.SetPosition(targetHexCoords);
+
+    const Hex& newHexLocation = Map.GetQPointLoc(Hero.GetPosition());
+    if (newHexLocation.HaveUnit()) {
+        interactWithContentOnHex(newHexLocation, currentPos);
+    }
+
+    return true;
+}
+
+void HexWidget::interactWithContentOnHex(const Hex& hex, const QPoint& previousPos)
+{
+    Unit* unit = hex.GetUnit();
+    if (!unit) return;
+
+    if (unit->IsEnemy())
+    {
+        processCombat(unit, previousPos);
+    }
+    else if (unit->GetType() == UnitType::Friend)
+    {
+        processFriendly(unit);
+    }
+    else if (unit->GetType() == UnitType::CampfireUnit)
+    {
+        processCampfire(unit);
+    }
+    else if (unit->GetType() == UnitType::StructBreak)
+    {
+        processTreasure(unit);
+    }
+}
+
+void HexWidget::processCombat(Unit* enemy, const QPoint& previousPos)
+{
+    qWarning("Hero moved onto an enemy hex! Starting fight.");
+
+    QPixmap enemyDisplayTexture = getEnemyTexture(enemy->GetType());
+
+    Fight fightDialog(enemyDisplayTexture, &Hero, enemy, this);
+    int fightResultCode = fightDialog.exec();
+
+    bool playerEscaped = fightDialog.didPlayerEscaped();
+
+    if (fightResultCode == QDialog::Accepted)
+    {
+        qDebug("Fight won!");
+        Map.ClearUnitAt(Hero.GetPosition());
+        Hero.LevelUp();
+        Map.DecrementEnemyCount();
+
+        if (Map.GetEnemyCount() <= 0) {
+            QMessageBox::information(this, tr("Victory!"), tr("Congratulations! You have defeated all enemies!"));
+            emit victory();
+        }
+    }
+    else
+    {
+        if (Hero.GetHP() <= 0) {
+            qDebug("Fight lost. Game Over.");
+            emit gameOver();
+        }
+        else {
+            qDebug() << (playerEscaped ? "Hero escaped" : "Dialog closed");
+            Hero.SetPosition(previousPos);
+        }
+    }
+}
+
+QPixmap HexWidget::getEnemyTexture(UnitType type)
+{
+    QPixmap texture;
+    switch (type) {
+    case UnitType::Barbarian: texture = this->BarbarianTexture; break;
+    case UnitType::Warrior:   texture = this->WarriorTexture; break;
+    case UnitType::Wizard:    texture = this->WizardTexture; break;
+    default: break;
+    }
+
+    if (texture.isNull()) {
+        texture = QPixmap(200, 150);
+        texture.fill(Qt::red);
+    }
+    return texture;
+}
+
+void HexWidget::processFriendly(Unit* friendUnit)
+{
+    if (friendUnit->GetAI()) {
+        Friendly* friendlyAI = dynamic_cast<Friendly*>(friendUnit->GetAI());
+        if (friendlyAI) {
+            QMessageBox::information(this, tr("Friendly NPC"), QString::fromStdString(friendlyAI->getGreeting()));
+        }
+    }
+}
+
+void HexWidget::processCampfire(Unit* campfireUnit)
+{
+    CampfireUnit* campfire = dynamic_cast<CampfireUnit*>(campfireUnit);
+    if (!campfire || !campfire->GetAI()) return;
+
+    Campfire* campfireAI = dynamic_cast<Campfire*>(campfire->GetAI());
+    if (!campfireAI) return;
+
+    double oldHP = Hero.GetHP();
+    double oldMana = Hero.GetMana();
+
+    campfireAI->Heal(&Hero);
+
+    float currentCharges = campfire->GetHP();
+    campfire->SetHP(currentCharges - 1);
+
+    QString msg = tr("You rest at the campfire.\nHP: %1 -> %2\nMana: %3 -> %4\nRemaining uses: %5")
+                      .arg(oldHP).arg(Hero.GetHP())
+                      .arg(oldMana).arg(Hero.GetMana())
+                      .arg(campfire->GetHP());
+
+    QMessageBox::information(this, tr("Campfire"), msg);
+
+    if (campfire->GetHP() <= 0) {
+        QMessageBox::information(this, tr("Campfire"), tr("The campfire has extinguished."));
+        Map.ClearUnitAt(Hero.GetPosition());
+    }
+}
+
+void HexWidget::processTreasure(Unit* treasureUnit)
+{
+    QMessageBox::information(this, tr("Treasure Chest"), tr("You found a chest! Level Up!"));
+    Hero.LevelUp();
+    Map.ClearUnitAt(Hero.GetPosition());
+}
+
 void HexWidget::mousePressEvent(QMouseEvent* event)
 {
-    if(event->button() == Qt::RightButton)
+    if (event->button() == Qt::RightButton)
     {
         IsDragging = true;
         LastMousePos = event->pos();
     }
-    else if(event->button() == Qt::LeftButton)
+    else if (event->button() == Qt::LeftButton)
     {
-        QPointF Pos = event->pos();
-
-        QPointF Cord = (Pos - QPointF(OffsetX, OffsetY)) / Scale;
-        QPoint HexCord = PixelToHex(Cord);
-
-        if(Map.ContainsHex(HexCord.x(), HexCord.y()))
-        {
-            QPoint HeroCurrPos = Hero.GetPosition();
-            const Hex& CurrHex = Map.GetQPointLoc(HeroCurrPos);
-            const Hex& TargetHex = Map.GetQPointLoc(HexCord);
-
-            //непробивні
-            if(TargetHex.HaveUnit())
-            {
-                Unit* Unit_ = TargetHex.GetUnit();
-                if(Unit_ && Unit_->GetType() == UnitType::StructUnBreak)
-                    return;
-            }
-
-            if(CurrHex.IsNeighbor(TargetHex))
-            {
-                QPoint PrevHeroPos = HeroCurrPos;
-                Hero.SetPosition(HexCord);
-
-                const Hex& heroIsOnThisHex = Map.GetQPointLoc(Hero.GetPosition());
-
-                if(heroIsOnThisHex.HaveUnit())
-                {
-                    Unit* unitOnCurrentHex = heroIsOnThisHex.GetUnit();
-                    if(unitOnCurrentHex && (unitOnCurrentHex->GetType() == UnitType::Barbarian ||
-                                             unitOnCurrentHex->GetType() == UnitType::Warrior ||
-                                             unitOnCurrentHex->GetType() == UnitType::Wizard))
-                    {
-                        qWarning("Hero moved onto an enemy hex! Starting fight.");
-
-                        QPixmap enemyDisplayTexture;
-
-                        if(unitOnCurrentHex->GetType() == UnitType::Barbarian)
-                            enemyDisplayTexture = this->BarbarianTexture;
-                        else if(unitOnCurrentHex->GetType() == UnitType::Warrior)
-                            enemyDisplayTexture = this->WarriorTexture;
-                        else if(unitOnCurrentHex->GetType() == UnitType::Wizard)
-                            enemyDisplayTexture = this->WizardTexture;
-
-                        if(enemyDisplayTexture.isNull())
-                        {
-                            qWarning("HexWidget: EnemyTexture is null! Using placeholder for Fight window.");
-                            enemyDisplayTexture = QPixmap(200,150);
-                            enemyDisplayTexture.fill(Qt::red);
-                        }
-
-
-                        MainHero* heroUnit = &(this->Hero);
-                        Unit* enemyUnit = unitOnCurrentHex;
-
-
-                        Fight* fightDialog = new Fight(enemyDisplayTexture, heroUnit, enemyUnit, this);
-                        fightDialog->setAttribute(Qt::WA_DeleteOnClose);
-
-                        int fightResultCode = fightDialog->exec();
-                        bool PlayerEscaped = fightDialog->didPlayerEscaped();
-
-                        if (fightResultCode == QDialog::Accepted)
-                        {
-                            qDebug("Fight won! Enemy removed from hero's current hex.");
-                            Map.ClearUnitAt(Hero.GetPosition());
-                            Hero.LevelUp();
-                            Map.DecrementEnemyCount();
-                            if (Map.GetEnemyCount() <= 0) //
-                            {
-                                QMessageBox::information(this, tr("Victory!"), tr("Congratulations! You have defeated all enemies and won the game!"));
-                                emit victory();
-                            }
-                        }
-                        else
-                        {
-                            if (heroUnit->GetHP() <= 0) { // Якщо HP героя <= 0, то це програш
-                                qDebug("Fight lost (Hero HP <= 0). Emitting gameOver signal.");
-                                emit gameOver();
-
-
-
-
-                                return;
-                            }
-                            else if(PlayerEscaped)
-                            {
-                                // Якщо HP героя > 0, це була втеча
-                                qDebug("Hero escaped");
-                                Hero.SetPosition(PrevHeroPos);
-                            }
-                            else
-                            {
-                                qDebug("Dialog was closed");
-                                Hero.SetPosition(PrevHeroPos);
-
-                            }
-                        }
-                    }
-
-                    else if (unitOnCurrentHex->GetType() == UnitType::Friend)
-                    {
-                        if (unitOnCurrentHex->GetAI()) {
-                            Friendly* friendlyAI = dynamic_cast<Friendly*>(unitOnCurrentHex->GetAI());
-                            if (friendlyAI)
-                            {
-                                std::string greeting = friendlyAI->getGreeting();
-                                QMessageBox::information(this, tr("Friendly NPC"), QString::fromStdString(greeting));
-                            }
-                            else
-                            {
-                                qWarning("HexWidget: AI for 'Friend' unit is not of Friendly type.");
-                            }
-                        }
-                        else
-                        {
-                            qWarning("HexWidget: 'Friend' unit has a null AI pointer.");
-                        }
-                    }
-
-                    //Багаття
-                    else if (unitOnCurrentHex->GetType() == UnitType::CampfireUnit)
-                    {
-                        qDebug("Hero stepped on a campfire.");
-                        CampfireUnit* campfireUnit = dynamic_cast<CampfireUnit*>(unitOnCurrentHex);
-                        if (campfireUnit && campfireUnit->GetAI())
-                        {
-                            Campfire* campfireAI = dynamic_cast<Campfire*>(campfireUnit->GetAI());
-                            if (campfireAI) {
-                                    double oldHP = Hero.GetHP();
-                                    double oldMana = Hero.GetMana();
-                                    campfireAI->Heal(&Hero);
-
-                                    double newHP = Hero.GetHP();
-                                    double newMana = Hero.GetMana();
-                                    double currentCampfireHp = campfireUnit->GetHP();
-                                    QMessageBox::information(this, tr("Campfire"),
-                                                             tr("You rest at the campfire.\nHP: %1 -> %2\nMana: %3 -> %4\nYou can rest %5 times")
-                                                                 .arg(oldHP).arg(newHP).arg(oldMana).arg(newMana).arg(currentCampfireHp-1));
-
-
-                                    currentCampfireHp = campfireUnit->GetHP();
-                                    campfireUnit->SetHP(currentCampfireHp - 1);
-                                    qDebug() << "[CAMPFIRE_DEBUG] After SetHp(" << currentCampfireHp - 1 << "): ID=" << campfireUnit << "HP=" << campfireUnit->GetHP() << "MaxHP=" << campfireUnit->GetMaxHP();
-
-
-                                    if (campfireUnit->GetHP() <= 0)
-                                    {
-                                        Map.ClearUnitAt(Hero.GetPosition());
-                                        qDebug("[CAMPFIRE_DEBUG] The campfire has extinguished. HP=%f", campfireUnit->GetHP());
-                                        QMessageBox::information(this, tr("Campfire"), tr("The campfire has extinguished."));
-                                    } else {
-                                        qDebug() << "[CAMPFIRE_DEBUG] Багаття ще горить. HP=" << campfireUnit->GetHP();
-                                    }
-
-                            } else {
-                                qWarning("HexWidget: Campfire unit's AI is not of Campfire type.");
-                            }
-                        }
-                        else
-                        {
-                            qWarning("HexWidget: Campfire unit is null or has a null AI pointer.");
-                        }
-                    }
-                    else if(unitOnCurrentHex->GetType() == UnitType::StructBreak)
-                    {
-                        QMessageBox::information(this, tr("Сундук зі скарбами"),tr("Ти знайшов сундук, рівень підвищено!"));
-                        Hero.LevelUp();
-                        Map.ClearUnitAt(Hero.GetPosition());
-                        qDebug("Hero found treasure");
-                    }
-                }
-                Map.UpdateVisibility(Hero.GetPosition());
-                update();
-            }
-            else
-            {
-                update();
-            }
-        }
-        else
-        {
-            update();
-        }
-        emit heroStatsChanged();
+        handleLeftClick(event->pos());
     }
 }
 

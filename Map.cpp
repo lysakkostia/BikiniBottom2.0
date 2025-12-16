@@ -5,6 +5,12 @@
 #include <QString>
 #include <QDebug>
 #include "RandomGenerator.h"
+#include "GameConstants.h"
+
+namespace Const_MGen = GlobalConst::MapGeneration;
+namespace Const_MZones = GlobalConst::MapGeneration::Zones;
+namespace Const_MProbs = GlobalConst::MapGeneration::UnitProbabilities;
+namespace Const_METypes = GlobalConst::MapGeneration::EnemyTypes;
 
 int HexMap::GetRadius() const { return Radius; }
 const std::vector<std::vector<Hex>>& HexMap::GetMap() const { return MapGrid; }
@@ -59,8 +65,8 @@ void HexMap::PlaceGuaranteedCampfire()
 int HexMap::CalculateZoneLevel(int distance) const
 {
     // Розбиваємо карту на зони складності
-    int Zone1 = static_cast<int>(Radius * 0.5);
-    int Zone2 = static_cast<int>(Radius * 0.7);
+    int Zone1 = static_cast<int>(Radius * Const_MZones::ZONE_1_RATIO);
+    int Zone2 = static_cast<int>(Radius * Const_MZones::ZONE_2_RATIO);
 
     if (distance <= Zone1) return RandGenerator::RandIntInInterval(1, 2);
     if (distance <= Zone2) return RandGenerator::RandIntInInterval(3, 4);
@@ -71,8 +77,8 @@ UnitType HexMap::ChooseRandomEnemyType() const
 {
     // Шанси появи конкретних ворогів
     double roll = RandGenerator::RandDoubleInInterval(0.0, 1.0);
-    if (roll < 0.4) return UnitType::Barbarian;
-    if (roll < 0.8) return UnitType::Warrior;
+    if (roll < Const_METypes::CHANCE_BARBARIAN) return UnitType::Barbarian;
+    if (roll < Const_METypes::CHANCE_WARRIOR) return UnitType::Warrior;
     return UnitType::Wizard;
 }
 
@@ -81,16 +87,16 @@ UnitType HexMap::ChooseRandomUnitType() const
     // 60% Enemy, 25% Unbreak, 7% Break, 7% Friend, 1% Campfire
     double roll = RandGenerator::RandDoubleInInterval(0.0, 1.0);
 
-    if (roll < 0.60) return UnitType::Enemy;
-    if (roll < 0.85) return UnitType::StructUnBreak;
-    if (roll < 0.92) return UnitType::StructBreak;
-    if (roll < 0.99) return UnitType::Friend;
+    if (roll < Const_MProbs::THRESHOLD_ENEMY) return UnitType::Enemy;
+    if (roll < Const_MProbs::THRESHOLD_UNBREAK) return UnitType::StructUnBreak;
+    if (roll < Const_MProbs::THRESHOLD_BREAK) return UnitType::StructBreak;
+    if (roll < Const_MProbs::THRESHOLD_FRIEND) return UnitType::Friend;
     return UnitType::CampfireUnit;
 }
 
 void HexMap::SpawnUnitInHex(Hex& hex, const QPoint& protectedPos)
 {
-    const double SpawnChance = 0.15;
+    const double SpawnChance = Const_MGen::SPAWN_CHANCE;
     if (RandGenerator::RandDoubleInInterval(0.0, 1.0) > SpawnChance) return;
 
     QPoint currPos(hex.q, hex.r);
