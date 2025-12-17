@@ -150,12 +150,19 @@ Hex& HexMap::GetChangeableLocation(int q, int r)
     }
 
     auto& Col = MapGrid[qi];
-    for(auto& Hex_ : Col)
-    {
-        if(Hex_.q == q && Hex_.r == r)
-            return Hex_;
+    int r1 = std::max(-Radius, -q - Radius);
+
+    int index = r - r1;
+
+    if(index < 0 || index >= Col.size()) {
+        throw std::out_of_range("Coordinate r out of range");
     }
-    throw std::out_of_range("Coordinate r out of range");
+
+    if (Col[index].q != q || Col[index].r != r) {
+        throw std::logic_error("Map indexing logic error");
+    }
+
+    return Col[index];
 }
 
 Hex& HexMap::GetChangeableQPointLoc(const QPoint& OHex)
@@ -172,12 +179,19 @@ const Hex& HexMap::GetLocation(int q, int r) const
     }
 
     const auto& Col = MapGrid[qi];
-    for(const auto& Hex_ : Col)
-    {
-        if(Hex_.q == q && Hex_.r == r)
-            return Hex_;
+    int r1 = std::max(-Radius, -q - Radius);
+
+    int index = r - r1;
+
+    if(index < 0 || index >= Col.size()) {
+        throw std::out_of_range("Coordinate r out of range");
     }
-    throw std::out_of_range("Coordinate r out of range");
+
+    if (Col[index].q != q || Col[index].r != r) {
+        throw std::logic_error("Map indexing logic error");
+    }
+
+    return Col[index];
 }
 
 const Hex& HexMap::GetQPointLoc(const QPoint& OHex) const
@@ -191,13 +205,10 @@ bool HexMap::ContainsHex(int q, int r) const
     if(qi < 0 || qi >= MapGrid.size())
         return false;
 
-    const auto& Col = MapGrid[qi];
-    for(const auto& Hex_ : Col)
-    {
-        if(Hex_.q == q && Hex_.r == r)
-            return true;
-    }
-    return false;
+    int r1 = std::max(-Radius, -q - Radius);
+    int r2 = std::min(Radius, -q + Radius);
+
+    return (r >= r1 && r <= r2);
 }
 
 void HexMap::UpdateVisibility(const QPoint& HeroPos)
@@ -214,15 +225,20 @@ void HexMap::UpdateVisibility(const QPoint& HeroPos)
     CenterHex.IsVisible = true;
     CenterHex.IsExplored = true;
 
-    for(auto& Col : MapGrid)
+    static const std::vector<QPoint> NeighborOffsets = {
+        {1, 0}, {1, -1}, {0, -1}, {-1, 0}, {-1, 1}, {0, 1}
+    };
+
+    for (const auto& offset : NeighborOffsets)
     {
-        for(auto& Hex_ : Col)
+        int nq = HeroPos.x() + offset.x();
+        int nr = HeroPos.y() + offset.y();
+
+        if (ContainsHex(nq, nr))
         {
-            if(CenterHex.IsNeighbor(Hex_))
-            {
-                Hex_.IsVisible = true;
-                Hex_.IsExplored = true;
-            }
+            Hex& neighbor = GetChangeableLocation(nq, nr);
+            neighbor.IsVisible = true;
+            neighbor.IsExplored = true;
         }
     }
 }
