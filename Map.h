@@ -17,6 +17,7 @@ private:
     std::vector<std::vector<Hex>> MapGrid;
     UnitFabric UnitFabric_;
     int EnemyCounter=0;
+    std::vector<Hex*> visibleNow;
 
     int GetHexDistance(int q, int r) const;
     Hex& GetChangeableLocation(int q, int r);

@@ -1,5 +1,6 @@
 #include "HexItem.h"
 #include "GameScene.h"
+#include "TextureManager.h"
 #include <QPen>
 #include <QStyleOptionGraphicsItem>
 #include <QStyle>
@@ -27,7 +28,7 @@ void HexItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
-    QPixmap bgTexture = MScene->getTerrainTexture(MHex->VisibilityState(), MHex->ExplorationState());
+    QPixmap bgTexture = TextureManager::GetInstance().getTerrainTexture(MHex->VisibilityState(), MHex->ExplorationState());
 
     painter->save();
     painter->setClipPath(shape());
@@ -50,12 +51,12 @@ void HexItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
 
         if (isHeroOnHex) {
             if (MHex->HaveUnit()) {
-                unitTexture = MScene->getUnitTexture(MHex->GetUnit()->GetType(), true);
+                unitTexture = TextureManager::GetInstance().getUnitTexture(MHex->GetUnit()->GetType(), true);
             } else {
-                unitTexture = MScene->getUnitTexture(UnitType::MainHero, false);
+                unitTexture = TextureManager::GetInstance().getUnitTexture(UnitType::MainHero, false);
             }
         } else if (MHex->HaveUnit()) {
-            unitTexture = MScene->getUnitTexture(MHex->GetUnit()->GetType(), false);
+            unitTexture = TextureManager::GetInstance().getUnitTexture(MHex->GetUnit()->GetType(), false);
         }
 
         if (!unitTexture.isNull()) {
@@ -77,10 +78,12 @@ void HexItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
     }
 
     if (option->state & QStyle::State_MouseOver) {
-        if (MHex->VisibilityState() || MHex->ExplorationState()) {
-            painter->setBrush(QColor(255, 255, 255, 60));
-            painter->setPen(Qt::NoPen);
-            painter->drawPolygon(polygon());
+        if (!MScene->isPanning()){
+            if (MHex->VisibilityState() || MHex->ExplorationState()) {
+                painter->setBrush(QColor(255, 255, 255, 60));
+                painter->setPen(Qt::NoPen);
+                painter->drawPolygon(polygon());
+            }
         }
     }
 
@@ -116,7 +119,7 @@ void HexItem::drawLevelBadge(QPainter* painter, int level)
     f.setPointSize(14);
     painter->setFont(f);
 
-    QPointF textPos(-15, -Hex::HexSize / 2.0);
+    QPointF textPos(-15, -GlobalConst::HexSize / 2.0);
 
     painter->setPen(Qt::black);
     painter->drawText(textPos + QPointF(1, 1), levelText);

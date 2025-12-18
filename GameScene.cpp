@@ -2,6 +2,7 @@
 #include "GameConstants.h"
 #include "Fight.h"
 #include "AI.h"
+#include "TextureManager.h"
 #include <QMessageBox>
 #include <QGraphicsView>
 #include <QDebug>
@@ -11,78 +12,8 @@ namespace Const_Scale = GlobalConst::TextureScale;
 GameScene::GameScene(int NRadius, QObject *parent)
     : QGraphicsScene(parent), Map(NRadius > 0 ? NRadius : 10), Hero(QPoint(0,0))
 {
-    InitializeTextures();
     Map.UpdateVisibility(Hero.GetPosition());
     generateMapItems();
-}
-
-QPixmap GameScene::loadTexture(const QString &fileName, double scaleFactor)
-{
-    QPixmap originalPixmap(fileName);
-
-    if (originalPixmap.isNull()) {
-        qWarning() << "Failed to load texture:" << fileName;
-        return QPixmap();
-    }
-
-    return originalPixmap.scaled(
-        QSizeF(scaleFactor * Hex::HexSize, scaleFactor * Hex::HexSize).toSize(),
-        Qt::KeepAspectRatio, Qt::SmoothTransformation);
-}
-
-void GameScene::InitializeTextures()
-{
-    this->HeroPixmap = loadTexture("NPC5Texture.png", Const_Scale::HERO);
-    this->FogTexture = loadTexture("FogTexture.png", Const_Scale::STANDART_HEX);
-    this->BarbarianTexture = loadTexture("NPC4Texture.png", Const_Scale::UNIT);
-    this->WarriorTexture = loadTexture("NPC1Texture.png", Const_Scale::UNIT);
-    this->WizardTexture = loadTexture("NPC7Texture.png", Const_Scale::UNIT);
-    this->FriendTexture = loadTexture("NPC2Texture.png", Const_Scale::UNIT);
-    this->StructBreakTexture = loadTexture("NPC3Texture.png", Const_Scale::UNIT);
-    this->StructUnBreakTexture = loadTexture("MountainTexture.png", Const_Scale::MOUNTAIN);
-    this->CampfireTexture = loadTexture("NPC6Texture.png", Const_Scale::UNIT);
-    this->HeroWithWarriorTexture = loadTexture("HeroWithEnemyTexture.png", Const_Scale::UNIT);
-    this->HeroWithBarbarianTexture = loadTexture("HeroWithCocosikTexture.png", Const_Scale::UNIT);
-    this->HeroWithWizardTexture = loadTexture("HeroWithWizardTexture.png", Const_Scale::UNIT);
-    this->HeroWithFriendTexture = loadTexture("HeroWithFriendTexture.png", Const_Scale::UNIT);
-    this->HeroWithStructTexture = loadTexture("HeroWithStructTexture.png", Const_Scale::UNIT);
-    this->HeroWithCampfireTexture = loadTexture("HeroWithCampfireTexture.png", Const_Scale::UNIT);
-
-    this->StandartVisibleHexTexture = loadTexture("StandartHex.jpg", Const_Scale::STANDART_HEX);
-    if (!this->StandartVisibleHexTexture.isNull()) {
-        this->StandartExploredHexTexture = TintPixmap(this->StandartVisibleHexTexture, 0.4);
-    }
-}
-
-QPixmap GameScene::TintPixmap(const QPixmap& Source, qreal Strength)
-{
-    if(Source.isNull())
-        return Source;
-
-    QPixmap TintedPixmap = Source;
-    QPainter p(&TintedPixmap);
-    QColor OverlayColor = Qt::black;
-    OverlayColor.setAlphaF(Strength);
-    p.fillRect(TintedPixmap.rect(), OverlayColor);
-    p.end();
-    return TintedPixmap;
-}
-
-QPixmap GameScene::getEnemyTexture(UnitType type)
-{
-    QPixmap texture;
-    switch (type) {
-    case UnitType::Barbarian: texture = this->BarbarianTexture; break;
-    case UnitType::Warrior:   texture = this->WarriorTexture; break;
-    case UnitType::Wizard:    texture = this->WizardTexture; break;
-    default: break;
-    }
-
-    if (texture.isNull()) {
-        texture = QPixmap(200, 150);
-        texture.fill(Qt::red);
-    }
-    return texture;
 }
 
 void GameScene::generateMapItems()
@@ -180,7 +111,7 @@ void GameScene::processCombat(Unit* enemy, const QPoint& previousPos)
 
     QWidget* parentView = getViewWidget();
 
-    Fight fightDialog(getEnemyTexture(enemy->GetType()), &Hero, enemy, parentView);
+    Fight fightDialog(TextureManager::GetInstance().getUnitTexture(enemy->GetType()), &Hero, enemy, parentView);
     int fightResultCode = fightDialog.exec();
 
     bool playerEscaped = fightDialog.didPlayerEscaped();
@@ -261,40 +192,6 @@ void GameScene::processTreasure(Unit* treasureUnit)
     Map.ClearUnitAt(Hero.GetPosition());
 }
 
-QPixmap GameScene::getTerrainTexture(bool visible, bool explored)
-{
-    if (visible) return StandartVisibleHexTexture;
-    if (explored) return StandartExploredHexTexture;
-    return FogTexture;
-}
-
-QPixmap GameScene::getUnitTexture(UnitType type, bool isHeroOnHex)
-{
-    if (isHeroOnHex) {
-        switch (type) {
-        case UnitType::Barbarian: return HeroWithBarbarianTexture;
-        case UnitType::Warrior:   return HeroWithWarriorTexture;
-        case UnitType::Wizard:    return HeroWithWizardTexture;
-        case UnitType::Friend:    return HeroWithFriendTexture;
-        case UnitType::StructBreak: return HeroWithStructTexture;
-        case UnitType::CampfireUnit:  return HeroWithCampfireTexture;
-        default: return HeroPixmap;
-        }
-    } else {
-        switch (type) {
-        case UnitType::Barbarian: return BarbarianTexture;
-        case UnitType::Warrior:   return WarriorTexture;
-        case UnitType::Wizard:    return WizardTexture;
-        case UnitType::Friend:    return FriendTexture;
-        case UnitType::StructBreak: return StructBreakTexture;
-        case UnitType::StructUnBreak: return StructUnBreakTexture;
-        case UnitType::CampfireUnit:  return CampfireTexture;
-        case UnitType::MainHero: return HeroPixmap;
-        default: return QPixmap();
-        }
-    }
-}
-
 void GameScene::handleHexClick(HexItem* item)
 {
     Hex* targetHex = item->getModelHex();
@@ -348,3 +245,10 @@ GameScene::HeroStats GameScene::GetStats()
     stats.LVL = Hero.GetLevel();
     return stats;
 }
+
+void GameScene::setPanning(bool panning) {
+    MisPanning = panning;
+    update();
+}
+
+bool GameScene::isPanning() const { return MisPanning; }

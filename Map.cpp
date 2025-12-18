@@ -64,7 +64,6 @@ void HexMap::PlaceGuaranteedCampfire()
 
 int HexMap::CalculateZoneLevel(int distance) const
 {
-    // Розбиваємо карту на зони складності
     int Zone1 = static_cast<int>(Radius * Const_MZones::ZONE_1_RATIO);
     int Zone2 = static_cast<int>(Radius * Const_MZones::ZONE_2_RATIO);
 
@@ -75,7 +74,6 @@ int HexMap::CalculateZoneLevel(int distance) const
 
 UnitType HexMap::ChooseRandomEnemyType() const
 {
-    // Шанси появи конкретних ворогів
     double roll = RandGenerator::RandDoubleInInterval(0.0, 1.0);
     if (roll < Const_METypes::CHANCE_BARBARIAN) return UnitType::Barbarian;
     if (roll < Const_METypes::CHANCE_WARRIOR) return UnitType::Warrior;
@@ -213,17 +211,20 @@ bool HexMap::ContainsHex(int q, int r) const
 
 void HexMap::UpdateVisibility(const QPoint& HeroPos)
 {
-    for(auto& Col : MapGrid)
+    if(!visibleNow.empty())
     {
-        for(auto& Hex_ : Col)
+        for(auto& Hex_ : visibleNow)
         {
-            Hex_.IsVisible = false;
+            Hex_->IsVisible = false;
         }
     }
+    visibleNow.clear();
+    visibleNow.reserve(7);
 
     Hex& CenterHex = GetChangeableQPointLoc(HeroPos);
     CenterHex.IsVisible = true;
     CenterHex.IsExplored = true;
+    visibleNow.emplace_back(&CenterHex);
 
     static const std::vector<QPoint> NeighborOffsets = {
         {1, 0}, {1, -1}, {0, -1}, {-1, 0}, {-1, 1}, {0, 1}
@@ -239,6 +240,7 @@ void HexMap::UpdateVisibility(const QPoint& HeroPos)
             Hex& neighbor = GetChangeableLocation(nq, nr);
             neighbor.IsVisible = true;
             neighbor.IsExplored = true;
+            visibleNow.emplace_back(&neighbor);
         }
     }
 }
@@ -357,6 +359,7 @@ bool HexMap::LoadFromFile(const QString& filePath, QPoint& heroPos, double& Hero
 
 void HexMap::Clear()
 {
+    visibleNow.clear();
     for(auto& Col : MapGrid)
     {
         for(Hex& Hex_ : Col)

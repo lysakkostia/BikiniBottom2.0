@@ -5,20 +5,8 @@
 #include <QTranslator>
 #include <QMainWindow>
 
-#include <iostream>
-#include <vector>
-
-#include "AI.h"
-#include "Cell.h"
-#include "Map.h"
-#include "Unit.h"
-#include "HexWidget.h"
-#include "Fight.h"
-
 int main(int argc, char *argv[])
 {
-
-
     QApplication a(argc, argv);
 
     a.setStyleSheet(
@@ -34,12 +22,6 @@ int main(int argc, char *argv[])
         "}"
         );
 
-
-
-
-
-
-
      QIcon appIcon("icon.png");
      a.setWindowIcon(appIcon);
      QTranslator translator;
@@ -53,10 +35,6 @@ int main(int argc, char *argv[])
      }
      MainWindow w;
      w.show();
-
-
-
-
 
     return a.exec();
 }

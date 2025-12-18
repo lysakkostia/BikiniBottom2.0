@@ -6,8 +6,8 @@ bool Hex::ExplorationState() const { return IsExplored; }
 
 QPointF Hex::GetCenter() const
 {
-    float x = HexSize * 3.0 / 2.0 * q;
-    float y = HexSize * std::sqrt(3.0) * (r + q / 2.0);
+    float x = GlobalConst::HexSize * 3.0 / 2.0 * q;
+    float y = GlobalConst::HexSize * std::sqrt(3.0) * (r + q / 2.0);
 
     return {x,y};
 }
@@ -22,8 +22,8 @@ std::vector<QPointF> Hex::GetCorners() const
     {
         float AngleDeg = 60.0 * i;
         float AngleRad = AngleDeg * M_PI / 180.0;
-        float x = Center.x() + HexSize * std::cos(AngleRad);
-        float y = Center.y() + HexSize * std::sin(AngleRad);
+        float x = Center.x() + GlobalConst::HexSize * std::cos(AngleRad);
+        float y = Center.y() + GlobalConst::HexSize * std::sin(AngleRad);
         Corners.emplace_back(x,y);
     }
     return Corners;

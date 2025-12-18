@@ -6,6 +6,8 @@
 
 namespace GlobalConst
 {
+    static constexpr float HexSize = 60.0;
+
     const double GLOBAL_BASE_HP = 200.0;
     const double GLOBAL_BASE_MANA = 100.0;
 

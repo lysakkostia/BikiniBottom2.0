@@ -3,6 +3,7 @@
 
 #include "Unit.h"
 #include "RandomGenerator.h"
+#include "GameConstants.h"
 #include <utility>
 #include <cmath>
 #include <vector>
@@ -17,8 +18,6 @@ private:
     Unit* Unit_;
 
 public:
-
-    static constexpr float HexSize = 60.0;
     Hex(int q_, int r_) : q(q_), r(r_), IsVisible(false), IsExplored(false), Unit_(nullptr)
     {}
 

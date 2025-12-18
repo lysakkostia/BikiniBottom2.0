@@ -29,6 +29,11 @@ void GameView::mousePressEvent(QMouseEvent* event)
         isPanning = true;
         lastPanPos = event->pos();
         setCursor(Qt::ClosedHandCursor);
+
+        if (GameScene* myScene = dynamic_cast<GameScene*>(scene())) {
+            myScene->setPanning(true);
+        }
+
         event->accept();
     } else {
         QGraphicsView::mousePressEvent(event);
@@ -54,6 +59,11 @@ void GameView::mouseReleaseEvent(QMouseEvent* event)
     if (event->button() == Qt::RightButton) {
         isPanning = false;
         setCursor(Qt::ArrowCursor);
+
+        if (GameScene* myScene = dynamic_cast<GameScene*>(scene())) {
+            myScene->setPanning(false);
+        }
+
         event->accept();
     } else {
         QGraphicsView::mouseReleaseEvent(event);

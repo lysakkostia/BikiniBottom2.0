@@ -13,29 +13,8 @@ class GameScene : public QGraphicsScene
 private:
     HexMap Map;
     MainHero Hero;
+    bool MisPanning = false;
 
-    QPixmap HeroPixmap;
-    QPixmap StandartVisibleHexTexture;
-    QPixmap StandartExploredHexTexture;
-    QPixmap FogTexture;
-    QPixmap BarbarianTexture;
-    QPixmap WarriorTexture;
-    QPixmap WizardTexture;
-    QPixmap FriendTexture;
-    QPixmap StructBreakTexture;
-    QPixmap StructUnBreakTexture;
-    QPixmap CampfireTexture;
-    QPixmap HeroWithWarriorTexture;
-    QPixmap HeroWithWizardTexture;
-    QPixmap HeroWithBarbarianTexture;
-    QPixmap HeroWithFriendTexture;
-    QPixmap HeroWithStructTexture;
-    QPixmap HeroWithCampfireTexture;
-
-    void InitializeTextures();
-    QPixmap loadTexture(const QString &fileName, double scaleFactor);
-    QPixmap TintPixmap(const QPixmap& Source, qreal Strength = 0.4);
-    QPixmap getEnemyTexture(UnitType type);
     QWidget* getViewWidget();
 
     void generateMapItems();
@@ -51,9 +30,6 @@ private:
 public:
     explicit GameScene(int NRadius, QObject *parent = nullptr);
 
-    QPixmap getTerrainTexture(bool visible, bool explored);
-    QPixmap getUnitTexture(UnitType type, bool isHeroOnHex);
-
     void handleHexClick(HexItem* item);
 
     Hex* getHeroHex();
@@ -67,6 +43,9 @@ public:
         double LVL;
     };
     HeroStats GetStats();
+
+    void setPanning(bool panning);
+    bool isPanning() const;
 
 signals:
     void heroStatsChanged();
