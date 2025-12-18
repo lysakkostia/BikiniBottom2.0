@@ -44,8 +44,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         UnitFabric.cpp
 
         settingswindow.h settingswindow.cpp settingswindow.ui
-        HexWidget.h
-        HexWidget.cpp
 
         Pause.h Pause.cpp Pause.ui
         Fight.h Fight.cpp Fight.ui
@@ -54,6 +52,12 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         RandomGenerator.cpp
         herowidget.h herowidget.cpp herowidget.ui
         GameConstants.h
+        HexItem.h HexItem.cpp
+        GameScene.h GameScene.cpp
+        GameView.h GameView.cpp
+
+        unused_HexWidget.h
+        unused_HexWidget.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET BikiniBottom2 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

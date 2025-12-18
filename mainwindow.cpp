@@ -18,7 +18,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     //стилі
-
     this->setFixedSize( 1280, 720 );
     QIcon mainWindowIcon("icon.png");
     this->setWindowIcon(mainWindowIcon);
@@ -30,11 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
         "    background-attachment: fixed;"
         "    border-image: url(background.png) 0 0 0 0 stretch stretch;"
         "}"
-
-
         );
-    //
-
 
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
@@ -99,45 +94,44 @@ void MainWindow::on_btn_play_clicked()
     New_or_old_Game *chooseDialog = new New_or_old_Game(this);
 
     connect(chooseDialog, &New_or_old_Game::startNewGame, this, [=]() {
-        if (MapWidget)
-        {
-            MapWidget->deleteLater();
-            MapWidget = nullptr;
+        if (MapView) {
+            MapView->deleteLater();
+            MapView = nullptr;
         }
-
+        if (MGameScene) {
+            MGameScene->deleteLater();
+            MGameScene = nullptr;
+        }
         if (heroWidget) {
             heroWidget->hide();
             heroWidget->deleteLater();
             heroWidget = nullptr;
         }
 
+        MGameScene = new GameScene(MapRadius, this);
+        MapView = new GameView(MGameScene, this);
 
-        MapWidget = new HexWidget(MapRadius, this);
-
-        connect(MapWidget, &HexWidget::gameOver, this, &MainWindow::HandleGameOver);
-        connect(MapWidget, &HexWidget::victory, this, &MainWindow::HandleVictory);
+        connect(MGameScene, &GameScene::gameOver, this, &MainWindow::HandleGameOver);
+        connect(MGameScene, &GameScene::victory, this, &MainWindow::HandleVictory);
 
         if (!MenuWidget) {
             MenuWidget = takeCentralWidget();
-
             if (!MenuWidget) {
-                qCritical("MainWindow::startNewGame - takeCentralWidget() returned null for MenuWidget. Aborting.");
-                if(MapWidget) { MapWidget->deleteLater(); MapWidget = nullptr; }
-
+                qCritical("MainWindow::startNewGame - error saving MenuWidget.");
+                if(MapView) { MapView->deleteLater(); MapView = nullptr; }
                 QApplication::quit();
                 return;
             }
         }
 
-
-
         MenuWidget->hide();
-        setCentralWidget(MapWidget);
-        MapWidget->setFocus();
+        setCentralWidget(MapView);
+        MapView->setFocus();
 
         QPixmap HeroTexture("NPC5Texture.png");
         if (!HeroTexture.isNull()) {
-            heroWidget = new HeroWidget(HeroTexture, MapWidget, this); // MainWindow як батько
+            heroWidget = new HeroWidget(HeroTexture, MGameScene, this);
+
             heroWidget->setFixedSize(200, 100);
             int x = 10;
             int y = height() - heroWidget->height() - 10;
@@ -145,57 +139,36 @@ void MainWindow::on_btn_play_clicked()
             heroWidget->raise();
             heroWidget->show();
 
-            connect(MapWidget, &HexWidget::heroStatsChanged,
+            connect(MGameScene, &GameScene::heroStatsChanged,
                     heroWidget, &HeroWidget::Update_stats);
         } else {
             qWarning("Failed to load HeroTexture for HeroWidget.");
         }
-
     });
 
     connect(chooseDialog, &New_or_old_Game::loadGame, this, [=]() {
-        if(MapWidget)
-        {
-            if(MenuWidget && MenuWidget->isVisible())
-            {
-                MapWidget->deleteLater();
-                MapWidget = nullptr;
-            }
-            else if (!MenuWidget || !MenuWidget->isVisible()) {
-
-                MapWidget->deleteLater();
-                MapWidget = nullptr;
-            }
+        if(MapView) {
+            if (centralWidget() == MapView) takeCentralWidget();
+            MapView->deleteLater(); MapView = nullptr;
         }
+        if (MGameScene) { MGameScene->deleteLater(); MGameScene = nullptr; }
+        if (heroWidget) { heroWidget->hide(); heroWidget->deleteLater(); heroWidget = nullptr; }
 
-        if (heroWidget) {
-            heroWidget->hide();
-            heroWidget->deleteLater();
-            heroWidget = nullptr;
-        }
+        MGameScene = new GameScene(MapRadius, this);
+        MapView = new GameView(MGameScene, this);
 
-        if (!MapWidget)
-        {
-            MapWidget = new HexWidget(MapRadius, this);
-        }
+        connect(MGameScene, &GameScene::gameOver, this, &MainWindow::HandleGameOver);
+        connect(MGameScene, &GameScene::victory, this, &MainWindow::HandleVictory);
 
-        connect(MapWidget, &HexWidget::gameOver, this, &MainWindow::HandleGameOver);
-        connect(MapWidget, &HexWidget::victory, this, &MainWindow::HandleVictory);
-
-        // Завантажуємо карту
-        if (!MapWidget->LoadMapFromFile("map.dat")) {
+        if (!MGameScene->LoadMapFromFile("map.dat")) {
             QMessageBox::warning(this, tr("Помилка завантаження"), tr("Не вдалося завантажити карту."));
-            if(MapWidget) { // Очищаємо MapWidget, якщо він був створений, але завантаження не вдалося
-                if (centralWidget() == MapWidget) takeCentralWidget();
-                MapWidget->deleteLater();
-                MapWidget = nullptr;
-            }
-            if (MenuWidget) { // Повертаємо меню
+
+            MapView->deleteLater(); MapView = nullptr;
+            MGameScene->deleteLater(); MGameScene = nullptr;
+
+            if (MenuWidget) {
                 if (centralWidget() != MenuWidget) setCentralWidget(MenuWidget);
                 MenuWidget->show();
-            } else {
-                qCritical("MainWindow::loadGame - MenuWidget is null after failed load!");
-                QApplication::quit();
             }
             return;
         }
@@ -203,34 +176,23 @@ void MainWindow::on_btn_play_clicked()
         if (!MenuWidget) {
             MenuWidget = takeCentralWidget();
         }
+        if (MenuWidget) MenuWidget->hide();
 
-        if (MenuWidget) { // Перевірка MenuWidget
-            MenuWidget->hide();
-        } else {
-            qCritical("MainWindow::loadGame - MenuWidget is null! Cannot hide.");
-            if(MapWidget) { if(centralWidget() == MapWidget) takeCentralWidget(); MapWidget->deleteLater(); MapWidget = nullptr; }
-            QApplication::quit();
-            return;
-        }
-        setCentralWidget(MapWidget);
-        MapWidget->setFocus();
-
+        setCentralWidget(MapView);
+        MapView->setFocus();
 
         QPixmap HeroTexture("NPC5Texture.png");
         if (!HeroTexture.isNull()) {
-            heroWidget = new HeroWidget(HeroTexture, MapWidget, this);
+            heroWidget = new HeroWidget(HeroTexture, MGameScene, this);
             heroWidget->setFixedSize(200, 100);
             int x = 10;
             int y = height() - heroWidget->height() - 10;
             heroWidget->move(x, y);
             heroWidget->raise();
             heroWidget->show();
-            connect(MapWidget, &HexWidget::heroStatsChanged,
+            connect(MGameScene, &GameScene::heroStatsChanged,
                     heroWidget, &HeroWidget::Update_stats);
-        } else {
-            qWarning("Failed to load HeroTexture for HeroWidget in loadGame.");
         }
-
     });
 
     chooseDialog->exec();
@@ -253,14 +215,16 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 //кнопка паузи
 void MainWindow::on_btn_pause_clicked()
 {
-    if (!MapWidget || !MapWidget->isVisible())
+    if (!MapView || !MapView->isVisible())
     {
         return;
     }
-    if (!pauseDialog)
-    {
-        pauseDialog = new Pause(this, MapWidget);
+
+    if (pauseDialog) {
+        delete pauseDialog;
     }
+
+    pauseDialog = new Pause(this, MGameScene);
 
     int result = pauseDialog->exec();
     if (result != QDialog::Accepted)
@@ -274,71 +238,44 @@ void MainWindow::HandleGameOver()
 {
     QMessageBox::information(this, tr("Гру завершено"), tr("Ви програли!"));
 
-    if (MapWidget) {
-        QWidget* oldCentralWidget = takeCentralWidget();
-        if (oldCentralWidget == MapWidget) {
-            delete MapWidget;
-            MapWidget = nullptr;
-        } else if (oldCentralWidget) {
-            oldCentralWidget->deleteLater();
-            if (MapWidget) {
-                MapWidget->hide();
-                MapWidget->deleteLater();
-                MapWidget = nullptr;
-            }
-        }
-    }
-
-    // Add this to clean up heroWidget:
-    if (heroWidget) {
-        delete heroWidget;
-        heroWidget = nullptr;
-    }
-
     if (MenuWidget) {
         setCentralWidget(MenuWidget);
         MenuWidget->show();
-    } else {
-        qCritical("MainWindow::HandleGameOver: MenuWidget is null! Cannot return to menu.");
-        QApplication::quit();
+    }
+    if (MapView) {
+        MapView->deleteLater();
+        MapView = nullptr;
+    }
+    if (MGameScene) {
+        MGameScene->deleteLater();
+        MGameScene = nullptr;
+    }
+    if (heroWidget) {
+        delete heroWidget;
+        heroWidget = nullptr;
     }
 }
 
 //подія перемоги
 void MainWindow::HandleVictory()
 {
-
     QMessageBox::information(this, tr("Перемога!"), tr("Ви виграли гру!"));
 
-    // 2. Очистити MapWidget (аналогічно до HandleGameOver)
-    if (MapWidget) {
-        QWidget* oldCentralWidget = takeCentralWidget();
-        if (oldCentralWidget == MapWidget) {
-            delete MapWidget;
-            MapWidget = nullptr;
-        } else if (oldCentralWidget) {
-            oldCentralWidget->deleteLater();
-            if (MapWidget) {
-                MapWidget->hide();
-                MapWidget->deleteLater();
-                MapWidget = nullptr;
-            }
-        }
-    }
-
-    // 3. Очистити heroWidget
-    if (heroWidget) {
-        delete heroWidget;
-        heroWidget = nullptr;
-    }
-
-    // 4. Перейти до головного меню або екрану перемоги
     if (MenuWidget) {
         setCentralWidget(MenuWidget);
         MenuWidget->show();
-    } else {
+    }
 
-        qCritical("MainWindow::HandleVictory: MenuWidget is null! Cannot return to menu.");
-        QApplication::quit();
+    if (MapView) {
+        MapView->deleteLater();
+        MapView = nullptr;
+    }
+    if (MGameScene) {
+        MGameScene->deleteLater();
+        MGameScene = nullptr;
+    }
+    if (heroWidget) {
+        delete heroWidget;
+        heroWidget = nullptr;
     }
 }

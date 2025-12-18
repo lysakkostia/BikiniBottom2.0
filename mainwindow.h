@@ -3,7 +3,8 @@
 
 #include <QMainWindow>
 #include "settingswindow.h"
-#include "HexWidget.h"
+#include "GameView.h"
+#include "GameScene.h"
 #include "Pause.h"
 #include "herowidget.h"
 #include <QMediaPlayer>
@@ -27,7 +28,8 @@ private:
     Ui::MainWindow *ui;
     SettingsWindow *settingsWindow;
     QWidget* MenuWidget=nullptr;
-    HexWidget* MapWidget=nullptr;
+    GameView* MapView = nullptr;
+    GameScene* MGameScene = nullptr;
     Pause* pauseDialog=nullptr;
     HeroWidget* heroWidget = nullptr;
     QMediaPlayer *player;

@@ -1,6 +1,6 @@
 #ifndef PAUSE_H
 #define PAUSE_H
-#include "HexWidget.h"
+#include "GameScene.h"
 #include <QDialog>
 
 namespace Ui {
@@ -12,12 +12,12 @@ class Pause : public QDialog
     Q_OBJECT
 
 public:
-    explicit Pause(QWidget *parent = nullptr, HexWidget *widget = nullptr);
+    explicit Pause(QWidget *parent = nullptr, GameScene *widget = nullptr);
     ~Pause();
 
 private:
     Ui::Pause *ui;
-    HexWidget *hexWidget;
+    GameScene *hexWidget;
 
 private slots:
     void on_Continue_clicked();

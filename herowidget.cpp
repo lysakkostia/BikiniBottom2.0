@@ -8,7 +8,7 @@
 #include <QMessageBox>
 #include <QListWidget>
 
-HeroWidget::HeroWidget(const QPixmap& Hero, HexWidget* mappa, QWidget *parent)
+HeroWidget::HeroWidget(const QPixmap& Hero, GameScene* mappa, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::HeroWidget)
     , Mappa(mappa)
@@ -57,7 +57,7 @@ HeroWidget::~HeroWidget()
 
 void HeroWidget::displayStats()
 {
-    HexWidget::HeroStats stats;
+    GameScene::HeroStats stats;
     stats = Mappa->GetStats();
     if (stats.HP) {
         ui->Hero_HP->setText(tr("HP: %1").arg(stats.HP));
