@@ -86,26 +86,40 @@ namespace GlobalConst
 
     namespace MapGeneration
     {
-        constexpr double SPAWN_CHANCE = 0.15;
-
         namespace Zones {
-        constexpr double ZONE_1_RATIO = 0.5;
-        constexpr double ZONE_2_RATIO = 0.7;
-        }
-
-        namespace UnitProbabilities {
-        constexpr double THRESHOLD_ENEMY = 0.60;
-        constexpr double THRESHOLD_UNBREAK = 0.85;
-        constexpr double THRESHOLD_BREAK = 0.92;
-        constexpr double THRESHOLD_FRIEND = 0.99;
-        //Campfire 1%
+            constexpr double DISTANCE_BASE = 0.5;
+            constexpr double DISTANCE_MULT = 4.5;
+            constexpr int RAND_NEG_BONUS = -1;
+            constexpr int RAND_POS_BONUS = 1;
+            constexpr int DANGER_BONUS = 1;
+            constexpr int NO_DANGER_BONUS = 0;
         }
 
         namespace EnemyTypes {
-        constexpr double CHANCE_BARBARIAN = 0.4;
-        constexpr double CHANCE_WARRIOR = 0.8;
-        //Wizard 20%
+            constexpr double CHANCE_BARBARIAN = 0.35;
+            constexpr double CHANCE_WARRIOR = 0.75;
         }
+
+        namespace GarantUnitProbs
+        {
+            constexpr double CHANCE_FRIEND = 0.025;
+            constexpr double CHANCE_CAMPFIRE = 0.02;
+            constexpr double CHANCE_CHEST = 0.05;
+        }
+    }
+
+    namespace NoiseSettings {
+        const int DANGER_NOISE_OFFSET = 63472;
+        const int TERRAIN_NOISE_OCTAVES_NUM = 3;
+        const double TERRAIN_NOISE_PERSISTENCE = 0.5;
+
+        const double SCALE_TERRAIN = 0.17;
+        const double SCALE_DANGER = 0.2;
+        const double THRESHOLD_MOUNTAIN = 0.60;
+        const double THRESHOLD_DANGER_ZONE = 0.52;
+
+        const double CHANCE_ENEMY_IN_ZONE = 0.40;
+        const double CHANCE_ENEMY_ROAMING = 0.03;
     }
 
     namespace FightAI

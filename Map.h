@@ -18,16 +18,16 @@ private:
     UnitFabric UnitFabric_;
     int EnemyCounter=0;
     std::vector<Hex*> visibleNow;
+    unsigned int mapSeed;
 
     int GetHexDistance(int q, int r) const;
     Hex& GetChangeableLocation(int q, int r);
     Hex& GetChangeableQPointLoc(const QPoint& OHex);
-    void GenerateUnits();
 
+    void GenerateUnits();
     void PlaceGuaranteedCampfire();
-    void SpawnUnitInHex(Hex& hex, const QPoint& protectedPos);
-    int CalculateZoneLevel(int distance) const;
-    UnitType ChooseRandomUnitType() const;
+    void SpawnEnemyInHex(Hex& hex, bool isDangerZone);
+    int CalculateUnitLevel(int q, int r, bool isDangerZone) const;
     UnitType ChooseRandomEnemyType() const;
 
 public:
@@ -44,6 +44,7 @@ public:
     void ClearUnitAt(const QPoint& position);
     int GetEnemyCount() const;
     void DecrementEnemyCount();
+    unsigned int getSeed() const { return mapSeed; }
 };
 
 #endif //MAP_H_DEFINED

@@ -21,13 +21,16 @@ public:
     Hex(int q_, int r_) : q(q_), r(r_), IsVisible(false), IsExplored(false), Unit_(nullptr)
     {}
 
+    friend class HexMap;
+
     std::pair<int, int> GetQR() const;
-    bool VisibilityState() const;
-    bool ExplorationState() const;
     QPointF GetCenter() const;
     std::vector<QPointF> GetCorners() const;
     bool IsNeighbor(const Hex& OHex) const;
-    friend class HexMap;
+
+    bool VisibilityState() const;
+    bool ExplorationState() const;
+
     void SetUnit(Unit* UnitTemp);
     Unit* GetUnit() const;
     bool HaveUnit() const;

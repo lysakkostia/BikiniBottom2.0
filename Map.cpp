@@ -4,13 +4,15 @@
 #include <QIODevice>
 #include <QString>
 #include <QDebug>
+#include <QDateTime>
 #include "RandomGenerator.h"
 #include "GameConstants.h"
+#include "PerlinNoise.h"
 
-namespace Const_MGen = GlobalConst::MapGeneration;
 namespace Const_MZones = GlobalConst::MapGeneration::Zones;
-namespace Const_MProbs = GlobalConst::MapGeneration::UnitProbabilities;
 namespace Const_METypes = GlobalConst::MapGeneration::EnemyTypes;
+namespace GarantUnit = GlobalConst::MapGeneration::GarantUnitProbs;
+namespace Noise = GlobalConst::NoiseSettings;
 
 int HexMap::GetRadius() const { return Radius; }
 const std::vector<std::vector<Hex>>& HexMap::GetMap() const { return MapGrid; }
@@ -18,6 +20,8 @@ const std::vector<std::vector<Hex>>& HexMap::GetMap() const { return MapGrid; }
 
 HexMap::HexMap(int radius) : Radius(radius), EnemyCounter(0)
 {
+    mapSeed = static_cast<unsigned int>(QDateTime::currentMSecsSinceEpoch());
+
     for(int q = -radius; q <=radius; q++)
     {
         int r1 = std::max(-radius, -q - radius);
@@ -62,14 +66,22 @@ void HexMap::PlaceGuaranteedCampfire()
     }
 }
 
-int HexMap::CalculateZoneLevel(int distance) const
+int HexMap::CalculateUnitLevel(int q, int r, bool isDangerZone) const
 {
-    int Zone1 = static_cast<int>(Radius * Const_MZones::ZONE_1_RATIO);
-    int Zone2 = static_cast<int>(Radius * Const_MZones::ZONE_2_RATIO);
+    int dist = GetHexDistance(q, r);
+    double distRatio = static_cast<double>(dist) / Radius;
 
-    if (distance <= Zone1) return RandGenerator::RandIntInInterval(1, 2);
-    if (distance <= Zone2) return RandGenerator::RandIntInInterval(3, 4);
-    return RandGenerator::RandIntInInterval(5, 6);
+    double baseLevel = Const_MZones::DISTANCE_BASE + (distRatio * Const_MZones::DISTANCE_MULT);
+
+    int variance = RandGenerator::RandIntInInterval(Const_MZones::RAND_NEG_BONUS, Const_MZones::RAND_POS_BONUS);
+
+    int dangerBonus = isDangerZone ? Const_MZones::DANGER_BONUS : Const_MZones::NO_DANGER_BONUS;
+
+    int finalLevel = static_cast<int>(baseLevel) + variance + dangerBonus;
+
+    if (finalLevel < 1) finalLevel = 1;
+
+    return finalLevel;
 }
 
 UnitType HexMap::ChooseRandomEnemyType() const
@@ -80,41 +92,17 @@ UnitType HexMap::ChooseRandomEnemyType() const
     return UnitType::Wizard;
 }
 
-UnitType HexMap::ChooseRandomUnitType() const
+void HexMap::SpawnEnemyInHex(Hex& hex, bool isDangerZone)
 {
-    // 60% Enemy, 25% Unbreak, 7% Break, 7% Friend, 1% Campfire
-    double roll = RandGenerator::RandDoubleInInterval(0.0, 1.0);
-
-    if (roll < Const_MProbs::THRESHOLD_ENEMY) return UnitType::Enemy;
-    if (roll < Const_MProbs::THRESHOLD_UNBREAK) return UnitType::StructUnBreak;
-    if (roll < Const_MProbs::THRESHOLD_BREAK) return UnitType::StructBreak;
-    if (roll < Const_MProbs::THRESHOLD_FRIEND) return UnitType::Friend;
-    return UnitType::CampfireUnit;
-}
-
-void HexMap::SpawnUnitInHex(Hex& hex, const QPoint& protectedPos)
-{
-    const double SpawnChance = Const_MGen::SPAWN_CHANCE;
-    if (RandGenerator::RandDoubleInInterval(0.0, 1.0) > SpawnChance) return;
-
     QPoint currPos(hex.q, hex.r);
+    int level = CalculateUnitLevel(hex.q, hex.r, isDangerZone);
 
-    int distance = GetHexDistance(currPos.x(), currPos.y());
-    int level = CalculateZoneLevel(distance);
-
-    UnitType type = ChooseRandomUnitType();
-
-    if (type == UnitType::Enemy)
-    {
-        type = ChooseRandomEnemyType();
-    }
+    UnitType type = ChooseRandomEnemyType();
 
     Unit* newUnit = UnitFabric_.Create(type, level, currPos);
-
     if (newUnit)
     {
         hex.SetUnit(newUnit);
-
         if (newUnit->IsEnemy())
         {
             EnemyCounter++;
@@ -124,9 +112,12 @@ void HexMap::SpawnUnitInHex(Hex& hex, const QPoint& protectedPos)
 
 void HexMap::GenerateUnits()
 {
+    PerlinNoise terrainNoise(mapSeed);
+    PerlinNoise dangerNoise(mapSeed + Noise::DANGER_NOISE_OFFSET);
+
     PlaceGuaranteedCampfire();
 
-    QPoint HeroSpawn(0, 0);
+    std::vector<Hex*> emptyHexes;
 
     for(auto& Col : MapGrid)
     {
@@ -134,7 +125,75 @@ void HexMap::GenerateUnits()
         {
             if(Hex_.q == 0 && Hex_.r == 0) continue;
             if(Hex_.HaveUnit()) continue;
-            SpawnUnitInHex(Hex_, HeroSpawn);
+
+            double terrainVal = terrainNoise.octaveNoise(Hex_.q * Noise::SCALE_TERRAIN,
+                                                         Hex_.r * Noise::SCALE_TERRAIN,
+                                                         Noise::TERRAIN_NOISE_OCTAVES_NUM,
+                                                         Noise::TERRAIN_NOISE_PERSISTENCE);
+
+            if (terrainVal > Noise::THRESHOLD_MOUNTAIN) {
+                Unit* mtn = UnitFabric_.Create(UnitType::StructUnBreak, 1, QPoint(Hex_.q, Hex_.r));
+                if(mtn) Hex_.SetUnit(mtn);
+                continue;
+            }
+
+            double dangerVal = dangerNoise.noise(Hex_.q * Noise::SCALE_DANGER,
+                                                 Hex_.r * Noise::SCALE_DANGER);
+
+            bool isDangerZone = dangerVal > Noise::THRESHOLD_DANGER_ZONE;
+
+            double currentEnemyChance = isDangerZone ? Noise::CHANCE_ENEMY_IN_ZONE
+                                                     : Noise::CHANCE_ENEMY_ROAMING;
+
+            if (RandGenerator::RandDoubleInInterval(0.0, 1.0) < currentEnemyChance) {
+                SpawnEnemyInHex(Hex_, isDangerZone);
+                continue;
+            }
+
+            emptyHexes.push_back(&Hex_);
+        }
+    }
+
+    std::shuffle(emptyHexes.begin(), emptyHexes.end(), std::mt19937(mapSeed));
+
+    int totalEmpty = emptyHexes.size();
+    int friendsCount = std::max(1, static_cast<int>(totalEmpty * GarantUnit::CHANCE_FRIEND));
+    int chestsCount  = std::max(1, static_cast<int>(totalEmpty * GarantUnit::CHANCE_CHEST));
+    int campfiresCount = std::max(1, static_cast<int>(totalEmpty * GarantUnit::CHANCE_CAMPFIRE));
+
+    int currentIndex = 0;
+
+    for (int i = 0; i < friendsCount && currentIndex < totalEmpty; ++i) {
+        Hex* h = emptyHexes[currentIndex++];
+        Unit* u = UnitFabric_.Create(UnitType::Friend, 1, QPoint(h->q, h->r));
+        if (u) h->SetUnit(u);
+    }
+
+    for (int i = 0; i < chestsCount && currentIndex < totalEmpty; ++i) {
+        Hex* h = emptyHexes[currentIndex++];
+        Unit* u = UnitFabric_.Create(UnitType::StructBreak, 1, QPoint(h->q, h->r));
+        if (u) h->SetUnit(u);
+    }
+
+    std::vector<QPoint> existingCampfires;
+
+    for (int i = 0; i < campfiresCount && currentIndex < totalEmpty; ++i) {
+        Hex* h = emptyHexes[currentIndex++];
+
+        bool tooClose = false;
+        for (const auto& pos : existingCampfires) {
+            if (GetHexDistance(h->q - pos.x(), h->r - pos.y()) < 4) {
+                tooClose = true;
+                break;
+            }
+        }
+
+        if (!tooClose) {
+            Unit* u = UnitFabric_.Create(UnitType::CampfireUnit, 1, QPoint(h->q, h->r));
+            if (u) {
+                h->SetUnit(u);
+                existingCampfires.push_back(QPoint(h->q, h->r));
+            }
         }
     }
 }
@@ -251,6 +310,7 @@ void HexMap::SaveToFile(const QString& filePath, const QPoint& heroPos, double H
 
     root["radius"] = Radius;
     root["enemyCount"] = EnemyCounter;
+    root["mapSeed"] = static_cast<qint64>(mapSeed);
 
     QJsonObject heroObj;
     heroObj["x"] = heroPos.x();
@@ -307,6 +367,9 @@ bool HexMap::LoadFromFile(const QString& filePath, QPoint& heroPos, double& Hero
 
     this->Radius = root["radius"].toInt();
     this->EnemyCounter = root["enemyCount"].toInt();
+    if (root.contains("mapSeed")) {
+        this->mapSeed = static_cast<unsigned int>(root["mapSeed"].toVariant().toLongLong());
+    }
 
     for(int q = -Radius; q <= Radius; q++) {
         int r1 = std::max(-Radius, -q - Radius);

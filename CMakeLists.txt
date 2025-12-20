@@ -48,6 +48,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         GameScene.h GameScene.cpp
         GameView.h GameView.cpp
         TextureManager.h TextureManager.cpp
+        PerlinNoise.h
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET BikiniBottom2 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
