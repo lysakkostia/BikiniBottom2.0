@@ -16,19 +16,21 @@ class GameScene : public QGraphicsScene
 private:
     HexMap Map;
     MainHero Hero;
+    QHash<QPoint, HexItem*> hexItemsMap;
     bool MisPanning = false;
+    bool isMoving;
+    int currentPathIndex = 0;
     QPoint pendingTarget = QPoint(-999, -999);
     std::vector<HexItem*> highlightedPath;
-    QTimer* movementTimer;
     std::vector<QPoint> currentPath;
-    bool isMoving;
+    QTimer* movementTimer;
 
     QWidget* getViewWidget();
 
     void generateMapItems();
     void refreshMap();
 
-    bool tryMoveHeroTo(const QPoint& targetHexCoords);
+    bool tryMoveHeroTo(const QPoint& targetHexCoords, bool npc_interaction = true);
     void interactWithContentOnHex(const Hex& hex, const QPoint& previousPos);
     void processCombat(Unit* enemy, const QPoint& previousPos);
     void processCampfire(Unit* campfireUnit);

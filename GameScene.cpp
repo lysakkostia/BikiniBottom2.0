@@ -32,6 +32,7 @@ void GameScene::generateMapItems()
 
             HexItem* item = new HexItem(modelHex, this);
             this->addItem(item);
+            hexItemsMap.insert(QPoint(modelHex->GetQR().first, modelHex->GetQR().second), item);
             item->updateZValue();
         }
     }
@@ -54,7 +55,7 @@ QWidget* GameScene::getViewWidget()
     return nullptr;
 }
 
-bool GameScene::tryMoveHeroTo(const QPoint& targetHexCoords)
+bool GameScene::tryMoveHeroTo(const QPoint& targetHexCoords, bool npc_interaction)
 {
     QPoint currentPos = Hero.GetPosition();
     const Hex& currentHex = Map.GetQPointLoc(currentPos);
@@ -70,7 +71,7 @@ bool GameScene::tryMoveHeroTo(const QPoint& targetHexCoords)
     Hero.SetPosition(targetHexCoords);
 
     const Hex& newHexLocation = Map.GetQPointLoc(Hero.GetPosition());
-    if (newHexLocation.HaveUnit()) {
+    if (newHexLocation.HaveUnit() && npc_interaction == true) {
         interactWithContentOnHex(newHexLocation, currentPos);
     }
 
@@ -124,7 +125,6 @@ void GameScene::processCombat(Unit* enemy, const QPoint& previousPos)
         qDebug("Fight won!");
         Map.ClearUnitAt(Hero.GetPosition());
         Hero.LevelUp();
-        Map.DecrementEnemyCount();
 
         if (Map.GetEnemyCount() <= 0) {
             QMessageBox::information(parentView, tr("Victory!"), tr("Congratulations! You have defeated all enemies!"));
@@ -289,13 +289,8 @@ void GameScene::clearPathHighlight()
 void GameScene::highlightPath()
 {
     for (const QPoint& pos : currentPath) {
-        const Hex& hex = Map.GetQPointLoc(pos);
-        QPointF center = hex.GetCenter();
-
-        QGraphicsItem* item = this->itemAt(center, QTransform());
-        HexItem* hexItem = dynamic_cast<HexItem*>(item);
-
-        if (hexItem) {
+        if (hexItemsMap.contains(pos)) {
+            HexItem* hexItem = hexItemsMap.value(pos);
             hexItem->setPathHighlight(true);
             highlightedPath.push_back(hexItem);
         }
@@ -311,29 +306,31 @@ void GameScene::StartMovement()
         return;
     }
 
+    currentPathIndex = 0;
     isMoving = true;
     movementTimer->start(200);
 }
 
 void GameScene::processStep()
 {
-    if (currentPath.empty()) {
+    if (currentPathIndex >= currentPath.size()) {
         movementTimer->stop();
         isMoving = false;
         return;
     }
 
-    QPoint nextPos = currentPath.front();
-    currentPath.erase(currentPath.begin());
+    QPoint nextPos = currentPath[currentPathIndex];
+    currentPathIndex++;
 
-    this->tryMoveHeroTo(nextPos);
+    this->tryMoveHeroTo(nextPos, false);
     Map.UpdateVisibility(Hero.GetPosition());
 
     this->update();
 
-    if (currentPath.empty()) {
+    if (currentPathIndex >= currentPath.size()) {
         movementTimer->stop();
         isMoving = false;
+        currentPath.clear();
         qDebug() << "Movement finished.";
     }
 }

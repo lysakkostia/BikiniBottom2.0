@@ -516,16 +516,12 @@ std::vector<QPoint> HexMap::FindPath(QPoint start, QPoint target)
 
     std::priority_queue<PathNode*, std::vector<PathNode*>, CompareNode> openList;
 
-    std::unordered_map<std::string, PathNode*> allNodes;
+    QHash<QPoint, PathNode*> allNodes;
     std::vector<QPoint> path;
-
-    auto pointToKey = [](const QPoint& p) {
-        return std::to_string(p.x()) + "," + std::to_string(p.y());
-    };
 
     PathNode* startNode = new PathNode(start, 0, GetHexDistance(start.x() - target.x(), start.y() - target.y()));
     openList.push(startNode);
-    allNodes[pointToKey(start)] = startNode;
+    allNodes.insert(start, startNode);
 
     PathNode* finalNode = nullptr;
 
@@ -564,15 +560,13 @@ std::vector<QPoint> HexMap::FindPath(QPoint start, QPoint target)
 
             int newG = current->g + 1;
 
-            std::string key = pointToKey(nextPos);
-
-            if (allNodes.find(key) == allNodes.end()) {
+            if (!allNodes.contains(nextPos)) {
                 int newH = GetHexDistance(nextPos.x() - target.x(), nextPos.y() - target.y());
                 PathNode* neighbor = new PathNode(nextPos, newG, newH, current);
-                allNodes[key] = neighbor;
+                allNodes.insert(nextPos, neighbor);
                 openList.push(neighbor);
             } else {
-                PathNode* existing = allNodes[key];
+                PathNode* existing = allNodes.value(nextPos);
                 if (newG < existing->g) {
                     existing->g = newG;
                     existing->parent = current;
@@ -595,9 +589,7 @@ std::vector<QPoint> HexMap::FindPath(QPoint start, QPoint target)
         }
     }
 
-    for (auto& entry : allNodes) {
-        delete entry.second;
-    }
+    qDeleteAll(allNodes);
 
     return path;
 }
