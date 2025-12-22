@@ -14,6 +14,9 @@ GameScene::GameScene(int NRadius, QObject *parent)
 {
     Map.UpdateVisibility(Hero.GetPosition());
     generateMapItems();
+    movementTimer = new QTimer(this);
+    connect(movementTimer, &QTimer::timeout, this, &GameScene::processStep);
+    isMoving = false;
 }
 
 void GameScene::generateMapItems()
@@ -75,7 +78,7 @@ bool GameScene::tryMoveHeroTo(const QPoint& targetHexCoords)
         HexItem *hexItem = dynamic_cast<HexItem*>(item);
         if (hexItem) {
             hexItem->updateZValue();
-            hexItem->update();
+            //hexItem->update();
         }
     }
 
@@ -194,6 +197,8 @@ void GameScene::processTreasure(Unit* treasureUnit)
 
 void GameScene::handleHexClick(HexItem* item)
 {
+    if (IsHeroMoving()) return;
+
     Hex* targetHex = item->getModelHex();
     QPoint targetPos(targetHex->GetQR().first, targetHex->GetQR().second);
 
@@ -203,6 +208,26 @@ void GameScene::handleHexClick(HexItem* item)
 
         this->update();
         emit heroStatsChanged();
+    }
+
+    if (targetPos == pendingTarget)
+    {
+        StartMovement();
+        clearPathHighlight();
+        pendingTarget = QPoint(-999, -999);
+    }
+    else
+    {
+        clearPathHighlight();
+
+        currentPath = Map.FindPath(Hero.GetPosition(), targetPos);
+
+        if (!currentPath.empty()) {
+            highlightPath();
+            pendingTarget = targetPos;
+        } else {
+            pendingTarget = QPoint(-999, -999);
+        }
     }
 }
 
@@ -252,3 +277,63 @@ void GameScene::setPanning(bool panning) {
 }
 
 bool GameScene::isPanning() const { return MisPanning; }
+
+void GameScene::clearPathHighlight()
+{
+    for (HexItem* item : highlightedPath) {
+        item->setPathHighlight(false);
+    }
+    highlightedPath.clear();
+}
+
+void GameScene::highlightPath()
+{
+    for (const QPoint& pos : currentPath) {
+        const Hex& hex = Map.GetQPointLoc(pos);
+        QPointF center = hex.GetCenter();
+
+        QGraphicsItem* item = this->itemAt(center, QTransform());
+        HexItem* hexItem = dynamic_cast<HexItem*>(item);
+
+        if (hexItem) {
+            hexItem->setPathHighlight(true);
+            highlightedPath.push_back(hexItem);
+        }
+    }
+}
+
+void GameScene::StartMovement()
+{
+    if (isMoving) return;
+
+    if (currentPath.empty()) {
+        qDebug() << "Path not found or invalid target!";
+        return;
+    }
+
+    isMoving = true;
+    movementTimer->start(200);
+}
+
+void GameScene::processStep()
+{
+    if (currentPath.empty()) {
+        movementTimer->stop();
+        isMoving = false;
+        return;
+    }
+
+    QPoint nextPos = currentPath.front();
+    currentPath.erase(currentPath.begin());
+
+    this->tryMoveHeroTo(nextPos);
+    Map.UpdateVisibility(Hero.GetPosition());
+
+    this->update();
+
+    if (currentPath.empty()) {
+        movementTimer->stop();
+        isMoving = false;
+        qDebug() << "Movement finished.";
+    }
+}

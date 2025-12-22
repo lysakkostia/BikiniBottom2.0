@@ -104,10 +104,18 @@ void HexItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
             pen.setWidthF(2.0);
         }
     }
-
     painter->setPen(pen);
     painter->setBrush(Qt::NoBrush);
     painter->drawPolygon(polygon());
+
+    if (isPathHighlighted)
+    {
+        QPen highlightPen(Qt::green);
+        highlightPen.setWidth(2.0);
+        painter->setPen(highlightPen);
+        painter->setBrush(Qt::NoBrush);
+        painter->drawPolygon(polygon());
+    }
 }
 
 void HexItem::drawLevelBadge(QPainter* painter, int level)
@@ -143,20 +151,19 @@ void HexItem::updateState()
 
 void HexItem::updateZValue()
 {
-    Hex* heroHex = MScene->getHeroHex();
-
     qreal newZ = 0;
 
-    if (heroHex && heroHex->IsNeighbor(*MHex)) {
-        bool isBlocked = false;
-        if (MHex->HaveUnit() && MHex->GetUnit()->GetType() == UnitType::StructUnBreak) {
-            isBlocked = true;
-        }
-
-        if (isBlocked) {
-            newZ = 2;
-        } else {
-            newZ = 1;
+    if (isPathHighlighted) {
+        newZ = 10;
+    }
+    else {
+        Hex* heroHex = MScene->getHeroHex();
+        if (heroHex && heroHex->IsNeighbor(*MHex)) {
+            bool isBlocked = false;
+            if (MHex->HaveUnit() && MHex->GetUnit()->GetType() == UnitType::StructUnBreak) {
+                isBlocked = true;
+            }
+            newZ = isBlocked ? 2 : 1;
         }
     }
 
@@ -173,4 +180,13 @@ void HexItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
     QGraphicsPolygonItem::hoverLeaveEvent(event);
     update();
+}
+
+void HexItem::setPathHighlight(bool active)
+{
+    if (isPathHighlighted != active) {
+        isPathHighlighted = active;
+        updateZValue();
+        update();
+    }
 }

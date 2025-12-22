@@ -1,13 +1,17 @@
 #include "Map.h"
+#include "RandomGenerator.h"
+#include "GameConstants.h"
+#include "PerlinNoise.h"
 #include <QFile>
 #include <QDataStream>
 #include <QIODevice>
 #include <QString>
 #include <QDebug>
 #include <QDateTime>
-#include "RandomGenerator.h"
-#include "GameConstants.h"
-#include "PerlinNoise.h"
+#include <queue>
+#include <unordered_map>
+#include <functional>
+#include <algorithm>
 
 namespace Const_MZones = GlobalConst::MapGeneration::Zones;
 namespace Const_METypes = GlobalConst::MapGeneration::EnemyTypes;
@@ -474,4 +478,126 @@ void HexMap::DecrementEnemyCount()
         EnemyCounter--;
     }
     qDebug() << "EnemyCounter decremented. Current count: " << EnemyCounter;
+}
+
+struct PathNode {
+    QPoint pos;
+    int g;
+    int h;
+    PathNode* parent;
+
+    PathNode(QPoint p, int _g, int _h, PathNode* _parent = nullptr)
+        : pos(p), g(_g), h(_h), parent(_parent) {}
+
+    int f() const { return g + h; }
+};
+
+struct CompareNode {
+    bool operator()(const PathNode* a, const PathNode* b) {
+        return a->f() > b->f();
+    }
+};
+
+std::vector<QPoint> HexMap::FindPath(QPoint start, QPoint target)
+{
+    if (!ContainsHex(target.x(), target.y())) return {};
+    if (start == target) return {};
+
+    const Hex& targetHex = GetQPointLoc(target);
+
+    if (!targetHex.IsExplored) return {};
+
+    if (targetHex.HaveUnit()) {
+        Unit* u = targetHex.GetUnit();
+        if (u->IsStructure() || u->IsEnemy()) {
+            return {};
+        }
+    }
+
+    std::priority_queue<PathNode*, std::vector<PathNode*>, CompareNode> openList;
+
+    std::unordered_map<std::string, PathNode*> allNodes;
+    std::vector<QPoint> path;
+
+    auto pointToKey = [](const QPoint& p) {
+        return std::to_string(p.x()) + "," + std::to_string(p.y());
+    };
+
+    PathNode* startNode = new PathNode(start, 0, GetHexDistance(start.x() - target.x(), start.y() - target.y()));
+    openList.push(startNode);
+    allNodes[pointToKey(start)] = startNode;
+
+    PathNode* finalNode = nullptr;
+
+    static const std::vector<QPoint> NeighborOffsets = {
+        {1, 0}, {1, -1}, {0, -1}, {-1, 0}, {-1, 1}, {0, 1}
+    };
+
+    while (!openList.empty()) {
+        PathNode* current = openList.top();
+        openList.pop();
+
+        if (current->pos == target) {
+            finalNode = current;
+            break;
+        }
+
+        for (const auto& offset : NeighborOffsets) {
+            QPoint nextPos = current->pos + offset;
+
+            if (!ContainsHex(nextPos.x(), nextPos.y())) continue;
+
+            const Hex& neighborHex = GetQPointLoc(nextPos);
+
+            if (!neighborHex.IsExplored) continue;
+
+            bool isWalkable = true;
+            if (neighborHex.HaveUnit()) {
+                Unit* u = neighborHex.GetUnit();
+                if (u->IsStructure() || u->IsEnemy()) {
+                    isWalkable = false;
+                }
+            }
+
+            if (!isWalkable && nextPos != target) continue;
+            if (!isWalkable && nextPos == target) continue;
+
+            int newG = current->g + 1;
+
+            std::string key = pointToKey(nextPos);
+
+            if (allNodes.find(key) == allNodes.end()) {
+                int newH = GetHexDistance(nextPos.x() - target.x(), nextPos.y() - target.y());
+                PathNode* neighbor = new PathNode(nextPos, newG, newH, current);
+                allNodes[key] = neighbor;
+                openList.push(neighbor);
+            } else {
+                PathNode* existing = allNodes[key];
+                if (newG < existing->g) {
+                    existing->g = newG;
+                    existing->parent = current;
+                    openList.push(existing);
+                }
+            }
+        }
+    }
+
+    if (finalNode) {
+        PathNode* curr = finalNode;
+        while (curr != nullptr) {
+            path.push_back(curr->pos);
+            curr = curr->parent;
+        }
+        std::reverse(path.begin(), path.end());
+
+        if (!path.empty() && path.front() == start) {
+            path.erase(path.begin());
+        }
+    }
+
+    for (auto& entry : allNodes) {
+        delete entry.second;
+    }
+
+    return path;
 }

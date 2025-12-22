@@ -13,6 +13,7 @@ class HexItem : public QGraphicsPolygonItem
 private:
     Hex* MHex;
     GameScene* MScene;
+    bool isPathHighlighted = false;
 
     void createPolygon();
     void drawLevelBadge(QPainter* painter, int level);
@@ -29,6 +30,7 @@ public:
     Hex* getModelHex() const { return MHex; }
     void updateState();
     void updateZValue();
+    void setPathHighlight(bool active);
 };
 
 #endif // HEXITEM_H

@@ -3,6 +3,9 @@
 
 #include <QGraphicsScene>
 #include <QMap>
+#include <QTimer>
+#include <vector>
+#include <QPoint>
 #include "Map.h"
 #include "Unit.h"
 #include "HexItem.h"
@@ -14,6 +17,11 @@ private:
     HexMap Map;
     MainHero Hero;
     bool MisPanning = false;
+    QPoint pendingTarget = QPoint(-999, -999);
+    std::vector<HexItem*> highlightedPath;
+    QTimer* movementTimer;
+    std::vector<QPoint> currentPath;
+    bool isMoving;
 
     QWidget* getViewWidget();
 
@@ -26,6 +34,9 @@ private:
     void processCampfire(Unit* campfireUnit);
     void processFriendly(Unit* friendUnit);
     void processTreasure(Unit* treasureUnit);
+
+    void clearPathHighlight();
+    void highlightPath();
 
 public:
     explicit GameScene(int NRadius, QObject *parent = nullptr);
@@ -47,11 +58,17 @@ public:
     void setPanning(bool panning);
     bool isPanning() const;
 
+    void StartMovement();
+    bool IsHeroMoving() const { return isMoving; }
+
 signals:
     void heroStatsChanged();
     void gameOver();
     void victory();
     void logMessage(const QString& msg);
+
+public slots:
+    void processStep();
 };
 
 #endif // GAMESCENE_H

@@ -45,6 +45,7 @@ public:
     int GetEnemyCount() const;
     void DecrementEnemyCount();
     unsigned int getSeed() const { return mapSeed; }
+    std::vector<QPoint> FindPath(QPoint start, QPoint target); //A*
 };
 
 #endif //MAP_H_DEFINED
