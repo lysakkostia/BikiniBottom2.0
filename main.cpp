@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "SpellManager.h"
 
 #include <QApplication>
 #include <QLocale>
@@ -32,9 +33,13 @@ int main(int argc, char *argv[])
              a.installTranslator(&translator);
              break;
          }
-     }
-     MainWindow w;
-     w.show();
+    }
+
+    SpellManager::Instance().LoadHeroSpells("hero_spells.json");
+    SpellManager::Instance().LoadEnemySpells("enemy_spells.json");
+
+    MainWindow w;
+    w.show();
 
     return a.exec();
 }

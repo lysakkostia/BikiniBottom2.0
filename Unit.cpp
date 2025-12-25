@@ -156,6 +156,11 @@ MainHero::MainHero(QPoint Pos)
 {
     SetAI(std::make_unique<MainCharacter>());
 
+    if (UAi) {
+        MainCharacter* heroAI = dynamic_cast<MainCharacter*>(UAi.get());
+        if(heroAI) heroAI->updateSpellStats(1);
+    }
+
     RecalculateStats();
     SetHP(GetMaxHP());
     SetMana(GetMaxMana());
@@ -190,6 +195,9 @@ Enemy::Enemy(UnitType type, double level)
     : Unit(type, level, 0, 0)
 {
     SetAI(std::make_unique<Aggresive>());
+    if (UAi) {
+        UAi->InitializeSpells(static_cast<int>(level), false);
+    }
 }
 
 void Enemy::RecalculateStats()
@@ -207,6 +215,11 @@ Wizard::Wizard(double level)
     RecalculateStats();
     SetHP(GetMaxHP());
     SetMana(GetMaxMana());
+
+    if (UAi) {
+        UAi->InitializeSpells(static_cast<int>(level), false);
+        static_cast<Intelligent*>(UAi.get())->UpgradeSpells();
+    }
 }
 
 void Wizard::RecalculateStats()
@@ -227,6 +240,10 @@ Barbarian::Barbarian(double level)
     RecalculateStats();
     SetHP(GetMaxHP());
     SetMana(GetMaxMana());
+
+    if (UAi) {
+        UAi->InitializeSpells(static_cast<int>(level), false);
+    }
 }
 
 void Barbarian::RecalculateStats()
@@ -247,6 +264,10 @@ Warrior::Warrior(double level)
     RecalculateStats();
     SetHP(GetMaxHP());
     SetMana(GetMaxMana());
+
+    if (UAi) {
+        UAi->InitializeSpells(static_cast<int>(level), false);
+    }
 }
 
 void Warrior::RecalculateStats()

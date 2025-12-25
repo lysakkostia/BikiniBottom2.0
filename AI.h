@@ -4,17 +4,9 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include "SpellManager.h"
 
 class Unit;
-
-class Spell
-{
-public:
-    Spell(std::string name, double manacost, double damage);
-    std::string name;
-    double manacost;
-    double damage;
-};
 
 class AI
 {
@@ -24,8 +16,9 @@ public:
 
     int TurnOver;
 
+    virtual void InitializeSpells(int level, bool isHero);
     virtual const Spell* ChooseBestSpell(double currentMana) const;
-    virtual const std::vector<Spell> &GetSpells() const;
+    const std::vector<Spell> &GetSpells() const;
 
 protected:
     std::vector<Spell> Spells;
@@ -46,13 +39,9 @@ public:
 
 class Intelligent : public AI
 {
-private:
-    std::vector<Spell> UpgradedSpells;
-
 public:
     Intelligent();
     void UpgradeSpells();
-    const std::vector<Spell> &GetSpells() const override;
 };
 
 class MainCharacter : public AI
@@ -60,10 +49,6 @@ class MainCharacter : public AI
 public:
     MainCharacter();
     void updateSpellStats(int playerLevel);
-    const std::vector<Spell>& GetSpells() const override;
-
-protected:
-    std::vector<Spell> HeroSpells;
 };
 
 class Friendly : public AI
