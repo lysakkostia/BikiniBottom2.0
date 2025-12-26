@@ -16,9 +16,11 @@ public:
 
     int TurnOver;
 
-    virtual void InitializeSpells(int level, bool isHero);
+    virtual void InitializeSpells(int level, bool isHero, const std::vector<std::string>& heroSpells = {});
     virtual const Spell* ChooseBestSpell(double currentMana) const;
     const std::vector<Spell> &GetSpells() const;
+    void ApplyMultipliers(const QMap<SpellType, double>& multipliers);
+    void ApplyManaReductions(const QMap<SpellType, double>& reductions);
 
 protected:
     std::vector<Spell> Spells;
@@ -48,7 +50,7 @@ class MainCharacter : public AI
 {
 public:
     MainCharacter();
-    void updateSpellStats(int playerLevel);
+    void updateSpellStats(int playerLevel, const std::vector<std::string>& heroSpells);
 };
 
 class Friendly : public AI

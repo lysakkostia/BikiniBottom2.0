@@ -100,6 +100,13 @@ namespace GlobalConst
         constexpr int AI_THINK_DELAY_MS = 1500;
         constexpr int AI_AFTER_PLAYER_DELAY_MS = 1000;
     }
+
+    namespace Progression {
+        const double BASE_XP_REQ = 100.0;
+        const double XP_GROWTH_FACTOR = 1.2;
+        const int SKILL_POINTS_PER_LEVEL = 1;
+        const double ENEMY_XP_REWARD = 40.0;
+    }
 }
 
 #endif // GAMECONSTANTS_H

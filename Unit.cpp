@@ -151,14 +151,30 @@ void Unit::FromJson(const QJsonObject& json)
     }
 }
 
+//----MainHero----
+
 MainHero::MainHero(QPoint Pos)
     : Unit(UnitType::MainHero, 1, 0, 0, Pos)
 {
+    UCurrentXP = 0;
+    UMaxXP = GlobalConst::Progression::BASE_XP_REQ;
+    USkillPoints = 0;
+    UBonusMaxHP = 0;
+    UBonusMaxMana = 0;
+    PendingLevelUps = 0;
+
     SetAI(std::make_unique<MainCharacter>());
+
+    UnlockedSpellIds.push_back("ember");
+    UnlockedSpellIds.push_back("icicle");
+    UnlockedSpellIds.push_back("spark");
+    UnlockedSpellIds.push_back("poison_dart");
+    UnlockedSpellIds.push_back("dark_orb");
+    UnlockedSpellIds.push_back("energy_pulse");
 
     if (UAi) {
         MainCharacter* heroAI = dynamic_cast<MainCharacter*>(UAi.get());
-        if(heroAI) heroAI->updateSpellStats(1);
+        if(heroAI) heroAI->updateSpellStats(1, UnlockedSpellIds);
     }
 
     RecalculateStats();
@@ -166,30 +182,141 @@ MainHero::MainHero(QPoint Pos)
     SetMana(GetMaxMana());
 }
 
-void MainHero::RecalculateStats()
+void MainHero::AddXP(double amount)
 {
-    double maxHp = GlobalConst::GLOBAL_BASE_HP + (GetLevel() * GlobalConst::Hero::HP_GROWTH);
-    double maxMana = GlobalConst::GLOBAL_BASE_MANA + (GetLevel() * GlobalConst::Hero::MANA_GROWTH);
-
-    SetMaxHP(maxHp);
-    SetMaxMana(maxMana);
+    UCurrentXP += amount;
+    while(UCurrentXP >= UMaxXP)
+    {
+        LevelUp();
+    }
 }
 
 void MainHero::LevelUp()
 {
-    Unit::LevelUp();
+    UCurrentXP -= UMaxXP;
+    SetLevel(GetLevel() + 1);
 
-    qDebug()<<"Герой підвищив рівень, новий рівень: " << this->GetLevel()
-             <<", HP: " << this->GetHP() <<"/" << GetMaxHP()
-             <<", MP: " << this->GetMana() <<"/" << GetMaxMana();
-    if (UAi) {
-        MainCharacter* heroAI = dynamic_cast<MainCharacter*>(UAi.get());
-        if (heroAI) {
-            heroAI->updateSpellStats(this->GetLevel());
-            qDebug() << "Заклинання героя оновлено для рівня " << this->GetLevel();
+    UMaxXP = UMaxXP * GlobalConst::Progression::XP_GROWTH_FACTOR;
+    AddSkillPoints();
+    PendingLevelUps++;
+
+    RefreshAISpells();
+
+    RecalculateStats();
+    SetHP(GetMaxHP());
+    SetMana(GetMaxMana());
+}
+
+void MainHero::AddSkillPoints()
+{
+    int currentLevelInt = static_cast<int>(GetLevel());
+    int pointsToGain = 1;
+
+    if (currentLevelInt % 5 == 0) {
+        pointsToGain = 2;
+        qDebug() << "Bonus Level! Gained 2 Skill Points.";
+    }
+    USkillPoints += pointsToGain;
+}
+
+void MainHero::AddMaxHPBonus(double amount) {
+    UBonusMaxHP += amount;
+    RecalculateStats();
+    SetHP(GetHP() + amount);
+}
+
+void MainHero::AddMaxManaBonus(double amount) {
+    UBonusMaxMana += amount;
+    RecalculateStats();
+    SetMana(GetMana() + amount);
+}
+
+void MainHero::AddSpellDamageMultiplier(SpellType type, double multiplier) {
+    if(!USpellDamageMultipliers.contains(type)) {
+        USpellDamageMultipliers[type] = 1.0;
+    }
+    USpellDamageMultipliers[type] += multiplier;
+    RefreshAISpells();
+}
+
+double MainHero::GetSpellDamageMultiplier(SpellType type) const {
+    return USpellDamageMultipliers.value(type, 1.0);
+}
+
+void MainHero::RecalculateStats()
+{
+    double baseMaxHp = GlobalConst::GLOBAL_BASE_HP + (GetLevel() * GlobalConst::Hero::HP_GROWTH);
+    double baseMaxMana = GlobalConst::GLOBAL_BASE_MANA + (GetLevel() * GlobalConst::Hero::MANA_GROWTH);
+
+    SetMaxHP(baseMaxHp + UBonusMaxHP);
+    SetMaxMana(baseMaxMana + UBonusMaxMana);
+}
+
+void MainHero::ApplyUpgrade(const UpgradeOption& option)
+{
+    if (option.type == UpgradeType::StatIncrease) {
+        if (option.statIndex == 0) {
+            AddMaxHPBonus(option.value);
+            SetHP(GetHP() + option.value);
+        } else if (option.statIndex == 1) {
+            AddMaxManaBonus(option.value);
+            SetMana(GetMana() + option.value);
         }
     }
+    else if (option.type == UpgradeType::SpellTypeBuff) {
+        AddSpellDamageMultiplier(option.specificType, option.value);
+        qDebug() << "Buffed" << (int)option.specificType << "by" << option.value;
+    }
 }
+
+bool MainHero::UnlockSkillNode(const std::string& nodeId, int cost) {
+    if (USkillPoints >= cost) {
+        USkillPoints -= cost;
+        UnlockedSkillNodes.insert(QString::fromStdString(nodeId));
+        return true;
+    }
+    return false;
+}
+
+bool MainHero::IsNodeUnlocked(const std::string& nodeId) const {
+    return UnlockedSkillNodes.contains(QString::fromStdString(nodeId));
+}
+
+void MainHero::UnlockSpell(const std::string& spellId) {
+    for(const auto& id : UnlockedSpellIds) {
+        if(id == spellId) return;
+    }
+    UnlockedSpellIds.push_back(spellId);
+
+    RefreshAISpells();
+}
+
+void MainHero::AddManaCostReduction(SpellType type, double reductionPercent) {
+    if (!ManaCostReductions.contains(type)) ManaCostReductions[type] = 0.0;
+    ManaCostReductions[type] += reductionPercent;
+    RefreshAISpells();
+}
+
+double MainHero::GetManaCostMultiplier(SpellType type) const {
+    double reduction = ManaCostReductions.value(type, 0.0);
+    double mult = 1.0 - reduction;
+    if (mult < 0.1) mult = 0.1;
+    return mult;
+}
+
+void MainHero::RefreshAISpells()
+{
+    if (!UAi) return;
+
+    MainCharacter* heroAI = dynamic_cast<MainCharacter*>(UAi.get());
+    if (heroAI) {
+        heroAI->updateSpellStats(this->GetLevel(), UnlockedSpellIds);
+        UAi->ApplyMultipliers(USpellDamageMultipliers);
+        UAi->ApplyManaReductions(ManaCostReductions);
+    }
+}
+
+//----Enemy----
 
 Enemy::Enemy(UnitType type, double level)
     : Unit(type, level, 0, 0)

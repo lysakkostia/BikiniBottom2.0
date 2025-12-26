@@ -1,12 +1,16 @@
 #ifndef UNIT_H_INCLUDE
-
 #define UNIT_H_INCLUDE
+
 #include "AI.h"
+#include "SpellManager.h"
+#include "LevelUpSystem.h"
 #include <string>
 #include <utility>
 #include <QPoint>
 #include <QJsonObject>
 #include <iostream>
+#include <QMap>
+#include <QSet>
 
 enum class UnitType
 {
@@ -73,10 +77,53 @@ public:
 
 class MainHero : public Unit
 {
+private:
+    double UCurrentXP;
+    double UMaxXP;
+    int USkillPoints;
+
+    int PendingLevelUps;
+
+    double UBonusMaxHP;
+    double UBonusMaxMana;
+    QMap<SpellType, double> USpellDamageMultipliers;
+
+    std::vector<std::string> UnlockedSpellIds;
+    QSet<QString> UnlockedSkillNodes;
+    QMap<SpellType, double> ManaCostReductions;
+    void RefreshAISpells();
+
 public:
     MainHero(QPoint Pos);
     virtual void LevelUp() override;
     virtual void RecalculateStats() override;
+
+    double GetCurrentXP() const { return UCurrentXP; }
+    double GetMaxXP() const { return UMaxXP; }
+    int GetSkillPoints() const { return USkillPoints; }
+
+    void AddXP(double amount);
+    void AddSkillPoints();
+
+    void AddMaxHPBonus(double amount);
+    void AddMaxManaBonus(double amount);
+    void AddSpellDamageMultiplier(SpellType type, double multiplier);
+    double GetSpellDamageMultiplier(SpellType type) const;
+
+    bool IsLevelUpPending() const { return PendingLevelUps > 0; }
+    void DecrementLevelUpPending() { if(PendingLevelUps > 0) PendingLevelUps--; }
+    int GetPendingLevelUpsCount() const { return PendingLevelUps; }
+
+    void ApplyUpgrade(const UpgradeOption& option);
+
+    bool UnlockSkillNode(const std::string& nodeId, int cost);
+    bool IsNodeUnlocked(const std::string& nodeId) const;
+    void UnlockSpell(const std::string& spellId);
+
+    double GetManaCostMultiplier(SpellType type) const;
+    void AddManaCostReduction(SpellType type, double reductionPercent);
+
+    const std::vector<std::string>& GetUnlockedSpellIds() const { return UnlockedSpellIds; }
 };
 
 class Enemy : public Unit

@@ -40,9 +40,6 @@ SpellType SpellManager::StringToSpellType(const QString& typeStr) {
     if (typeStr == "fire_spell") return SpellType::Fire;
     if (typeStr == "ice_spell") return SpellType::Ice;
     if (typeStr == "electric_spell") return SpellType::Electric;
-    if (typeStr == "arcane_spell") return SpellType::Arcane;
-    if (typeStr == "earth_spell") return SpellType::Earth;
-    if (typeStr == "wind_spell") return SpellType::Wind;
     if (typeStr == "poison_spell") return SpellType::Poison;
     if (typeStr == "dark_spell") return SpellType::Dark;
     if (typeStr == "holy_spell") return SpellType::Holy;
@@ -91,15 +88,25 @@ Spell SpellManager::CalculateSpellStats(const SpellDefinition& definition, int l
     return Spell(definition.id, definition.name, definition.type, currentManacost, currentDamage);
 }
 
-std::vector<Spell> SpellManager::GetHeroSpellsForLevel(int level)
+std::vector<Spell> SpellManager::GetHeroSpellsByIds(const std::vector<std::string>& unlockedIds, int level)
 {
     std::vector<Spell> result;
     for (const auto& definition : heroSpellDefinitions) {
-        if (level >= definition.requiredLevel) {
-            result.push_back(CalculateSpellStats(definition, level));
+        for(const std::string& id : unlockedIds) {
+            if(definition.id == id) {
+                result.push_back(CalculateSpellStats(definition, level));
+                break;
+            }
         }
     }
     return result;
+}
+
+bool SpellManager::HeroSpellExists(const std::string& id) {
+    for (const auto& def : heroSpellDefinitions) {
+        if (def.id == id) return true;
+    }
+    return false;
 }
 
 std::vector<Spell> SpellManager::GetEnemySpellsForLevel(int level)

@@ -39,6 +39,12 @@ MainWindow::MainWindow(QWidget *parent)
     audioOutput->setVolume(0);
     player->play();
 
+    levelUpWidget = new LevelUpWidget(this);
+    levelUpWidget->hide();
+
+    connect(levelUpWidget, &LevelUpWidget::OptionSelected,
+            this, &MainWindow::OnLevelUpOptionSelected);
+
 }
 
 MainWindow::~MainWindow()
@@ -48,6 +54,7 @@ MainWindow::~MainWindow()
     delete heroWidget;
     delete player;
     delete audioOutput;
+    delete levelUpWidget;
 }
 
 
@@ -111,8 +118,28 @@ void MainWindow::on_btn_play_clicked()
         MGameScene = new GameScene(MapRadius, this);
         MapView = new GameView(MGameScene, this);
 
+        MainHero* hero = MGameScene->GetHero();
+        skillTreeWidget = new SkillTreeWidget(hero, this);
+        skillTreeWidget->hide();
+
+        QPushButton* treeBtn = new QPushButton(this);
+        treeBtn->setIcon(QIcon("icon.png"));
+        treeBtn->setGeometry(10, height() - 150, 50, 50);
+        treeBtn->show();
+        treeBtn->raise();
+
+        connect(treeBtn, &QPushButton::clicked, [this]() {
+            if (MGameScene) MGameScene->SetPaused(true);
+            skillTreeWidget->show();
+        });
+
+        connect(skillTreeWidget, &SkillTreeWidget::closed, [this]() {
+            if (MGameScene) MGameScene->SetPaused(false);
+        });
+
         connect(MGameScene, &GameScene::gameOver, this, &MainWindow::HandleGameOver);
         connect(MGameScene, &GameScene::victory, this, &MainWindow::HandleVictory);
+        connect(MGameScene, &GameScene::levelUpTriggered, this, &MainWindow::HandleLevelUp);
 
         if (!MenuWidget) {
             MenuWidget = takeCentralWidget();
@@ -278,4 +305,43 @@ void MainWindow::HandleVictory()
         delete heroWidget;
         heroWidget = nullptr;
     }
+}
+
+void MainWindow::HandleLevelUp()
+{
+    if (!MGameScene) return;
+
+    MGameScene->SetPaused(true);
+
+    std::vector<UpgradeOption> options = LevelUpGenerator::GenerateOptions();
+
+    levelUpWidget->ShowOptions(options);
+
+    int x = (this->width() - levelUpWidget->width()) / 2;
+    int y = (this->height() - levelUpWidget->height()) / 2;
+    levelUpWidget->move(x, y);
+
+    levelUpWidget->raise();
+    levelUpWidget->show();
+}
+
+void MainWindow::OnLevelUpOptionSelected(int index)
+{
+    if (!MGameScene) return;
+
+    MainHero* hero = MGameScene->GetHero();
+
+    UpgradeOption option = levelUpWidget->GetOption(index);
+    hero->ApplyUpgrade(option);
+
+    hero->DecrementLevelUpPending();
+
+    if (hero->IsLevelUpPending()) {
+        std::vector<UpgradeOption> newOptions = LevelUpGenerator::GenerateOptions();
+        levelUpWidget->ShowOptions(newOptions);
+
+        return;
+    }
+
+    MGameScene->SetPaused(false);
 }

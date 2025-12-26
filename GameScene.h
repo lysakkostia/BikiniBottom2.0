@@ -14,6 +14,8 @@ class GameScene : public QGraphicsScene
 {
     Q_OBJECT
 private:
+    bool isPaused = false;
+
     HexMap Map;
     MainHero Hero;
     QHash<QPoint, HexItem*> hexItemsMap;
@@ -63,11 +65,16 @@ public:
     void StartMovement();
     bool IsHeroMoving() const { return isMoving; }
 
+    MainHero* GetHero() { return &Hero; }
+    void SetPaused(bool paused);
+    bool IsPaused() const { return isPaused; }
+
 signals:
     void heroStatsChanged();
     void gameOver();
     void victory();
     void logMessage(const QString& msg);
+    void levelUpTriggered();
 
 public slots:
     void processStep();

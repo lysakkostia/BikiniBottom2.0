@@ -16,9 +16,6 @@ enum class SpellType
     Fire,
     Ice,
     Electric,
-    Arcane,
-    Earth,
-    Wind,
     Poison,
     Dark,
     Holy,
@@ -70,8 +67,9 @@ public:
     bool LoadHeroSpells(const QString& path);
     bool LoadEnemySpells(const QString& path);
 
-    std::vector<Spell> GetHeroSpellsForLevel(int level);
+    std::vector<Spell> GetHeroSpellsByIds(const std::vector<std::string>& unlockedIds, int level);
     std::vector<Spell> GetEnemySpellsForLevel(int level);
+    bool HeroSpellExists(const std::string& id);
 };
 
 #endif // SPELLMANAGER_H

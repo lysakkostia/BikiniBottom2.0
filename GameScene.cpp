@@ -123,8 +123,21 @@ void GameScene::processCombat(Unit* enemy, const QPoint& previousPos)
     if (fightResultCode == QDialog::Accepted)
     {
         qDebug("Fight won!");
+
+        double xpReward = GlobalConst::Progression::ENEMY_XP_REWARD * enemy->GetLevel();
+        if (enemy->GetType() == UnitType::Wizard || enemy->GetType() == UnitType::Barbarian) {
+            xpReward *= 1.2;
+        }
+        Hero.AddXP(xpReward);
+        emit heroStatsChanged();
+
+        qDebug() << "Gained XP:" << xpReward << "Current XP:" << Hero.GetCurrentXP() << "/" << Hero.GetMaxXP();
+
         Map.ClearUnitAt(Hero.GetPosition());
-        Hero.LevelUp();
+
+        if (Hero.IsLevelUpPending()) {
+            emit levelUpTriggered();
+        }
 
         if (Map.GetEnemyCount() <= 0) {
             QMessageBox::information(parentView, tr("Victory!"), tr("Congratulations! You have defeated all enemies!"));
@@ -189,15 +202,22 @@ void GameScene::processFriendly(Unit* friendUnit)
 
 void GameScene::processTreasure(Unit* treasureUnit)
 {
-    QWidget* parentView = getViewWidget();
-    QMessageBox::information(parentView, tr("Treasure Chest"), tr("You found a chest! Level Up!"));
-    Hero.LevelUp();
+    double neededXP = Hero.GetMaxXP() - Hero.GetCurrentXP();
+    if (neededXP > 0) {
+        Hero.AddXP(neededXP);
+    } else {
+        Hero.AddXP(1);
+    }
+
     Map.ClearUnitAt(Hero.GetPosition());
+    if (Hero.IsLevelUpPending()) {
+        emit levelUpTriggered();
+    }
 }
 
 void GameScene::handleHexClick(HexItem* item)
 {
-    if (IsHeroMoving()) return;
+    if (IsHeroMoving() || IsPaused()) return;
 
     Hex* targetHex = item->getModelHex();
     QPoint targetPos(targetHex->GetQR().first, targetHex->GetQR().second);
@@ -332,5 +352,14 @@ void GameScene::processStep()
         isMoving = false;
         currentPath.clear();
         qDebug() << "Movement finished.";
+    }
+}
+
+void GameScene::SetPaused(bool paused) {
+    isPaused = paused;
+    if (paused) {
+        movementTimer->stop();
+    } else if (isMoving) {
+        movementTimer->start(200);
     }
 }

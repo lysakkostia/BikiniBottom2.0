@@ -7,6 +7,8 @@
 #include "GameScene.h"
 #include "Pause.h"
 #include "herowidget.h"
+#include "LevelUpWidget.h"
+#include "SkillTreeWidget.h"
 #include <QMediaPlayer>
 #include <QAudioOutput>
 QT_BEGIN_NAMESPACE
@@ -32,6 +34,8 @@ private:
     GameScene* MGameScene = nullptr;
     Pause* pauseDialog=nullptr;
     HeroWidget* heroWidget = nullptr;
+    LevelUpWidget* levelUpWidget = nullptr;
+    SkillTreeWidget* skillTreeWidget = nullptr;
     QMediaPlayer *player;
     QAudioOutput *audioOutput;
     int MapRadius = 10;
@@ -46,6 +50,9 @@ private slots:
     void HandleGameOver();
     void HandleVictory();
     void HandleVolumeChanged(int volume);
+
+    void HandleLevelUp();
+    void OnLevelUpOptionSelected(int index);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;

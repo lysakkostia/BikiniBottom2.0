@@ -5,10 +5,10 @@
 
 AI::AI() : TurnOver(0) {}
 
-void AI::InitializeSpells(int level, bool isHero) {
+void AI::InitializeSpells(int level, bool isHero, const std::vector<std::string>& heroSpells) {
     Spells.clear();
     if (isHero) {
-        Spells = SpellManager::Instance().GetHeroSpellsForLevel(level);
+        Spells = SpellManager::Instance().GetHeroSpellsByIds(heroSpells, level);
     } else {
         Spells = SpellManager::Instance().GetEnemySpellsForLevel(level);
     }
@@ -33,6 +33,28 @@ const Spell* AI::ChooseBestSpell(double currentMana) const
         }
     }
     return bestSpell;
+}
+
+void AI::ApplyMultipliers(const QMap<SpellType, double>& multipliers)
+{
+    for (auto &spell : Spells) {
+        if (multipliers.contains(spell.type)) {
+            double mult = multipliers.value(spell.type);
+            spell.damage *= mult;
+        }
+    }
+}
+
+void AI::ApplyManaReductions(const QMap<SpellType, double>& reductions)
+{
+    for (auto &spell : Spells) {
+        if (reductions.contains(spell.type)) {
+            double reductionPercent = reductions.value(spell.type);
+            spell.manacost = spell.manacost * (1.0 - reductionPercent);
+
+            if (spell.manacost < 1.0) spell.manacost = 1.0;
+        }
+    }
 }
 
 Aggresive::Aggresive()
@@ -82,8 +104,8 @@ MainCharacter::MainCharacter()
     this->TurnOver = GlobalConst::AI::INIT_HERO;
 }
 
-void MainCharacter::updateSpellStats(int playerLevel) {
-    InitializeSpells(playerLevel, true);
+void MainCharacter::updateSpellStats(int playerLevel, const std::vector<std::string>& heroSpells) {
+    InitializeSpells(playerLevel, true, heroSpells);
 }
 
 Friendly::Friendly()
