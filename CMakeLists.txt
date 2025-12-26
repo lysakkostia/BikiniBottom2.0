@@ -36,10 +36,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         Map.cpp
         Unit.cpp
         UnitFabric.cpp
-        settingswindow.h settingswindow.cpp settingswindow.ui
+        SettingsWidget.h SettingsWidget.cpp
         Pause.h Pause.cpp Pause.ui
         Fight.h Fight.cpp Fight.ui
-        new_or_old_game.h new_or_old_game.cpp new_or_old_game.ui
+        GameSelectionWidget.h GameSelectionWidget.cpp
         RandomGenerator.h
         RandomGenerator.cpp
         herowidget.h herowidget.cpp herowidget.ui

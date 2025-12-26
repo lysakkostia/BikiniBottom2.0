@@ -1,26 +1,21 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include <QMediaPlayer>
-#include <QAudioOutput>
 #include <QUrl>
-#include <QPainter>
-#include <QKeyEvent>
 #include <QMessageBox>
-#include "new_or_old_game.h"
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow),
-    settingsWindow(nullptr),
-    MapRadius(10),
-    heroWidget(nullptr)
+    , ui(new Ui::MainWindow)
+    , m_settingsWidget(nullptr)
+    , MapRadius(10)
+    , heroWidget(nullptr)
 {
     ui->setupUi(this);
 
-    //стилі
-    this->setFixedSize( 1280, 720 );
-    QIcon mainWindowIcon("icon.png");
-    this->setWindowIcon(mainWindowIcon);
+    this->setFixedSize(1280, 720);
+    this->setWindowIcon(QIcon("icon.png"));
+
     this->setStyleSheet(
         "QMainWindow {"
         "    background-image: url(background.png);"
@@ -30,6 +25,27 @@ MainWindow::MainWindow(QWidget *parent)
         "    border-image: url(background.png) 0 0 0 0 stretch stretch;"
         "}"
         );
+
+    m_stackedWidget = new QStackedWidget(this);
+
+    m_menuWidget = takeCentralWidget();
+    m_stackedWidget->addWidget(m_menuWidget);
+
+    m_settingsWidget = new SettingsWidget(this);
+    m_stackedWidget->addWidget(m_settingsWidget);
+
+    m_gameSelectWidget = new GameSelectionWidget(this);
+    m_stackedWidget->addWidget(m_gameSelectWidget);
+
+    setCentralWidget(m_stackedWidget);
+
+    connect(m_settingsWidget, &SettingsWidget::MapRadChanged, this, &MainWindow::HandleMapRadiusChanged);
+    connect(m_settingsWidget, &SettingsWidget::VolumeChanged, this, &MainWindow::HandleVolumeChanged);
+    connect(m_settingsWidget, &SettingsWidget::BackClicked, this, &MainWindow::HandleBackToMenu);
+
+    connect(m_gameSelectWidget, &GameSelectionWidget::StartNewGameClicked, this, &MainWindow::StartNewGame);
+    connect(m_gameSelectWidget, &GameSelectionWidget::LoadGameClicked, this, &MainWindow::LoadSavedGame);
+    connect(m_gameSelectWidget, &GameSelectionWidget::BackClicked, this, &MainWindow::HandleBackToMenu);
 
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
@@ -41,17 +57,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     levelUpWidget = new LevelUpWidget(this);
     levelUpWidget->hide();
-
-    connect(levelUpWidget, &LevelUpWidget::OptionSelected,
-            this, &MainWindow::OnLevelUpOptionSelected);
-
+    connect(levelUpWidget, &LevelUpWidget::OptionSelected, this, &MainWindow::OnLevelUpOptionSelected);
 }
 
 MainWindow::~MainWindow()
 {
+    CleanupGame();
+
     delete ui;
-    delete settingsWindow;
-    delete heroWidget;
     delete player;
     delete audioOutput;
     delete levelUpWidget;
@@ -74,17 +87,16 @@ void MainWindow::on_btn_exit_clicked()
 //кнопка налаштування
 void MainWindow::on_btn_settings_clicked()
 {
-    if(!settingsWindow)
-    {
-        settingsWindow = new SettingsWindow();
-        connect(settingsWindow, &SettingsWindow::MapRadChanged,
-                this, &MainWindow::HandleMapRadiusChanged);
-        connect(settingsWindow, &SettingsWindow::VolumeChanged, this, &MainWindow::HandleVolumeChanged);
-    }
+    m_settingsWidget->SetCurrentRadius(MapRadius);
+    m_stackedWidget->setCurrentWidget(m_settingsWidget);
+}
 
-    settingsWindow->SetCurrentRadius(MapRadius);
-    settingsWindow->show();
-    settingsWindow->activateWindow();
+void MainWindow::HandleBackToMenu()
+{
+    m_stackedWidget->setCurrentWidget(m_menuWidget);
+    if(MapView) {
+        CleanupGame();
+    }
 }
 
 void MainWindow::HandleVolumeChanged(int volume)
@@ -98,134 +110,113 @@ void MainWindow::HandleVolumeChanged(int volume)
 //кнопка гри
 void MainWindow::on_btn_play_clicked()
 {
-    New_or_old_Game *chooseDialog = new New_or_old_Game(this);
-
-    connect(chooseDialog, &New_or_old_Game::startNewGame, this, [=]() {
-        if (MapView) {
-            MapView->deleteLater();
-            MapView = nullptr;
-        }
-        if (MGameScene) {
-            MGameScene->deleteLater();
-            MGameScene = nullptr;
-        }
-        if (heroWidget) {
-            heroWidget->hide();
-            heroWidget->deleteLater();
-            heroWidget = nullptr;
-        }
-
-        MGameScene = new GameScene(MapRadius, this);
-        MapView = new GameView(MGameScene, this);
-
-        MainHero* hero = MGameScene->GetHero();
-        skillTreeWidget = new SkillTreeWidget(hero, this);
-        skillTreeWidget->hide();
-
-        QPushButton* treeBtn = new QPushButton(this);
-        treeBtn->setIcon(QIcon("icon.png"));
-        treeBtn->setGeometry(10, height() - 150, 50, 50);
-        treeBtn->show();
-        treeBtn->raise();
-
-        connect(treeBtn, &QPushButton::clicked, [this]() {
-            if (MGameScene) MGameScene->SetPaused(true);
-            skillTreeWidget->show();
-        });
-
-        connect(skillTreeWidget, &SkillTreeWidget::closed, [this]() {
-            if (MGameScene) MGameScene->SetPaused(false);
-        });
-
-        connect(MGameScene, &GameScene::gameOver, this, &MainWindow::HandleGameOver);
-        connect(MGameScene, &GameScene::victory, this, &MainWindow::HandleVictory);
-        connect(MGameScene, &GameScene::levelUpTriggered, this, &MainWindow::HandleLevelUp);
-
-        if (!MenuWidget) {
-            MenuWidget = takeCentralWidget();
-            if (!MenuWidget) {
-                qCritical("MainWindow::startNewGame - error saving MenuWidget.");
-                if(MapView) { MapView->deleteLater(); MapView = nullptr; }
-                QApplication::quit();
-                return;
-            }
-        }
-
-        MenuWidget->hide();
-        setCentralWidget(MapView);
-        MapView->setFocus();
-
-        QPixmap HeroTexture("NPC5Texture.png");
-        if (!HeroTexture.isNull()) {
-            heroWidget = new HeroWidget(HeroTexture, MGameScene, this);
-
-            heroWidget->setFixedSize(200, 100);
-            int x = 10;
-            int y = height() - heroWidget->height() - 10;
-            heroWidget->move(x, y);
-            heroWidget->raise();
-            heroWidget->show();
-
-            connect(MGameScene, &GameScene::heroStatsChanged,
-                    heroWidget, &HeroWidget::Update_stats);
-        } else {
-            qWarning("Failed to load HeroTexture for HeroWidget.");
-        }
-    });
-
-    connect(chooseDialog, &New_or_old_Game::loadGame, this, [=]() {
-        if(MapView) {
-            if (centralWidget() == MapView) takeCentralWidget();
-            MapView->deleteLater(); MapView = nullptr;
-        }
-        if (MGameScene) { MGameScene->deleteLater(); MGameScene = nullptr; }
-        if (heroWidget) { heroWidget->hide(); heroWidget->deleteLater(); heroWidget = nullptr; }
-
-        MGameScene = new GameScene(MapRadius, this);
-        MapView = new GameView(MGameScene, this);
-
-        connect(MGameScene, &GameScene::gameOver, this, &MainWindow::HandleGameOver);
-        connect(MGameScene, &GameScene::victory, this, &MainWindow::HandleVictory);
-
-        if (!MGameScene->LoadMapFromFile("map.dat")) {
-            QMessageBox::warning(this, tr("Помилка завантаження"), tr("Не вдалося завантажити карту."));
-
-            MapView->deleteLater(); MapView = nullptr;
-            MGameScene->deleteLater(); MGameScene = nullptr;
-
-            if (MenuWidget) {
-                if (centralWidget() != MenuWidget) setCentralWidget(MenuWidget);
-                MenuWidget->show();
-            }
-            return;
-        }
-
-        if (!MenuWidget) {
-            MenuWidget = takeCentralWidget();
-        }
-        if (MenuWidget) MenuWidget->hide();
-
-        setCentralWidget(MapView);
-        MapView->setFocus();
-
-        QPixmap HeroTexture("NPC5Texture.png");
-        if (!HeroTexture.isNull()) {
-            heroWidget = new HeroWidget(HeroTexture, MGameScene, this);
-            heroWidget->setFixedSize(200, 100);
-            int x = 10;
-            int y = height() - heroWidget->height() - 10;
-            heroWidget->move(x, y);
-            heroWidget->raise();
-            heroWidget->show();
-            connect(MGameScene, &GameScene::heroStatsChanged,
-                    heroWidget, &HeroWidget::Update_stats);
-        }
-    });
-
-    chooseDialog->exec();
-    delete chooseDialog;
+    m_stackedWidget->setCurrentWidget(m_gameSelectWidget);
 }
 
+void MainWindow::StartNewGame()
+{
+    CleanupGame();
+
+    MGameScene = new GameScene(MapRadius, this);
+    MapView = new GameView(MGameScene, this);
+
+    m_stackedWidget->addWidget(MapView);
+    m_stackedWidget->setCurrentWidget(MapView);
+    MapView->setFocus();
+
+    MainHero* hero = MGameScene->GetHero();
+    skillTreeWidget = new SkillTreeWidget(hero, this);
+    skillTreeWidget->hide();
+
+    m_treeBtn = new QPushButton(this);
+    m_treeBtn->setIcon(QIcon(":/textures/icon.png"));
+    m_treeBtn->setGeometry(10, height() - 150, 50, 50);
+    m_treeBtn->show();
+    m_treeBtn->raise();
+
+    connect(m_treeBtn, &QPushButton::clicked, [this]() {
+        if (MGameScene) MGameScene->SetPaused(true);
+        if (skillTreeWidget) skillTreeWidget->show();
+    });
+
+    connect(skillTreeWidget, &SkillTreeWidget::closed, [this]() {
+        if (MGameScene) MGameScene->SetPaused(false);
+    });
+
+    connect(MGameScene, &GameScene::gameOver, this, &MainWindow::HandleGameOver);
+    connect(MGameScene, &GameScene::victory, this, &MainWindow::HandleVictory);
+    connect(MGameScene, &GameScene::levelUpTriggered, this, &MainWindow::HandleLevelUp);
+
+    QPixmap HeroTexture("NPC5Texture.png");
+    if (!HeroTexture.isNull()) {
+        heroWidget = new HeroWidget(HeroTexture, MGameScene, this);
+        heroWidget->setFixedSize(200, 100);
+        heroWidget->move(10, height() - heroWidget->height() - 10);
+        heroWidget->raise();
+        heroWidget->show();
+
+        connect(MGameScene, &GameScene::heroStatsChanged, heroWidget, &HeroWidget::Update_stats);
+    }
+}
+
+void MainWindow::LoadSavedGame()
+{
+    CleanupGame();
+
+    MGameScene = new GameScene(MapRadius, this);
+
+    if (!MGameScene->LoadMapFromFile("map.dat")) {
+        QMessageBox::warning(this, tr("Помилка"), tr("Не вдалося завантажити збереження."));
+        delete MGameScene;
+        MGameScene = nullptr;
+        return;
+    }
+
+    MapView = new GameView(MGameScene, this);
+
+    m_stackedWidget->addWidget(MapView);
+    m_stackedWidget->setCurrentWidget(MapView);
+    MapView->setFocus();
+
+    connect(MGameScene, &GameScene::gameOver, this, &MainWindow::HandleGameOver);
+    connect(MGameScene, &GameScene::victory, this, &MainWindow::HandleVictory);
+    connect(MGameScene, &GameScene::levelUpTriggered, this, &MainWindow::HandleLevelUp);
+
+    QPixmap HeroTexture("NPC5Texture.png");
+    if (!HeroTexture.isNull()) {
+        heroWidget = new HeroWidget(HeroTexture, MGameScene, this);
+        heroWidget->setFixedSize(200, 100);
+        heroWidget->move(10, height() - heroWidget->height() - 10);
+        heroWidget->raise();
+        heroWidget->show();
+        connect(MGameScene, &GameScene::heroStatsChanged, heroWidget, &HeroWidget::Update_stats);
+    }
+}
+
+void MainWindow::CleanupGame()
+{
+    if (MapView) {
+        m_stackedWidget->removeWidget(MapView);
+        MapView->deleteLater();
+        MapView = nullptr;
+    }
+    if (MGameScene) {
+        MGameScene->deleteLater();
+        MGameScene = nullptr;
+    }
+    if (heroWidget) {
+        heroWidget->deleteLater();
+        heroWidget = nullptr;
+    }
+    if (skillTreeWidget) {
+        skillTreeWidget->deleteLater();
+        skillTreeWidget = nullptr;
+    }
+    if (m_treeBtn) {
+        m_treeBtn->deleteLater();
+        m_treeBtn = nullptr;
+    }
+}
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
@@ -242,21 +233,16 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 //кнопка паузи
 void MainWindow::on_btn_pause_clicked()
 {
-    if (!MapView || !MapView->isVisible())
-    {
-        return;
-    }
+    if (!MGameScene) return;
 
-    if (pauseDialog) {
-        delete pauseDialog;
-    }
+    if (pauseDialog) delete pauseDialog;
 
     pauseDialog = new Pause(this, MGameScene);
-
     int result = pauseDialog->exec();
-    if (result != QDialog::Accepted)
-    {
-        QApplication::quit();
+
+    if (result != QDialog::Accepted) {
+        CleanupGame();
+        m_stackedWidget->setCurrentWidget(m_menuWidget);
     }
 }
 
@@ -264,47 +250,16 @@ void MainWindow::on_btn_pause_clicked()
 void MainWindow::HandleGameOver()
 {
     QMessageBox::information(this, tr("Гру завершено"), tr("Ви програли!"));
-
-    if (MenuWidget) {
-        setCentralWidget(MenuWidget);
-        MenuWidget->show();
-    }
-    if (MapView) {
-        MapView->deleteLater();
-        MapView = nullptr;
-    }
-    if (MGameScene) {
-        MGameScene->deleteLater();
-        MGameScene = nullptr;
-    }
-    if (heroWidget) {
-        delete heroWidget;
-        heroWidget = nullptr;
-    }
+    CleanupGame();
+    m_stackedWidget->setCurrentWidget(m_menuWidget);
 }
 
 //подія перемоги
 void MainWindow::HandleVictory()
 {
     QMessageBox::information(this, tr("Перемога!"), tr("Ви виграли гру!"));
-
-    if (MenuWidget) {
-        setCentralWidget(MenuWidget);
-        MenuWidget->show();
-    }
-
-    if (MapView) {
-        MapView->deleteLater();
-        MapView = nullptr;
-    }
-    if (MGameScene) {
-        MGameScene->deleteLater();
-        MGameScene = nullptr;
-    }
-    if (heroWidget) {
-        delete heroWidget;
-        heroWidget = nullptr;
-    }
+    CleanupGame();
+    m_stackedWidget->setCurrentWidget(m_menuWidget);
 }
 
 void MainWindow::HandleLevelUp()
