@@ -2,16 +2,10 @@
 #define HEROWIDGET_H
 
 #include <QWidget>
-#include <QPixmap>
-#include <QDialog>
-#include <QPixmap>
-#include <QListWidget>
+#include <QLabel>
+#include <QProgressBar>
+#include <QFrame>
 #include "GameScene.h"
-class MainHero;
-
-namespace Ui {
-class HeroWidget;
-}
 
 class HeroWidget : public QWidget
 {
@@ -20,13 +14,22 @@ class HeroWidget : public QWidget
 public:
     explicit HeroWidget(const QPixmap& Hero, GameScene* mappa, QWidget *parent = nullptr);
     ~HeroWidget();
+
     void Update_stats();
 
 private:
-    Ui::HeroWidget *ui;
-    GameScene* Mappa = NULL;
+    void setupUi();
+
+    GameScene* Mappa;
     QPixmap HeroTexture;
-    void displayStats();
+
+    QFrame* m_containerFrame;
+    QLabel* m_avatarLabel;
+    QLabel* m_levelLabel;
+
+    QProgressBar* m_hpBar;
+    QProgressBar* m_manaBar;
+    QProgressBar* m_xpBar;
 };
 
 #endif // HEROWIDGET_H

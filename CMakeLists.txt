@@ -37,12 +37,12 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         Unit.cpp
         UnitFabric.cpp
         SettingsWidget.h SettingsWidget.cpp
-        Pause.h Pause.cpp Pause.ui
-        Fight.h Fight.cpp Fight.ui
+        PauseWidget.h PauseWidget.cpp
+        Fight.h Fight.cpp
         GameSelectionWidget.h GameSelectionWidget.cpp
         RandomGenerator.h
         RandomGenerator.cpp
-        herowidget.h herowidget.cpp herowidget.ui
+        HeroWidget.h HeroWidget.cpp
         GameConstants.h
         HexItem.h HexItem.cpp
         GameScene.h GameScene.cpp

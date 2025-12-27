@@ -10,8 +10,8 @@
 #include "GameSelectionWidget.h"
 #include "GameView.h"
 #include "GameScene.h"
-#include "Pause.h"
-#include "herowidget.h"
+#include "PauseWidget.h"
+#include "HeroWidget.h"
 #include "LevelUpWidget.h"
 #include "SkillTreeWidget.h"
 
@@ -52,6 +52,12 @@ private slots:
     void HandleLevelUp();
     void OnLevelUpOptionSelected(int index);
 
+    void OnPauseContinue();
+    void OnPauseExit();
+
+    void OnCombatStarted();
+    void OnCombatEnded();
+
 private:
     Ui::MainWindow *ui;
 
@@ -65,7 +71,7 @@ private:
     HeroWidget* heroWidget = nullptr;
     SkillTreeWidget* skillTreeWidget = nullptr;
     QPushButton* m_treeBtn = nullptr;
-    Pause* pauseDialog = nullptr;
+    PauseWidget* m_pauseWidget = nullptr;
     LevelUpWidget* levelUpWidget = nullptr;
 
     QMediaPlayer *player;
@@ -74,5 +80,6 @@ private:
     int MapRadius = 10;
 
     void CleanupGame();
+    void SetupPauseWidget();
 };
 #endif // MAINWINDOW_H

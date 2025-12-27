@@ -75,6 +75,8 @@ signals:
     void victory();
     void logMessage(const QString& msg);
     void levelUpTriggered();
+    void combatStarted();
+    void combatEnded();
 
 public slots:
     void processStep();

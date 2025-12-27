@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QGraphicsView>
 #include <QDebug>
+#include <QEventLoop>
 
 namespace Const_Scale = GlobalConst::TextureScale;
 
@@ -112,15 +113,41 @@ void GameScene::interactWithContentOnHex(const Hex& hex, const QPoint& previousP
 void GameScene::processCombat(Unit* enemy, const QPoint& previousPos)
 {
     qWarning("Hero moved onto an enemy hex! Starting fight.");
+    emit combatStarted();
 
     QWidget* parentView = getViewWidget();
 
-    Fight fightDialog(TextureManager::GetInstance().getUnitTexture(enemy->GetType()), &Hero, enemy, parentView);
-    int fightResultCode = fightDialog.exec();
+    Fight* fightWidget = new Fight(
+        TextureManager::GetInstance().getUnitTexture(UnitType::MainHero),
+        TextureManager::GetInstance().getUnitTexture(enemy->GetType()),
+        &Hero,
+        enemy,
+        parentView
+        );
 
-    bool playerEscaped = fightDialog.didPlayerEscaped();
+    fightWidget->resize(parentView->size());
+    fightWidget->show();
+    fightWidget->setFocus();
 
-    if (fightResultCode == QDialog::Accepted)
+    QEventLoop loop;
+    bool fightWon = false;
+
+    connect(fightWidget, &Fight::battleEnded, [&](bool result) {
+        fightWon = result;
+        loop.quit();
+    });
+
+    loop.exec();
+
+    bool playerEscaped = fightWidget->didPlayerEscaped();
+
+    fightWidget->deleteLater();
+
+    emit combatEnded();
+
+    bool levelUpHappened = false;
+
+    if (fightWon)
     {
         qDebug("Fight won!");
 
@@ -137,6 +164,7 @@ void GameScene::processCombat(Unit* enemy, const QPoint& previousPos)
 
         if (Hero.IsLevelUpPending()) {
             emit levelUpTriggered();
+            levelUpHappened = true;
         }
 
         if (Map.GetEnemyCount() <= 0) {
@@ -154,6 +182,10 @@ void GameScene::processCombat(Unit* enemy, const QPoint& previousPos)
             qDebug() << (playerEscaped ? "Hero escaped" : "Dialog closed");
             Hero.SetPosition(previousPos);
         }
+    }
+
+    if (!levelUpHappened && parentView) {
+        parentView->setFocus();
     }
 }
 

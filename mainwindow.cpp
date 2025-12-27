@@ -93,6 +93,7 @@ void MainWindow::on_btn_settings_clicked()
 
 void MainWindow::HandleBackToMenu()
 {
+    if (m_pauseWidget) m_pauseWidget->hide();
     m_stackedWidget->setCurrentWidget(m_menuWidget);
     if(MapView) {
         CleanupGame();
@@ -128,6 +129,8 @@ void MainWindow::StartNewGame()
     skillTreeWidget = new SkillTreeWidget(hero, this);
     skillTreeWidget->hide();
 
+    SetupPauseWidget();
+
     m_treeBtn = new QPushButton(this);
     m_treeBtn->setIcon(QIcon("icon.png"));
     m_treeBtn->setGeometry(10, height() - 150, 50, 50);
@@ -143,6 +146,8 @@ void MainWindow::StartNewGame()
         if (MGameScene) MGameScene->SetPaused(false);
     });
 
+    connect(MGameScene, &GameScene::combatStarted, this, &MainWindow::OnCombatStarted);
+    connect(MGameScene, &GameScene::combatEnded, this, &MainWindow::OnCombatEnded);
     connect(MGameScene, &GameScene::gameOver, this, &MainWindow::HandleGameOver);
     connect(MGameScene, &GameScene::victory, this, &MainWindow::HandleVictory);
     connect(MGameScene, &GameScene::levelUpTriggered, this, &MainWindow::HandleLevelUp);
@@ -182,6 +187,8 @@ void MainWindow::LoadSavedGame()
     skillTreeWidget = new SkillTreeWidget(hero, this);
     skillTreeWidget->hide();
 
+    SetupPauseWidget();
+
     m_treeBtn = new QPushButton(this);
     m_treeBtn->setIcon(QIcon("icon.png"));
     m_treeBtn->setGeometry(10, height() - 150, 50, 50);
@@ -197,6 +204,8 @@ void MainWindow::LoadSavedGame()
         if (MGameScene) MGameScene->SetPaused(false);
     });
 
+    connect(MGameScene, &GameScene::combatStarted, this, &MainWindow::OnCombatStarted);
+    connect(MGameScene, &GameScene::combatEnded, this, &MainWindow::OnCombatEnded);
     connect(MGameScene, &GameScene::gameOver, this, &MainWindow::HandleGameOver);
     connect(MGameScene, &GameScene::victory, this, &MainWindow::HandleVictory);
     connect(MGameScene, &GameScene::levelUpTriggered, this, &MainWindow::HandleLevelUp);
@@ -212,6 +221,17 @@ void MainWindow::LoadSavedGame()
         connect(MGameScene, &GameScene::heroStatsChanged, heroWidget, &HeroWidget::Update_stats);
         heroWidget->Update_stats();
     }
+}
+
+void MainWindow::SetupPauseWidget()
+{
+    m_pauseWidget = new PauseWidget(this);
+    m_pauseWidget->hide();
+
+    m_pauseWidget->resize(this->size());
+
+    connect(m_pauseWidget, &PauseWidget::ContinueClicked, this, &MainWindow::OnPauseContinue);
+    connect(m_pauseWidget, &PauseWidget::ExitClicked, this, &MainWindow::OnPauseExit);
 }
 
 void MainWindow::CleanupGame()
@@ -237,6 +257,10 @@ void MainWindow::CleanupGame()
         m_treeBtn->deleteLater();
         m_treeBtn = nullptr;
     }
+    if (m_pauseWidget) {
+        m_pauseWidget->deleteLater();
+        m_pauseWidget = nullptr;
+    }
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -256,15 +280,26 @@ void MainWindow::on_btn_pause_clicked()
 {
     if (!MGameScene) return;
 
-    if (pauseDialog) delete pauseDialog;
+    MGameScene->SetPaused(true);
+    m_pauseWidget->resize(this->size());
+    m_pauseWidget->raise();
+    m_pauseWidget->show();
+}
 
-    pauseDialog = new Pause(this, MGameScene);
-    int result = pauseDialog->exec();
+void MainWindow::OnPauseContinue()
+{
+    if (m_pauseWidget) m_pauseWidget->hide();
+    if (MGameScene) MGameScene->SetPaused(false);
+    if (MapView) MapView->setFocus();
+}
 
-    if (result != QDialog::Accepted) {
-        CleanupGame();
-        m_stackedWidget->setCurrentWidget(m_menuWidget);
+void MainWindow::OnPauseExit()
+{
+    if (MGameScene) {
+        MGameScene->SaveMapToFile("map.dat");
     }
+    CleanupGame();
+    m_stackedWidget->setCurrentWidget(m_menuWidget);
 }
 
 //подія програшу
@@ -320,4 +355,21 @@ void MainWindow::OnLevelUpOptionSelected(int index)
     }
 
     MGameScene->SetPaused(false);
+    if (MapView) {
+        MapView->setFocus();
+    }
+}
+
+void MainWindow::OnCombatStarted()
+{
+    if (heroWidget) heroWidget->hide();
+    if (m_treeBtn) m_treeBtn->hide();
+
+    if (skillTreeWidget) skillTreeWidget->hide();
+}
+
+void MainWindow::OnCombatEnded()
+{
+    if (heroWidget) heroWidget->show();
+    if (m_treeBtn) m_treeBtn->show();
 }

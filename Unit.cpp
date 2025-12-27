@@ -397,6 +397,9 @@ void MainHero::FromJson(const QJsonObject& json)
 
     RecalculateStats();
     RefreshAISpells();
+
+    if (json.contains("hp")) SetHP(json["hp"].toDouble());
+    if (json.contains("mana")) SetMana(json["mana"].toDouble());
 }
 
 //----Enemy----
