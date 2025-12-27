@@ -38,10 +38,9 @@ void GameSelectionWidget::setupUi()
 
     QString styles = R"(
         QFrame#Container {
-            background-image: url(TestBackground.png);
-            background-repeat: no-repeat;
-            background-position: center;
-            border-image: url(TestBackground.png) 0 0 0 0 stretch stretch;
+            background-color: #FFF9C4;
+            border: 4px solid #FBC02D;
+            border-radius: 20px;
         }
 
         QLabel {

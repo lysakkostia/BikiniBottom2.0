@@ -129,7 +129,7 @@ void MainWindow::StartNewGame()
     skillTreeWidget->hide();
 
     m_treeBtn = new QPushButton(this);
-    m_treeBtn->setIcon(QIcon(":/textures/icon.png"));
+    m_treeBtn->setIcon(QIcon("icon.png"));
     m_treeBtn->setGeometry(10, height() - 150, 50, 50);
     m_treeBtn->show();
     m_treeBtn->raise();
@@ -178,6 +178,25 @@ void MainWindow::LoadSavedGame()
     m_stackedWidget->setCurrentWidget(MapView);
     MapView->setFocus();
 
+    MainHero* hero = MGameScene->GetHero();
+    skillTreeWidget = new SkillTreeWidget(hero, this);
+    skillTreeWidget->hide();
+
+    m_treeBtn = new QPushButton(this);
+    m_treeBtn->setIcon(QIcon("icon.png"));
+    m_treeBtn->setGeometry(10, height() - 150, 50, 50);
+    m_treeBtn->show();
+    m_treeBtn->raise();
+
+    connect(m_treeBtn, &QPushButton::clicked, [this]() {
+        if (MGameScene) MGameScene->SetPaused(true);
+        if (skillTreeWidget) skillTreeWidget->show();
+    });
+
+    connect(skillTreeWidget, &SkillTreeWidget::closed, [this]() {
+        if (MGameScene) MGameScene->SetPaused(false);
+    });
+
     connect(MGameScene, &GameScene::gameOver, this, &MainWindow::HandleGameOver);
     connect(MGameScene, &GameScene::victory, this, &MainWindow::HandleVictory);
     connect(MGameScene, &GameScene::levelUpTriggered, this, &MainWindow::HandleLevelUp);
@@ -189,7 +208,9 @@ void MainWindow::LoadSavedGame()
         heroWidget->move(10, height() - heroWidget->height() - 10);
         heroWidget->raise();
         heroWidget->show();
+
         connect(MGameScene, &GameScene::heroStatsChanged, heroWidget, &HeroWidget::Update_stats);
+        heroWidget->Update_stats();
     }
 }
 

@@ -316,6 +316,89 @@ void MainHero::RefreshAISpells()
     }
 }
 
+QJsonObject MainHero::ToJson() const
+{
+    QJsonObject json = Unit::ToJson();
+
+    json["xp"] = UCurrentXP;
+    json["skillPoints"] = USkillPoints;
+    json["pendingLevelUps"] = PendingLevelUps;
+    json["bonusHp"] = UBonusMaxHP;
+    json["bonusMana"] = UBonusMaxMana;
+
+    QJsonArray spellsArr;
+    for(const auto& s : UnlockedSpellIds) {
+        spellsArr.append(QString::fromStdString(s));
+    }
+    json["unlockedSpells"] = spellsArr;
+
+    QJsonArray nodesArr;
+    for(const auto& node : UnlockedSkillNodes) {
+        nodesArr.append(node);
+    }
+    json["unlockedNodes"] = nodesArr;
+
+    QJsonObject dmgMultObj;
+    for(auto it = USpellDamageMultipliers.begin(); it != USpellDamageMultipliers.end(); ++it) {
+        dmgMultObj[QString::number(static_cast<int>(it.key()))] = it.value();
+    }
+    json["dmgMultipliers"] = dmgMultObj;
+
+    QJsonObject manaRedObj;
+    for(auto it = ManaCostReductions.begin(); it != ManaCostReductions.end(); ++it) {
+        manaRedObj[QString::number(static_cast<int>(it.key()))] = it.value();
+    }
+    json["manaReductions"] = manaRedObj;
+
+    return json;
+}
+
+void MainHero::FromJson(const QJsonObject& json)
+{
+    Unit::FromJson(json);
+
+    if (json.contains("xp")) UCurrentXP = json["xp"].toDouble();
+    if (json.contains("skillPoints")) USkillPoints = json["skillPoints"].toInt();
+    if (json.contains("pendingLevelUps")) PendingLevelUps = json["pendingLevelUps"].toInt();
+    if (json.contains("bonusHp")) UBonusMaxHP = json["bonusHp"].toDouble();
+    if (json.contains("bonusMana")) UBonusMaxMana = json["bonusMana"].toDouble();
+
+    if (json.contains("unlockedSpells")) {
+        UnlockedSpellIds.clear();
+        QJsonArray spellsArr = json["unlockedSpells"].toArray();
+        for(const auto& val : spellsArr) {
+            UnlockedSpellIds.push_back(val.toString().toStdString());
+        }
+    }
+
+    if (json.contains("unlockedNodes")) {
+        UnlockedSkillNodes.clear();
+        QJsonArray nodesArr = json["unlockedNodes"].toArray();
+        for(const auto& val : nodesArr) {
+            UnlockedSkillNodes.insert(val.toString());
+        }
+    }
+
+    if (json.contains("dmgMultipliers")) {
+        USpellDamageMultipliers.clear();
+        QJsonObject obj = json["dmgMultipliers"].toObject();
+        for(auto it = obj.begin(); it != obj.end(); ++it) {
+            USpellDamageMultipliers[static_cast<SpellType>(it.key().toInt())] = it.value().toDouble();
+        }
+    }
+
+    if (json.contains("manaReductions")) {
+        ManaCostReductions.clear();
+        QJsonObject obj = json["manaReductions"].toObject();
+        for(auto it = obj.begin(); it != obj.end(); ++it) {
+            ManaCostReductions[static_cast<SpellType>(it.key().toInt())] = it.value().toDouble();
+        }
+    }
+
+    RecalculateStats();
+    RefreshAISpells();
+}
+
 //----Enemy----
 
 Enemy::Enemy(UnitType type, double level)

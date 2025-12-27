@@ -124,6 +124,9 @@ public:
     void AddManaCostReduction(SpellType type, double reductionPercent);
 
     const std::vector<std::string>& GetUnlockedSpellIds() const { return UnlockedSpellIds; }
+
+    virtual QJsonObject ToJson() const override;
+    virtual void FromJson(const QJsonObject& json) override;
 };
 
 class Enemy : public Unit

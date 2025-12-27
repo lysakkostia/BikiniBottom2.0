@@ -308,7 +308,7 @@ void HexMap::UpdateVisibility(const QPoint& HeroPos)
     }
 }
 
-void HexMap::SaveToFile(const QString& filePath, const QPoint& heroPos, double HeroHP,double HeroMP, double HeroLVL) const
+void HexMap::SaveToFile(const QString& filePath, const MainHero& hero) const
 {
     QJsonObject root;
 
@@ -316,13 +316,7 @@ void HexMap::SaveToFile(const QString& filePath, const QPoint& heroPos, double H
     root["enemyCount"] = EnemyCounter;
     root["mapSeed"] = static_cast<qint64>(mapSeed);
 
-    QJsonObject heroObj;
-    heroObj["x"] = heroPos.x();
-    heroObj["y"] = heroPos.y();
-    heroObj["hp"] = HeroHP;
-    heroObj["mana"] = HeroMP;
-    heroObj["level"] = HeroLVL;
-    root["hero"] = heroObj;
+    root["hero"] = hero.ToJson();
 
     QJsonArray hexArray;
     for (const auto& Col : MapGrid) {
@@ -351,7 +345,7 @@ void HexMap::SaveToFile(const QString& filePath, const QPoint& heroPos, double H
         qDebug() << "Failed to save game:" << filePath;
     }
 }
-bool HexMap::LoadFromFile(const QString& filePath, QPoint& heroPos, double& HeroHP,double& HeroMP, double& HeroLVL)
+bool HexMap::LoadFromFile(const QString& filePath, MainHero& hero)
 {
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -385,11 +379,9 @@ bool HexMap::LoadFromFile(const QString& filePath, QPoint& heroPos, double& Hero
         MapGrid.push_back(std::move(Column));
     }
 
-    QJsonObject heroObj = root["hero"].toObject();
-    heroPos = QPoint(heroObj["x"].toInt(), heroObj["y"].toInt());
-    HeroHP = heroObj["hp"].toDouble();
-    HeroMP = heroObj["mana"].toDouble();
-    HeroLVL = heroObj["level"].toDouble();
+    if (root.contains("hero")) {
+        hero.FromJson(root["hero"].toObject());
+    }
 
     QJsonArray hexArray = root["map"].toArray();
     for (const auto& val : hexArray) {
@@ -419,7 +411,7 @@ bool HexMap::LoadFromFile(const QString& filePath, QPoint& heroPos, double& Hero
         }
     }
 
-    UpdateVisibility(heroPos);
+    UpdateVisibility(hero.GetPosition());
     qDebug() << "Game loaded from JSON successfully.";
     return true;
 }

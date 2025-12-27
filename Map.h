@@ -38,8 +38,8 @@ public:
     const std::vector<std::vector<Hex>>& GetMap() const;
     bool ContainsHex(int q, int r) const;
     void UpdateVisibility(const QPoint& HeroPos);
-    void SaveToFile(const QString& filePath, const QPoint& heroPos, double HeroHP,double HeroMP, double HeroLVL) const;
-    bool LoadFromFile(const QString& filePath, QPoint& heroPos, double& HeroHP,double& HeroMP, double& HeroLVL);
+    void SaveToFile(const QString& filePath, const MainHero& hero) const;
+    bool LoadFromFile(const QString& filePath, MainHero& hero);
     void Clear();
     void ClearUnitAt(const QPoint& position);
     int GetEnemyCount() const;

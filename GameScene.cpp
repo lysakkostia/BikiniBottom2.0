@@ -258,23 +258,15 @@ Hex* GameScene::getHeroHex()
 
 void GameScene::SaveMapToFile(const QString& filePath)
 {
-    HeroStats CurrentStats = GetStats();
-    Map.SaveToFile(filePath, Hero.GetPosition(), CurrentStats.HP, CurrentStats.MP, CurrentStats.LVL);
+    Map.SaveToFile(filePath, Hero);
 }
 
 bool GameScene::LoadMapFromFile(const QString& filePath)
 {
-    QPoint heroPos;
-    double LoadedHeroHP, LoadedHeroMP, LoadedHeroLVL;
-    bool Success = Map.LoadFromFile(filePath, heroPos, LoadedHeroHP, LoadedHeroMP, LoadedHeroLVL);
+    bool Success = Map.LoadFromFile(filePath, Hero);
 
     if(Success)
     {
-        Hero.SetPosition(heroPos);
-        Hero.SetLevel(LoadedHeroLVL);
-        Hero.RecalculateStats();
-        Hero.SetHP(LoadedHeroHP);
-        Hero.SetMana(LoadedHeroMP);
         Map.UpdateVisibility(Hero.GetPosition());
         generateMapItems();
         emit heroStatsChanged();
