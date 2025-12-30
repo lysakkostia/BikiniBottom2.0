@@ -9,6 +9,7 @@
 #include <QGridLayout>
 #include <QPushButton>
 #include <QScrollArea>
+#include <functional>
 
 class Unit;
 class MainHero;
@@ -61,6 +62,8 @@ private:
     QPushButton* m_btnEscape;
     QTextEdit* m_combatLog;
 
+    QWidget* m_currentOverlay = nullptr;
+
     void initUI();
     void startBattle();
 
@@ -77,6 +80,8 @@ private:
 
     bool isBattleOver();
     void endBattle(bool playerWon);
+
+    void showInternalDialog(const QString& title, const QString& message, std::function<void()> onOk = nullptr);
 };
 
 #endif // FIGHT_H

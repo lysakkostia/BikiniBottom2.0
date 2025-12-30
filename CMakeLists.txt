@@ -16,9 +16,9 @@ set(TS_FILES BikiniBottom2_uk_UA.ts)
 
 set(PROJECT_SOURCES
         main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
+        MainWindow.cpp
+        MainWindow.h
+
         ${TS_FILES}
 )
 
@@ -54,6 +54,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         LevelUpWidget.h
         SkillTreeSystem.h
         SkillTreeWidget.h
+        LevelUpWidget.cpp
+        SkillTreeWidget.cpp
+        CampfireWidget.h CampfireWidget.cpp
+        NPCWidget.h NPCWidget.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET BikiniBottom2 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

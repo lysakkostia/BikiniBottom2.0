@@ -3,6 +3,7 @@
 #include "Fight.h"
 #include "AI.h"
 #include "TextureManager.h"
+#include "CampfireWidget.h"
 #include <QMessageBox>
 #include <QGraphicsView>
 #include <QDebug>
@@ -112,42 +113,17 @@ void GameScene::interactWithContentOnHex(const Hex& hex, const QPoint& previousP
 
 void GameScene::processCombat(Unit* enemy, const QPoint& previousPos)
 {
-    qWarning("Hero moved onto an enemy hex! Starting fight.");
+    qWarning("Hero moved onto an enemy hex! Requesting combat UI.");
+    lastPreCombatPos = previousPos;
     emit combatStarted();
+    emit combatRequested(enemy);
+}
 
-    QWidget* parentView = getViewWidget();
-
-    Fight* fightWidget = new Fight(
-        TextureManager::GetInstance().getUnitTexture(UnitType::MainHero),
-        TextureManager::GetInstance().getUnitTexture(enemy->GetType()),
-        &Hero,
-        enemy,
-        parentView
-        );
-
-    fightWidget->resize(parentView->size());
-    fightWidget->show();
-    fightWidget->setFocus();
-
-    QEventLoop loop;
-    bool fightWon = false;
-
-    connect(fightWidget, &Fight::battleEnded, [&](bool result) {
-        fightWon = result;
-        loop.quit();
-    });
-
-    loop.exec();
-
-    bool playerEscaped = fightWidget->didPlayerEscaped();
-
-    fightWidget->deleteLater();
-
+void GameScene::FinishCombat(bool playerWon, bool playerEscaped, Unit* enemy)
+{
     emit combatEnded();
 
-    bool levelUpHappened = false;
-
-    if (fightWon)
+    if (playerWon)
     {
         qDebug("Fight won!");
 
@@ -155,20 +131,18 @@ void GameScene::processCombat(Unit* enemy, const QPoint& previousPos)
         if (enemy->GetType() == UnitType::Wizard || enemy->GetType() == UnitType::Barbarian) {
             xpReward *= 1.2;
         }
+
         Hero.AddXP(xpReward);
         emit heroStatsChanged();
 
-        qDebug() << "Gained XP:" << xpReward << "Current XP:" << Hero.GetCurrentXP() << "/" << Hero.GetMaxXP();
+        qDebug() << "Gained XP:" << xpReward;
 
         Map.ClearUnitAt(Hero.GetPosition());
 
         if (Hero.IsLevelUpPending()) {
             emit levelUpTriggered();
-            levelUpHappened = true;
         }
-
         if (Map.GetEnemyCount() <= 0) {
-            QMessageBox::information(parentView, tr("Victory!"), tr("Congratulations! You have defeated all enemies!"));
             emit victory();
         }
     }
@@ -179,20 +153,18 @@ void GameScene::processCombat(Unit* enemy, const QPoint& previousPos)
             emit gameOver();
         }
         else {
-            qDebug() << (playerEscaped ? "Hero escaped" : "Dialog closed");
-            Hero.SetPosition(previousPos);
+            qDebug() << (playerEscaped ? "Hero escaped" : "Dialog closed unexpectedly");
+            this->tryMoveHeroTo(lastPreCombatPos);
+            Map.UpdateVisibility(Hero.GetPosition());
         }
     }
 
-    if (!levelUpHappened && parentView) {
-        parentView->setFocus();
-    }
+    QWidget* view = getViewWidget();
+    if (view) view->setFocus();
 }
 
 void GameScene::processCampfire(Unit* campfireUnit)
 {
-    QWidget* parentView = getViewWidget();
-
     CampfireUnit* campfire = dynamic_cast<CampfireUnit*>(campfireUnit);
     if (!campfire || !campfire->GetAI()) return;
 
@@ -207,29 +179,38 @@ void GameScene::processCampfire(Unit* campfireUnit)
     float currentCharges = campfire->GetHP();
     campfire->SetHP(currentCharges - 1);
 
-    QString msg = tr("You rest at the campfire.\nHP: %1 -> %2\nMana: %3 -> %4\nRemaining uses: %5")
-                      .arg(oldHP).arg(Hero.GetHP())
-                      .arg(oldMana).arg(Hero.GetMana())
-                      .arg(campfire->GetHP());
+    int remainingCharges = static_cast<int>(campfire->GetHP());
 
-    QMessageBox::information(parentView, tr("Campfire"), msg);
+    emit campfireRequested(oldHP, Hero.GetHP(), oldMana, Hero.GetMana(), remainingCharges, campfireUnit);
+}
 
-    if (campfire->GetHP() <= 0) {
-        QMessageBox::information(parentView, tr("Campfire"), tr("The campfire has extinguished."));
+void GameScene::FinishCampfireInteraction(Unit* campfireUnit)
+{
+    CampfireUnit* campfire = dynamic_cast<CampfireUnit*>(campfireUnit);
+    if (campfire && campfire->GetHP() <= 0) {
         Map.ClearUnitAt(Hero.GetPosition());
+        this->update();
     }
+
+    QWidget* view = getViewWidget();
+    if (view) view->setFocus();
 }
 
 void GameScene::processFriendly(Unit* friendUnit)
 {
-    QWidget* parentView = getViewWidget();
-
     if (friendUnit->GetAI()) {
         Friendly* friendlyAI = dynamic_cast<Friendly*>(friendUnit->GetAI());
         if (friendlyAI) {
-            QMessageBox::information(parentView, tr("Friendly NPC"), QString::fromStdString(friendlyAI->getGreeting()));
+            QString greeting = QString::fromStdString(friendlyAI->getGreeting());
+            emit npcInteractionRequested(friendUnit, greeting);
         }
     }
+}
+
+void GameScene::FinishNPCInteraction()
+{
+    QWidget* view = getViewWidget();
+    if (view) view->setFocus();
 }
 
 void GameScene::processTreasure(Unit* treasureUnit)

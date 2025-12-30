@@ -502,14 +502,13 @@ void Fight::endBattle(bool playerWon)
     if(m_spellsContainer) m_spellsContainer->setEnabled(false);
     if(m_btnEscape) m_btnEscape->setEnabled(false);
 
-    if (playerWon) {
-        QMessageBox::information(this, tr("Перемога!"), tr("Ви перемогли ворога!"));
-        emit battleEnded(true);
-    } else {
-        QMessageBox::critical(this, tr("Поразка"), tr("Вас було переможено..."));
-        emit battleEnded(false);
-    }
-    this->close();
+    QString title = playerWon ? tr("Перемога!") : tr("Поразка");
+    QString message = playerWon ? tr("Ви перемогли ворога!") : tr("Вас було переможено...");
+
+    showInternalDialog(title, message, [this, playerWon]() {
+        emit battleEnded(playerWon);
+        this->close();
+    });
 }
 
 void Fight::onEscapeButtonClicked()
@@ -527,19 +526,20 @@ void Fight::onEscapeButtonClicked()
         logMessage(tr("Втеча вдалася!"));
         currentEnemy->SetHP(currentEnemy->GetMaxHP());
         currentEnemy->SetMana(currentEnemy->GetMaxMana());
-        QMessageBox::information(this, tr("Втеча"), tr("Ви успішно втекли!"));
-        playerEscaped = true;
-        emit battleEnded(false);
-        this->close();
+        showInternalDialog(tr("Втеча"), tr("Ви успішно втекли!"), [this]() {
+            playerEscaped = true;
+            emit battleEnded(false);
+            this->close();
+        });
     } else {
         logMessage(tr("Втекти не вдалося! Хід втрачено."));
-        QMessageBox::warning(this, tr("Невдача"), tr("Втекти не вдалося!"));
+        showInternalDialog(tr("Невдача"), tr("Втекти не вдалося!"), [this]() {
+            isPlayerTurn = false;
+            m_turnLabel->setText(tr("ХІД ВОРОГА"));
+            m_turnLabel->setStyleSheet("color: #EF5350; font-size: 24px; font-weight: bold;");
 
-        isPlayerTurn = false;
-        m_turnLabel->setText(tr("ХІД ВОРОГА"));
-        m_turnLabel->setStyleSheet("color: #EF5350; font-size: 24px; font-weight: bold;");
-
-        QTimer::singleShot(GlobalConst::FightAI::AI_AFTER_PLAYER_DELAY_MS, this, &Fight::onAiTurnTimeout);
+            QTimer::singleShot(GlobalConst::FightAI::AI_AFTER_PLAYER_DELAY_MS, this, &Fight::onAiTurnTimeout);
+        });
     }
 }
 
@@ -551,4 +551,74 @@ bool Fight::didPlayerEscaped() const
 void Fight::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
+    if (m_currentOverlay) {
+        m_currentOverlay->setGeometry(rect());
+    }
+}
+
+void Fight::showInternalDialog(const QString& title, const QString& message, std::function<void()> onOk)
+{
+    if (m_currentOverlay) {
+        m_currentOverlay->deleteLater();
+    }
+
+    m_currentOverlay = new QWidget(this);
+    m_currentOverlay->setGeometry(rect());
+    m_currentOverlay->setStyleSheet("background-color: rgba(0, 0, 0, 180);");
+
+    QVBoxLayout* overlayLayout = new QVBoxLayout(m_currentOverlay);
+    overlayLayout->setAlignment(Qt::AlignCenter);
+
+    QFrame* dialogPanel = new QFrame(m_currentOverlay);
+    dialogPanel->setFixedSize(380, 220);
+    dialogPanel->setStyleSheet(
+        "QFrame {"
+        "   background-color: #3E2723;"
+        "   border: 3px solid #FFD54F;"
+        "   border-radius: 15px;"
+        "}"
+        "QLabel { background: transparent; color: #E0E0E0; font-size: 16px; border: none; }"
+        );
+
+    QVBoxLayout* dialogLayout = new QVBoxLayout(dialogPanel);
+    dialogLayout->setSpacing(15);
+    dialogLayout->setContentsMargins(20, 20, 20, 20);
+
+    QLabel* lblTitle = new QLabel(title, dialogPanel);
+    lblTitle->setAlignment(Qt::AlignCenter);
+    lblTitle->setStyleSheet("font-size: 22px; font-weight: bold; color: #FFD54F;");
+
+    QLabel* lblMsg = new QLabel(message, dialogPanel);
+    lblMsg->setAlignment(Qt::AlignCenter);
+    lblMsg->setWordWrap(true);
+
+    QPushButton* btnOk = new QPushButton("OK", dialogPanel);
+    btnOk->setCursor(Qt::PointingHandCursor);
+    btnOk->setFixedSize(100, 40);
+    btnOk->setStyleSheet(
+        "QPushButton {"
+        "   background-color: #5D4037; color: white; font-weight: bold;"
+        "   border: 2px solid #8D6E63; border-radius: 8px;"
+        "   font-size: 14px;"
+        "}"
+        "QPushButton:hover { background-color: #6D4C41; border-color: #FFD54F; }"
+        "QPushButton:pressed { background-color: #3E2723; }"
+        );
+
+    connect(btnOk, &QPushButton::clicked, [this, onOk]() {
+        if (m_currentOverlay) {
+            m_currentOverlay->deleteLater();
+            m_currentOverlay = nullptr;
+        }
+        if (onOk) {
+            onOk();
+        }
+    });
+
+    dialogLayout->addWidget(lblTitle);
+    dialogLayout->addWidget(lblMsg);
+    dialogLayout->addWidget(btnOk, 0, Qt::AlignCenter);
+
+    overlayLayout->addWidget(dialogPanel);
+    m_currentOverlay->show();
 }

@@ -23,6 +23,7 @@ private:
     bool isMoving;
     int currentPathIndex = 0;
     QPoint pendingTarget = QPoint(-999, -999);
+    QPoint lastPreCombatPos;
     std::vector<HexItem*> highlightedPath;
     std::vector<QPoint> currentPath;
     QTimer* movementTimer;
@@ -77,9 +78,15 @@ signals:
     void levelUpTriggered();
     void combatStarted();
     void combatEnded();
+    void combatRequested(Unit* enemy);
+    void campfireRequested(double oldHP, double newHP, double oldMana, double newMana, int charges, Unit* campfireUnit);
+    void npcInteractionRequested(Unit* npcUnit, const QString& text);
 
 public slots:
     void processStep();
+    void FinishCombat(bool playerWon, bool playerEscaped, Unit* enemy);
+    void FinishCampfireInteraction(Unit* campfireUnit);
+    void FinishNPCInteraction();
 };
 
 #endif // GAMESCENE_H

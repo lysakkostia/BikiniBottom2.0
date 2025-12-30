@@ -5,6 +5,9 @@
 #include <QStackedWidget>
 #include <QMediaPlayer>
 #include <QAudioOutput>
+#include <QPushButton>
+#include <QLabel>
+#include <QWidget>
 
 #include "SettingsWidget.h"
 #include "GameSelectionWidget.h"
@@ -14,13 +17,10 @@
 #include "HeroWidget.h"
 #include "LevelUpWidget.h"
 #include "SkillTreeWidget.h"
-
-QT_BEGIN_NAMESPACE
-namespace Ui {
-class HeroWidget;
-class MainWindow;
-}
-QT_END_NAMESPACE
+#include "Fight.h"
+#include "CampfireWidget.h"
+#include "NPCWidget.h"
+#include "TextureManager.h"
 
 class MainWindow : public QMainWindow
 {
@@ -57,12 +57,20 @@ private slots:
 
     void OnCombatStarted();
     void OnCombatEnded();
+    void OnCombatRequested(Unit* enemy);
+    void OnCampfireRequested(double oldHP, double newHP, double oldMana, double newMana, int charges, Unit* campfireUnit);
+    void OnNPCInteractionRequested(Unit* npcUnit, const QString& text);
 
 private:
-    Ui::MainWindow *ui;
+    QWidget *m_menuWidget;
+    QPushButton *btn_play;
+    QPushButton *btn_settings;
+    QPushButton *btn_exit;
+    QLabel *lbl_title;
+    QLabel *lbl_footer;
 
     QStackedWidget *m_stackedWidget;
-    QWidget *m_menuWidget;
+
     SettingsWidget *m_settingsWidget;
     GameSelectionWidget *m_gameSelectWidget;
 
@@ -73,6 +81,9 @@ private:
     QPushButton* m_treeBtn = nullptr;
     PauseWidget* m_pauseWidget = nullptr;
     LevelUpWidget* levelUpWidget = nullptr;
+    Fight* m_fightWidget = nullptr;
+    CampfireWidget* m_campfireWidget = nullptr;
+    NPCWidget* m_npcWidget = nullptr;
 
     QMediaPlayer *player;
     QAudioOutput *audioOutput;
@@ -81,5 +92,7 @@ private:
 
     void CleanupGame();
     void SetupPauseWidget();
+    void InitializeMenuUI();
+    void showEndGameDialog(const QString& title, const QString& message, bool isVictory);
 };
 #endif // MAINWINDOW_H

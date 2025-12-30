@@ -1,20 +1,24 @@
-#include "mainwindow.h"
-#include "./ui_mainwindow.h"
+#include "MainWindow.h"
 #include <QUrl>
 #include <QMessageBox>
 #include <QDebug>
+#include <QKeyEvent>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QFrame>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , m_menuWidget(nullptr)
     , m_settingsWidget(nullptr)
     , MapRadius(10)
     , heroWidget(nullptr)
 {
-    ui->setupUi(this);
-
     this->setFixedSize(1280, 720);
+    this->setMinimumSize(1280, 720);
+    this->setWindowTitle("HexRPG");
     this->setWindowIcon(QIcon("icon.png"));
+    this->setAutoFillBackground(false);
 
     this->setStyleSheet(
         "QMainWindow {"
@@ -27,8 +31,9 @@ MainWindow::MainWindow(QWidget *parent)
         );
 
     m_stackedWidget = new QStackedWidget(this);
+    this->setCentralWidget(m_stackedWidget);
 
-    m_menuWidget = takeCentralWidget();
+    InitializeMenuUI();
     m_stackedWidget->addWidget(m_menuWidget);
 
     m_settingsWidget = new SettingsWidget(this);
@@ -37,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_gameSelectWidget = new GameSelectionWidget(this);
     m_stackedWidget->addWidget(m_gameSelectWidget);
 
-    setCentralWidget(m_stackedWidget);
+    m_stackedWidget->setCurrentWidget(m_menuWidget);
 
     connect(m_settingsWidget, &SettingsWidget::MapRadChanged, this, &MainWindow::HandleMapRadiusChanged);
     connect(m_settingsWidget, &SettingsWidget::VolumeChanged, this, &MainWindow::HandleVolumeChanged);
@@ -46,6 +51,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_gameSelectWidget, &GameSelectionWidget::StartNewGameClicked, this, &MainWindow::StartNewGame);
     connect(m_gameSelectWidget, &GameSelectionWidget::LoadGameClicked, this, &MainWindow::LoadSavedGame);
     connect(m_gameSelectWidget, &GameSelectionWidget::BackClicked, this, &MainWindow::HandleBackToMenu);
+
+    connect(btn_play, &QPushButton::clicked, this, &MainWindow::on_btn_play_clicked);
+    connect(btn_settings, &QPushButton::clicked, this, &MainWindow::on_btn_settings_clicked);
+    connect(btn_exit, &QPushButton::clicked, this, &MainWindow::on_btn_exit_clicked);
 
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
@@ -63,13 +72,80 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     CleanupGame();
-
-    delete ui;
     delete player;
     delete audioOutput;
-    delete levelUpWidget;
 }
 
+void MainWindow::InitializeMenuUI()
+{
+    m_menuWidget = new QWidget(this);
+    m_menuWidget->setGeometry(0, 0, 1280, 720);
+
+    btn_play = new QPushButton(m_menuWidget);
+    btn_play->setObjectName("btn_play");
+    btn_play->setGeometry(535, 300, 210, 80);
+    QFont fontPlay;
+    fontPlay.setPointSize(10);
+    btn_play->setFont(fontPlay);
+    btn_play->setIconSize(QSize(410, 300));
+    btn_play->setStyleSheet(
+        "QPushButton {"
+        "    border-image: url(btn_play) 0 0 0 0 stretch stretch;"
+        "    background: transparent;"
+        "}"
+        );
+
+    btn_settings = new QPushButton(m_menuWidget);
+    btn_settings->setObjectName("btn_settings");
+    btn_settings->setGeometry(535, 400, 210, 90);
+    btn_settings->setIconSize(QSize(410, 310));
+    btn_settings->setStyleSheet(
+        "QPushButton {"
+        "    border-image: url(btn_options) 0 0 0 0 stretch stretch;"
+        "    background: transparent;"
+        "}"
+        );
+
+    btn_exit = new QPushButton(m_menuWidget);
+    btn_exit->setObjectName("btn_exit");
+    btn_exit->setGeometry(535, 500, 210, 90);
+    btn_exit->setStyleSheet(
+        "QPushButton {"
+        "    border-image: url(btn_exit) 0 0 0 0 stretch stretch;"
+        "    background: transparent;"
+        "}"
+        );
+
+    lbl_title = new QLabel(m_menuWidget);
+    lbl_title->setObjectName("label");
+    lbl_title->setGeometry(490, 20, 300, 300);
+    QFont fontTitle("Times New Roman", 14);
+    fontTitle.setBold(true);
+    lbl_title->setFont(fontTitle);
+    lbl_title->setAlignment(Qt::AlignCenter);
+    lbl_title->setStyleSheet(
+        "QLabel {"
+        "    border: none;"
+        "    border-image: url(icon) 0 0 0 0 stretch stretch;"
+        "    background: transparent;"
+        "}"
+        );
+
+    lbl_footer = new QLabel(m_menuWidget);
+    lbl_footer->setObjectName("label_2");
+    lbl_footer->setGeometry(-20, 670, 421, 71);
+    QFont fontFooter("Unispace", 17);
+    fontFooter.setBold(true);
+    lbl_footer->setFont(fontFooter);
+    lbl_footer->setText("Made by BikiniBottom Group");
+    lbl_footer->setAlignment(Qt::AlignCenter);
+
+    btn_settings->raise();
+    btn_exit->raise();
+    lbl_title->raise();
+    btn_play->raise();
+    lbl_footer->raise();
+}
 
 //радіус гри
 void MainWindow::HandleMapRadiusChanged(int NewRadius)
@@ -146,6 +222,17 @@ void MainWindow::StartNewGame()
         if (MGameScene) MGameScene->SetPaused(false);
     });
 
+    m_campfireWidget = new CampfireWidget(this);
+    m_campfireWidget->hide();
+
+    m_npcWidget = new NPCWidget(this);
+    m_npcWidget->hide();
+
+    connect(MGameScene, &GameScene::npcInteractionRequested, this, &MainWindow::OnNPCInteractionRequested);
+    connect(MGameScene, &GameScene::combatRequested, this, &MainWindow::OnCombatRequested);
+    connect(MGameScene, &GameScene::campfireRequested, this, &MainWindow::OnCampfireRequested);
+    connect(MGameScene, &GameScene::combatStarted, this, &MainWindow::OnCombatStarted);
+    connect(MGameScene, &GameScene::combatEnded, this, &MainWindow::OnCombatEnded);
     connect(MGameScene, &GameScene::combatStarted, this, &MainWindow::OnCombatStarted);
     connect(MGameScene, &GameScene::combatEnded, this, &MainWindow::OnCombatEnded);
     connect(MGameScene, &GameScene::gameOver, this, &MainWindow::HandleGameOver);
@@ -204,6 +291,15 @@ void MainWindow::LoadSavedGame()
         if (MGameScene) MGameScene->SetPaused(false);
     });
 
+    m_campfireWidget = new CampfireWidget(this);
+    m_campfireWidget->hide();
+
+    m_npcWidget = new NPCWidget(this);
+    m_npcWidget->hide();
+
+    connect(MGameScene, &GameScene::npcInteractionRequested, this, &MainWindow::OnNPCInteractionRequested);
+    connect(MGameScene, &GameScene::combatRequested, this, &MainWindow::OnCombatRequested);
+    connect(MGameScene, &GameScene::campfireRequested, this, &MainWindow::OnCampfireRequested);
     connect(MGameScene, &GameScene::combatStarted, this, &MainWindow::OnCombatStarted);
     connect(MGameScene, &GameScene::combatEnded, this, &MainWindow::OnCombatEnded);
     connect(MGameScene, &GameScene::gameOver, this, &MainWindow::HandleGameOver);
@@ -261,6 +357,18 @@ void MainWindow::CleanupGame()
         m_pauseWidget->deleteLater();
         m_pauseWidget = nullptr;
     }
+    if (m_fightWidget) {
+        m_fightWidget->deleteLater();
+        m_fightWidget = nullptr;
+    }
+    if (m_campfireWidget) {
+        m_campfireWidget->deleteLater();
+        m_campfireWidget = nullptr;
+    }
+    if (m_npcWidget) {
+        m_npcWidget->deleteLater();
+        m_npcWidget = nullptr;
+    }
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -305,17 +413,13 @@ void MainWindow::OnPauseExit()
 //подія програшу
 void MainWindow::HandleGameOver()
 {
-    QMessageBox::information(this, tr("Гру завершено"), tr("Ви програли!"));
-    CleanupGame();
-    m_stackedWidget->setCurrentWidget(m_menuWidget);
+    showEndGameDialog(tr("Гру завершено"), tr("На жаль, ваш герой загинув..."), false);
 }
 
 //подія перемоги
 void MainWindow::HandleVictory()
 {
-    QMessageBox::information(this, tr("Перемога!"), tr("Ви виграли гру!"));
-    CleanupGame();
-    m_stackedWidget->setCurrentWidget(m_menuWidget);
+    showEndGameDialog(tr("ПЕРЕМОГА!"), tr("Вітаємо! Ви успішно пройшли гру!"), true);
 }
 
 void MainWindow::HandleLevelUp()
@@ -372,4 +476,133 @@ void MainWindow::OnCombatEnded()
 {
     if (heroWidget) heroWidget->show();
     if (m_treeBtn) m_treeBtn->show();
+}
+
+void MainWindow::OnCombatRequested(Unit* enemy)
+{
+    QPixmap heroTex = TextureManager::GetInstance().getUnitTexture(UnitType::MainHero);
+    QPixmap enemyTex = TextureManager::GetInstance().getUnitTexture(enemy->GetType());
+
+    MainHero* hero = MGameScene->GetHero();
+
+    m_fightWidget = new Fight(heroTex, enemyTex, hero, enemy, this);
+    m_fightWidget->resize(this->size());
+    m_fightWidget->show();
+    m_fightWidget->setFocus();
+
+    connect(m_fightWidget, &Fight::battleEnded, [this, enemy](bool playerWon) {
+
+        bool escaped = m_fightWidget->didPlayerEscaped();
+
+        if (MGameScene) {
+            MGameScene->FinishCombat(playerWon, escaped, enemy);
+        }
+
+        m_fightWidget->deleteLater();
+        m_fightWidget = nullptr;
+    });
+}
+
+void MainWindow::OnCampfireRequested(double oldHP, double newHP, double oldMana, double newMana, int charges, Unit* campfireUnit)
+{
+    if (!m_campfireWidget) return;
+
+    m_campfireWidget->ShowRestDetails(oldHP, newHP, oldMana, newMana, charges);
+    m_campfireWidget->raise();
+
+    m_campfireWidget->disconnect(SIGNAL(finished()));
+
+    connect(m_campfireWidget, &CampfireWidget::finished, [this, campfireUnit]() {
+        if (MGameScene) {
+            MGameScene->FinishCampfireInteraction(campfireUnit);
+        }
+    });
+}
+
+void MainWindow::OnNPCInteractionRequested(Unit* npcUnit, const QString& text)
+{
+    if (!m_npcWidget) return;
+
+    QString name = "Friendly Villager";
+
+    m_npcWidget->ShowDialogue(name, text);
+
+    m_npcWidget->disconnect(SIGNAL(finished()));
+
+    connect(m_npcWidget, &NPCWidget::finished, [this]() {
+        if (MGameScene) {
+            MGameScene->FinishNPCInteraction();
+        }
+    });
+}
+
+void MainWindow::showEndGameDialog(const QString& title, const QString& message, bool isVictory)
+{
+    if (MGameScene) {
+        MGameScene->SetPaused(true);
+    }
+
+    QWidget* overlay = new QWidget(this);
+    overlay->setGeometry(rect());
+    overlay->setStyleSheet("background-color: rgba(0, 0, 0, 200);");
+    overlay->setAttribute(Qt::WA_DeleteOnClose);
+
+    QVBoxLayout* layout = new QVBoxLayout(overlay);
+    layout->setAlignment(Qt::AlignCenter);
+
+    QFrame* dialogFrame = new QFrame(overlay);
+    dialogFrame->setFixedSize(400, 250);
+
+    QString borderColor = isVictory ? "#FFD54F" : "#EF5350";
+
+    dialogFrame->setStyleSheet(QString(
+                                   "QFrame {"
+                                   "   background-color: #3E2723;"
+                                   "   border: 4px solid %1;"
+                                   "   border-radius: 15px;"
+                                   "}"
+                                   ).arg(borderColor));
+
+    QVBoxLayout* frameLayout = new QVBoxLayout(dialogFrame);
+    frameLayout->setSpacing(20);
+    frameLayout->setContentsMargins(30, 30, 30, 30);
+
+    QLabel* lblTitle = new QLabel(title, dialogFrame);
+    lblTitle->setAlignment(Qt::AlignCenter);
+    lblTitle->setStyleSheet(QString("font-size: 28px; font-weight: bold; color: %1; border: none; background: transparent;").arg(borderColor));
+
+    QLabel* lblMsg = new QLabel(message, dialogFrame);
+    lblMsg->setAlignment(Qt::AlignCenter);
+    lblMsg->setWordWrap(true);
+    lblMsg->setStyleSheet("font-size: 16px; color: #E0E0E0; border: none; background: transparent;");
+
+    QPushButton* btnMenu = new QPushButton(tr("У ГОЛОВНЕ МЕНЮ"), dialogFrame);
+    btnMenu->setCursor(Qt::PointingHandCursor);
+    btnMenu->setFixedSize(200, 50);
+    btnMenu->setStyleSheet(
+        "QPushButton {"
+        "   background-color: #5D4037;"
+        "   color: white;"
+        "   font-weight: bold;"
+        "   border: 2px solid #8D6E63;"
+        "   border-radius: 10px;"
+        "   font-size: 14px;"
+        "}"
+        "QPushButton:hover { background-color: #6D4C41; border-color: #FFD54F; }"
+        "QPushButton:pressed { background-color: #3E2723; }"
+        );
+
+    connect(btnMenu, &QPushButton::clicked, [this, overlay]() {
+        overlay->close();
+        CleanupGame();
+        m_stackedWidget->setCurrentWidget(m_menuWidget);
+    });
+
+    frameLayout->addWidget(lblTitle);
+    frameLayout->addWidget(lblMsg);
+    frameLayout->addWidget(btnMenu, 0, Qt::AlignCenter);
+
+    layout->addWidget(dialogFrame);
+    overlay->show();
+    overlay->raise();
 }
