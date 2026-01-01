@@ -18,11 +18,11 @@ namespace Const_METypes = GlobalConst::MapGeneration::EnemyTypes;
 namespace GarantUnit = GlobalConst::MapGeneration::GarantUnitProbs;
 namespace Noise = GlobalConst::NoiseSettings;
 
-int HexMap::GetRadius() const { return Radius; }
-const std::vector<std::vector<Hex>>& HexMap::GetMap() const { return MapGrid; }
+int HexMap::getRadius() const { return radiusInner; }
+const std::vector<std::vector<Hex>>& HexMap::getMap() const { return mapGrid; }
 
 
-HexMap::HexMap(int radius) : Radius(radius), EnemyCounter(0)
+HexMap::HexMap(int radius) : radiusInner(radius), enemyCounter(0)
 {
     mapSeed = static_cast<unsigned int>(QDateTime::currentMSecsSinceEpoch());
 
@@ -35,22 +35,22 @@ HexMap::HexMap(int radius) : Radius(radius), EnemyCounter(0)
         {
             Column.emplace_back(q,r);
         }
-        MapGrid.push_back(Column);
+        mapGrid.push_back(Column);
     }
-    GenerateUnits();
+    generateUnits();
 
     QPoint S = {0, 0};
-    UpdateVisibility(S);
+    updateVisibility(S);
 }
 
-void HexMap::PlaceGuaranteedCampfire()
+void HexMap::placeGuaranteedCampfire()
 {
     std::vector<QPoint> Neighbors = {{1,0}, {1,-1}, {0,-1}, {-1,0}, {-1,1}, {0,1}};
     std::vector<QPoint> ValidPositions;
 
     for(const auto& offset : Neighbors)
     {
-        if(ContainsHex(offset.x(), offset.y()))
+        if(containsHex(offset.x(), offset.y()))
         {
             ValidPositions.push_back(offset);
         }
@@ -58,26 +58,26 @@ void HexMap::PlaceGuaranteedCampfire()
 
     if(!ValidPositions.empty())
     {
-        int idx = RandGenerator::RandIntInInterval(0, ValidPositions.size() - 1);
+        int idx = RandGenerator::randIntInInterval(0, ValidPositions.size() - 1);
         QPoint pos = ValidPositions[idx];
 
-        Hex& hex = GetChangeableQPointLoc(pos);
-        Unit* campfire = UnitFabric_.Create(UnitType::CampfireUnit, 1, pos);
+        Hex& hex = getChangeableQPointLoc(pos);
+        Unit* campfire = unitFabric.create(UnitType::CampfireUnit, 1, pos);
         if(campfire)
         {
-            hex.SetUnit(campfire);
+            hex.setUnit(campfire);
         }
     }
 }
 
-int HexMap::CalculateUnitLevel(int q, int r, bool isDangerZone) const
+int HexMap::calculateUnitLevel(int q, int r, bool isDangerZone) const
 {
-    int dist = GetHexDistance(q, r);
-    double distRatio = static_cast<double>(dist) / Radius;
+    int dist = getHexDistance(q, r);
+    double distRatio = static_cast<double>(dist) / radiusInner;
 
     double baseLevel = Const_MZones::DISTANCE_BASE + (distRatio * Const_MZones::DISTANCE_MULT);
 
-    int variance = RandGenerator::RandIntInInterval(Const_MZones::RAND_NEG_BONUS, Const_MZones::RAND_POS_BONUS);
+    int variance = RandGenerator::randIntInInterval(Const_MZones::RAND_NEG_BONUS, Const_MZones::RAND_POS_BONUS);
 
     int dangerBonus = isDangerZone ? Const_MZones::DANGER_BONUS : Const_MZones::NO_DANGER_BONUS;
 
@@ -88,47 +88,47 @@ int HexMap::CalculateUnitLevel(int q, int r, bool isDangerZone) const
     return finalLevel;
 }
 
-UnitType HexMap::ChooseRandomEnemyType() const
+UnitType HexMap::chooseRandomEnemyType() const
 {
-    double roll = RandGenerator::RandDoubleInInterval(0.0, 1.0);
+    double roll = RandGenerator::randDoubleInInterval(0.0, 1.0);
     if (roll < Const_METypes::CHANCE_BARBARIAN) return UnitType::Barbarian;
     if (roll < Const_METypes::CHANCE_WARRIOR) return UnitType::Warrior;
     return UnitType::Wizard;
 }
 
-void HexMap::SpawnEnemyInHex(Hex& hex, bool isDangerZone)
+void HexMap::spawnEnemyInHex(Hex& hex, bool isDangerZone)
 {
     QPoint currPos(hex.q, hex.r);
-    int level = CalculateUnitLevel(hex.q, hex.r, isDangerZone);
+    int level = calculateUnitLevel(hex.q, hex.r, isDangerZone);
 
-    UnitType type = ChooseRandomEnemyType();
+    UnitType type = chooseRandomEnemyType();
 
-    Unit* newUnit = UnitFabric_.Create(type, level, currPos);
+    Unit* newUnit = unitFabric.create(type, level, currPos);
     if (newUnit)
     {
-        hex.SetUnit(newUnit);
-        if (newUnit->IsEnemy())
+        hex.setUnit(newUnit);
+        if (newUnit->isEnemy())
         {
-            EnemyCounter++;
+            enemyCounter++;
         }
     }
 }
 
-void HexMap::GenerateUnits()
+void HexMap::generateUnits()
 {
     PerlinNoise terrainNoise(mapSeed);
     PerlinNoise dangerNoise(mapSeed + Noise::DANGER_NOISE_OFFSET);
 
-    PlaceGuaranteedCampfire();
+    placeGuaranteedCampfire();
 
     std::vector<Hex*> emptyHexes;
 
-    for(auto& Col : MapGrid)
+    for(auto& Col : mapGrid)
     {
         for(Hex& Hex_ : Col)
         {
             if(Hex_.q == 0 && Hex_.r == 0) continue;
-            if(Hex_.HaveUnit()) continue;
+            if(Hex_.haveUnit()) continue;
 
             double terrainVal = terrainNoise.octaveNoise(Hex_.q * Noise::SCALE_TERRAIN,
                                                          Hex_.r * Noise::SCALE_TERRAIN,
@@ -136,8 +136,8 @@ void HexMap::GenerateUnits()
                                                          Noise::TERRAIN_NOISE_PERSISTENCE);
 
             if (terrainVal > Noise::THRESHOLD_MOUNTAIN) {
-                Unit* mtn = UnitFabric_.Create(UnitType::StructUnBreak, 1, QPoint(Hex_.q, Hex_.r));
-                if(mtn) Hex_.SetUnit(mtn);
+                Unit* mtn = unitFabric.create(UnitType::StructUnBreak, 1, QPoint(Hex_.q, Hex_.r));
+                if(mtn) Hex_.setUnit(mtn);
                 continue;
             }
 
@@ -149,8 +149,8 @@ void HexMap::GenerateUnits()
             double currentEnemyChance = isDangerZone ? Noise::CHANCE_ENEMY_IN_ZONE
                                                      : Noise::CHANCE_ENEMY_ROAMING;
 
-            if (RandGenerator::RandDoubleInInterval(0.0, 1.0) < currentEnemyChance) {
-                SpawnEnemyInHex(Hex_, isDangerZone);
+            if (RandGenerator::randDoubleInInterval(0.0, 1.0) < currentEnemyChance) {
+                spawnEnemyInHex(Hex_, isDangerZone);
                 continue;
             }
 
@@ -169,14 +169,14 @@ void HexMap::GenerateUnits()
 
     for (int i = 0; i < friendsCount && currentIndex < totalEmpty; ++i) {
         Hex* h = emptyHexes[currentIndex++];
-        Unit* u = UnitFabric_.Create(UnitType::Friend, 1, QPoint(h->q, h->r));
-        if (u) h->SetUnit(u);
+        Unit* u = unitFabric.create(UnitType::Friend, 1, QPoint(h->q, h->r));
+        if (u) h->setUnit(u);
     }
 
     for (int i = 0; i < chestsCount && currentIndex < totalEmpty; ++i) {
         Hex* h = emptyHexes[currentIndex++];
-        Unit* u = UnitFabric_.Create(UnitType::StructBreak, 1, QPoint(h->q, h->r));
-        if (u) h->SetUnit(u);
+        Unit* u = unitFabric.create(UnitType::StructBreak, 1, QPoint(h->q, h->r));
+        if (u) h->setUnit(u);
     }
 
     std::vector<QPoint> existingCampfires;
@@ -186,32 +186,32 @@ void HexMap::GenerateUnits()
 
         bool tooClose = false;
         for (const auto& pos : existingCampfires) {
-            if (GetHexDistance(h->q - pos.x(), h->r - pos.y()) < 4) {
+            if (getHexDistance(h->q - pos.x(), h->r - pos.y()) < 4) {
                 tooClose = true;
                 break;
             }
         }
 
         if (!tooClose) {
-            Unit* u = UnitFabric_.Create(UnitType::CampfireUnit, 1, QPoint(h->q, h->r));
+            Unit* u = unitFabric.create(UnitType::CampfireUnit, 1, QPoint(h->q, h->r));
             if (u) {
-                h->SetUnit(u);
+                h->setUnit(u);
                 existingCampfires.push_back(QPoint(h->q, h->r));
             }
         }
     }
 }
 
-Hex& HexMap::GetChangeableLocation(int q, int r)
+Hex& HexMap::getChangeableLocation(int q, int r)
 {
-    int qi = q + Radius;
-    if(qi < 0 || qi >= MapGrid.size())
+    int qi = q + radiusInner;
+    if(qi < 0 || qi >= mapGrid.size())
     {
         throw std::out_of_range("Coordinate q out of range");
     }
 
-    auto& Col = MapGrid[qi];
-    int r1 = std::max(-Radius, -q - Radius);
+    auto& Col = mapGrid[qi];
+    int r1 = std::max(-radiusInner, -q - radiusInner);
 
     int index = r - r1;
 
@@ -226,21 +226,21 @@ Hex& HexMap::GetChangeableLocation(int q, int r)
     return Col[index];
 }
 
-Hex& HexMap::GetChangeableQPointLoc(const QPoint& OHex)
+Hex& HexMap::getChangeableQPointLoc(const QPoint& OHex)
 {
-    return GetChangeableLocation(OHex.x(), OHex.y());
+    return getChangeableLocation(OHex.x(), OHex.y());
 }
 
-const Hex& HexMap::GetLocation(int q, int r) const
+const Hex& HexMap::getLocation(int q, int r) const
 {
-    int qi = q + Radius;
-    if(qi < 0 || qi >= MapGrid.size())
+    int qi = q + radiusInner;
+    if(qi < 0 || qi >= mapGrid.size())
     {
         throw std::out_of_range("Coordinate q out of range");
     }
 
-    const auto& Col = MapGrid[qi];
-    int r1 = std::max(-Radius, -q - Radius);
+    const auto& Col = mapGrid[qi];
+    int r1 = std::max(-radiusInner, -q - radiusInner);
 
     int index = r - r1;
 
@@ -255,38 +255,38 @@ const Hex& HexMap::GetLocation(int q, int r) const
     return Col[index];
 }
 
-const Hex& HexMap::GetQPointLoc(const QPoint& OHex) const
+const Hex& HexMap::getQPointLoc(const QPoint& OHex) const
 {
-    return GetLocation(OHex.x(), OHex.y());
+    return getLocation(OHex.x(), OHex.y());
 }
 
-bool HexMap::ContainsHex(int q, int r) const
+bool HexMap::containsHex(int q, int r) const
 {
-    int qi = q + Radius;
-    if(qi < 0 || qi >= MapGrid.size())
+    int qi = q + radiusInner;
+    if(qi < 0 || qi >= mapGrid.size())
         return false;
 
-    int r1 = std::max(-Radius, -q - Radius);
-    int r2 = std::min(Radius, -q + Radius);
+    int r1 = std::max(-radiusInner, -q - radiusInner);
+    int r2 = std::min(radiusInner, -q + radiusInner);
 
     return (r >= r1 && r <= r2);
 }
 
-void HexMap::UpdateVisibility(const QPoint& HeroPos)
+void HexMap::updateVisibility(const QPoint& HeroPos)
 {
     if(!visibleNow.empty())
     {
         for(auto& Hex_ : visibleNow)
         {
-            Hex_->IsVisible = false;
+            Hex_->isVisible = false;
         }
     }
     visibleNow.clear();
     visibleNow.reserve(7);
 
-    Hex& CenterHex = GetChangeableQPointLoc(HeroPos);
-    CenterHex.IsVisible = true;
-    CenterHex.IsExplored = true;
+    Hex& CenterHex = getChangeableQPointLoc(HeroPos);
+    CenterHex.isVisible = true;
+    CenterHex.isExplored = true;
     visibleNow.emplace_back(&CenterHex);
 
     static const std::vector<QPoint> NeighborOffsets = {
@@ -298,37 +298,37 @@ void HexMap::UpdateVisibility(const QPoint& HeroPos)
         int nq = HeroPos.x() + offset.x();
         int nr = HeroPos.y() + offset.y();
 
-        if (ContainsHex(nq, nr))
+        if (containsHex(nq, nr))
         {
-            Hex& neighbor = GetChangeableLocation(nq, nr);
-            neighbor.IsVisible = true;
-            neighbor.IsExplored = true;
+            Hex& neighbor = getChangeableLocation(nq, nr);
+            neighbor.isVisible = true;
+            neighbor.isExplored = true;
             visibleNow.emplace_back(&neighbor);
         }
     }
 }
 
-void HexMap::SaveToFile(const QString& filePath, const MainHero& hero) const
+void HexMap::saveToFile(const QString& filePath, const MainHero& hero) const
 {
     QJsonObject root;
 
-    root["radius"] = Radius;
-    root["enemyCount"] = EnemyCounter;
+    root["radius"] = radiusInner;
+    root["enemyCount"] = enemyCounter;
     root["mapSeed"] = static_cast<qint64>(mapSeed);
 
-    root["hero"] = hero.ToJson();
+    root["hero"] = hero.toJson();
 
     QJsonArray hexArray;
-    for (const auto& Col : MapGrid) {
+    for (const auto& Col : mapGrid) {
         for (const Hex& Hex_ : Col) {
             QJsonObject hexObj;
             hexObj["q"] = Hex_.q;
             hexObj["r"] = Hex_.r;
-            hexObj["vis"] = Hex_.IsVisible;
-            hexObj["exp"] = Hex_.IsExplored;
+            hexObj["vis"] = Hex_.isVisible;
+            hexObj["exp"] = Hex_.isExplored;
 
-            if (Hex_.HaveUnit()) {
-                hexObj["unit"] = Hex_.GetUnit()->ToJson();
+            if (Hex_.haveUnit()) {
+                hexObj["unit"] = Hex_.getUnit()->toJson();
             }
             hexArray.append(hexObj);
         }
@@ -345,7 +345,7 @@ void HexMap::SaveToFile(const QString& filePath, const MainHero& hero) const
         qDebug() << "Failed to save game:" << filePath;
     }
 }
-bool HexMap::LoadFromFile(const QString& filePath, MainHero& hero)
+bool HexMap::loadFromFile(const QString& filePath, MainHero& hero)
 {
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -361,26 +361,26 @@ bool HexMap::LoadFromFile(const QString& filePath, MainHero& hero)
 
     QJsonObject root = doc.object();
 
-    Clear();
+    clear();
 
-    this->Radius = root["radius"].toInt();
-    this->EnemyCounter = root["enemyCount"].toInt();
+    this->radiusInner = root["radius"].toInt();
+    this->enemyCounter = root["enemyCount"].toInt();
     if (root.contains("mapSeed")) {
         this->mapSeed = static_cast<unsigned int>(root["mapSeed"].toVariant().toLongLong());
     }
 
-    for(int q = -Radius; q <= Radius; q++) {
-        int r1 = std::max(-Radius, -q - Radius);
-        int r2 = std::min(Radius, -q + Radius);
+    for(int q = -radiusInner; q <= radiusInner; q++) {
+        int r1 = std::max(-radiusInner, -q - radiusInner);
+        int r2 = std::min(radiusInner, -q + radiusInner);
         std::vector<Hex> Column;
         for(int r = r1; r <= r2; r++) {
             Column.emplace_back(q, r);
         }
-        MapGrid.push_back(std::move(Column));
+        mapGrid.push_back(std::move(Column));
     }
 
     if (root.contains("hero")) {
-        hero.FromJson(root["hero"].toObject());
+        hero.fromJson(root["hero"].toObject());
     }
 
     QJsonArray hexArray = root["map"].toArray();
@@ -389,11 +389,11 @@ bool HexMap::LoadFromFile(const QString& filePath, MainHero& hero)
         int q = hexObj["q"].toInt();
         int r = hexObj["r"].toInt();
 
-        if (!ContainsHex(q, r)) continue;
+        if (!containsHex(q, r)) continue;
 
-        Hex& hex = GetChangeableLocation(q, r);
-        hex.IsVisible = hexObj["vis"].toBool();
-        hex.IsExplored = hexObj["exp"].toBool();
+        Hex& hex = getChangeableLocation(q, r);
+        hex.isVisible = hexObj["vis"].toBool();
+        hex.isExplored = hexObj["exp"].toBool();
 
         if (hexObj.contains("unit")) {
             QJsonObject unitObj = hexObj["unit"].toObject();
@@ -402,48 +402,48 @@ bool HexMap::LoadFromFile(const QString& filePath, MainHero& hero)
             UnitType type = static_cast<UnitType>(typeInt);
             double level = unitObj["level"].toDouble();
 
-            Unit* newUnit = UnitFabric_.Create(type, level, QPoint(q, r));
+            Unit* newUnit = unitFabric.create(type, level, QPoint(q, r));
 
             if (newUnit) {
-                newUnit->FromJson(unitObj);
-                hex.SetUnit(newUnit);
+                newUnit->fromJson(unitObj);
+                hex.setUnit(newUnit);
             }
         }
     }
 
-    UpdateVisibility(hero.GetPosition());
+    updateVisibility(hero.getPosition());
     qDebug() << "Game loaded from JSON successfully.";
     return true;
 }
 
-void HexMap::Clear()
+void HexMap::clear()
 {
     visibleNow.clear();
-    for(auto& Col : MapGrid)
+    for(auto& Col : mapGrid)
     {
         for(Hex& Hex_ : Col)
         {
-            Hex_.ClearUnit();
+            Hex_.clearUnit();
         }
     }
-    MapGrid.clear();
-    UnitFabric_.ClearAll();
-    EnemyCounter = 0;
+    mapGrid.clear();
+    unitFabric.clearAll();
+    enemyCounter = 0;
 }
 
-void HexMap:: ClearUnitAt(const QPoint& position)
+void HexMap:: clearUnitAt(const QPoint& position)
 {
-    if (ContainsHex(position.x(), position.y()))
+    if (containsHex(position.x(), position.y()))
     {
-        Hex& h = GetChangeableQPointLoc(position);
-        if (h.HaveUnit())
+        Hex& h = getChangeableQPointLoc(position);
+        if (h.haveUnit())
         {
-            Unit* u = h.GetUnit();
-            if (u->IsEnemy())
+            Unit* u = h.getUnit();
+            if (u->isEnemy())
             {
-                DecrementEnemyCount();
+                decrementEnemyCount();
             }
-            h.ClearUnit();
+            h.clearUnit();
         }
     }
     else
@@ -452,24 +452,24 @@ void HexMap:: ClearUnitAt(const QPoint& position)
     }
 }
 
-int HexMap::GetHexDistance(int q, int r) const
+int HexMap::getHexDistance(int q, int r) const
 {
     return (std::abs(q)+std::abs(r)+std::abs(q+r)) / 2;
 }
 
 
-int HexMap::GetEnemyCount() const
+int HexMap::getEnemyCount() const
 {
-    return EnemyCounter;
+    return enemyCounter;
 }
 
-void HexMap::DecrementEnemyCount()
+void HexMap::decrementEnemyCount()
 {
-    if (EnemyCounter > 0)
+    if (enemyCounter > 0)
     {
-        EnemyCounter--;
+        enemyCounter--;
     }
-    qDebug() << "EnemyCounter decremented. Current count: " << EnemyCounter;
+    qDebug() << "enemyCounter decremented. Current count: " << enemyCounter;
 }
 
 struct PathNode {
@@ -490,18 +490,18 @@ struct CompareNode {
     }
 };
 
-std::vector<QPoint> HexMap::FindPath(QPoint start, QPoint target)
+std::vector<QPoint> HexMap::findPath(QPoint start, QPoint target)
 {
-    if (!ContainsHex(target.x(), target.y())) return {};
+    if (!containsHex(target.x(), target.y())) return {};
     if (start == target) return {};
 
-    const Hex& targetHex = GetQPointLoc(target);
+    const Hex& targetHex = getQPointLoc(target);
 
-    if (!targetHex.IsExplored) return {};
+    if (!targetHex.isExplored) return {};
 
-    if (targetHex.HaveUnit()) {
-        Unit* u = targetHex.GetUnit();
-        if (u->IsStructure() || u->IsEnemy()) {
+    if (targetHex.haveUnit()) {
+        Unit* u = targetHex.getUnit();
+        if (u->isStructure() || u->isEnemy()) {
             return {};
         }
     }
@@ -511,7 +511,7 @@ std::vector<QPoint> HexMap::FindPath(QPoint start, QPoint target)
     QHash<QPoint, PathNode*> allNodes;
     std::vector<QPoint> path;
 
-    PathNode* startNode = new PathNode(start, 0, GetHexDistance(start.x() - target.x(), start.y() - target.y()));
+    PathNode* startNode = new PathNode(start, 0, getHexDistance(start.x() - target.x(), start.y() - target.y()));
     openList.push(startNode);
     allNodes.insert(start, startNode);
 
@@ -533,16 +533,16 @@ std::vector<QPoint> HexMap::FindPath(QPoint start, QPoint target)
         for (const auto& offset : NeighborOffsets) {
             QPoint nextPos = current->pos + offset;
 
-            if (!ContainsHex(nextPos.x(), nextPos.y())) continue;
+            if (!containsHex(nextPos.x(), nextPos.y())) continue;
 
-            const Hex& neighborHex = GetQPointLoc(nextPos);
+            const Hex& neighborHex = getQPointLoc(nextPos);
 
-            if (!neighborHex.IsExplored) continue;
+            if (!neighborHex.isExplored) continue;
 
             bool isWalkable = true;
-            if (neighborHex.HaveUnit()) {
-                Unit* u = neighborHex.GetUnit();
-                if (u->IsStructure() || u->IsEnemy()) {
+            if (neighborHex.haveUnit()) {
+                Unit* u = neighborHex.getUnit();
+                if (u->isStructure() || u->isEnemy()) {
                     isWalkable = false;
                 }
             }
@@ -553,7 +553,7 @@ std::vector<QPoint> HexMap::FindPath(QPoint start, QPoint target)
             int newG = current->g + 1;
 
             if (!allNodes.contains(nextPos)) {
-                int newH = GetHexDistance(nextPos.x() - target.x(), nextPos.y() - target.y());
+                int newH = getHexDistance(nextPos.x() - target.x(), nextPos.y() - target.y());
                 PathNode* neighbor = new PathNode(nextPos, newG, newH, current);
                 allNodes.insert(nextPos, neighbor);
                 openList.push(neighbor);

@@ -6,10 +6,10 @@ UnitFabric::UnitFabric() {}
 
 UnitFabric::~UnitFabric()
 {
-    Units.clear();
+    units.clear();
 }
 
-Unit* UnitFabric::Create(UnitType type, double level, QPoint pos)
+Unit* UnitFabric::create(UnitType type, double level, QPoint pos)
 {
     std::unique_ptr<Unit> newUnit = nullptr;
 
@@ -19,10 +19,10 @@ Unit* UnitFabric::Create(UnitType type, double level, QPoint pos)
         newUnit = std::make_unique<MainHero>(pos);
         if(level > 1)
         {
-            newUnit->SetLevel(level);
-            newUnit->RecalculateStats();
-            newUnit->SetHP(newUnit->GetMaxHP());
-            newUnit->SetMana(newUnit->GetMaxMana());
+            newUnit->setLevel(level);
+            newUnit->recalculateStats();
+            newUnit->setHP(newUnit->getMaxHP());
+            newUnit->setMana(newUnit->getMaxMana());
         }
         break;
 
@@ -63,35 +63,35 @@ Unit* UnitFabric::Create(UnitType type, double level, QPoint pos)
         return nullptr;
     }
 
-    newUnit->SetPosition(pos);
-    Units.push_back(std::move(newUnit));
-    return Units.back().get();
+    newUnit->setPosition(pos);
+    units.push_back(std::move(newUnit));
+    return units.back().get();
 }
 
-Unit *UnitFabric::Get(int pos)
+Unit *UnitFabric::get(int pos)
 {
-    if (pos < 0 || pos >= Units.size()) {
+    if (pos < 0 || pos >= units.size()) {
         std::cerr << "Out of bounds: " << pos << std::endl;
         return NULL;
     }
-    return Units[pos].get();
+    return units[pos].get();
 }
 
-void UnitFabric::Remove(int pos)
+void UnitFabric::remove(int pos)
 {
-    if (pos < 0 || pos >= Units.size()) {
+    if (pos < 0 || pos >= units.size()) {
         std::cerr << "Out of bounds: " << pos << std::endl;
         return;
     }
-    Units.erase(Units.begin() + pos);
+    units.erase(units.begin() + pos);
 }
 
-void UnitFabric::ClearAll()
+void UnitFabric::clearAll()
 {
-    Units.clear();
+    units.clear();
 }
 
-int UnitFabric::HowMany()
+int UnitFabric::howMany()
 {
-    return Units.size();
+    return units.size();
 }

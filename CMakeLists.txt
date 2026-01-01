@@ -41,7 +41,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         Fight.h Fight.cpp
         GameSelectionWidget.h GameSelectionWidget.cpp
         RandomGenerator.h
-        RandomGenerator.cpp
+
         HeroWidget.h HeroWidget.cpp
         GameConstants.h
         HexItem.h HexItem.cpp

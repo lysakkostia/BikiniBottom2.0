@@ -34,65 +34,64 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
 
 private slots:
-    void on_btn_play_clicked();
-    void on_btn_settings_clicked();
-    void on_btn_exit_clicked();
-    void on_btn_pause_clicked();
+    void onBtnPlayClicked();
+    void onBtnSettingsClicked();
+    void onBtnExitClicked();
+    void onBtnPauseClicked();
 
-    void HandleBackToMenu();
+    void handleBackToMenu();
 
-    void StartNewGame();
-    void LoadSavedGame();
-    void HandleGameOver();
-    void HandleVictory();
+    void startNewGame();
+    void loadSavedGame();
+    void handleGameOver();
+    void handleVictory();
 
-    void HandleMapRadiusChanged(int NewRadius);
-    void HandleVolumeChanged(int volume);
+    void handleMapRadiusChanged(int NewRadius);
+    void handleVolumeChanged(int volume);
 
-    void HandleLevelUp();
-    void OnLevelUpOptionSelected(int index);
+    void handleLevelUp();
+    void onLevelUpOptionSelected(int index);
 
-    void OnPauseContinue();
-    void OnPauseExit();
+    void onPauseContinue();
+    void onPauseExit();
 
-    void OnCombatStarted();
-    void OnCombatEnded();
-    void OnCombatRequested(Unit* enemy);
-    void OnCampfireRequested(double oldHP, double newHP, double oldMana, double newMana, int charges, Unit* campfireUnit);
-    void OnNPCInteractionRequested(Unit* npcUnit, const QString& text);
+    void onCombatStarted();
+    void onCombatEnded();
+    void onCombatRequested(Unit* enemy);
+    void onCampfireRequested(double oldHP, double newHP, double oldMana, double newMana, int charges, Unit* campfireUnit);
+    void onNPCInteractionRequested(Unit* npcUnit, const QString& text);
 
 private:
-    QWidget *m_menuWidget;
-    QPushButton *btn_play;
-    QPushButton *btn_settings;
-    QPushButton *btn_exit;
-    QLabel *lbl_title;
-    QLabel *lbl_footer;
+    QWidget* menuWidget = nullptr;
+    QPushButton* btnPlay = nullptr;
+    QPushButton* btnSettings = nullptr;
+    QPushButton* btnExit = nullptr;
+    QPushButton* btnTree = nullptr;
+    QLabel* lblTitle = nullptr;
+    QLabel* lblFooter = nullptr;
 
-    QStackedWidget *m_stackedWidget;
+    QStackedWidget* stackedWidget = nullptr;
 
-    SettingsWidget *m_settingsWidget;
-    GameSelectionWidget *m_gameSelectWidget;
-
-    GameView* MapView = nullptr;
-    GameScene* MGameScene = nullptr;
+    SettingsWidget* settingsWidget = nullptr;
+    GameSelectionWidget* gameSelectWidget = nullptr;
+    GameView* mapView = nullptr;
+    GameScene* gameScene = nullptr;
     HeroWidget* heroWidget = nullptr;
     SkillTreeWidget* skillTreeWidget = nullptr;
-    QPushButton* m_treeBtn = nullptr;
-    PauseWidget* m_pauseWidget = nullptr;
+    PauseWidget* pauseWidget = nullptr;
     LevelUpWidget* levelUpWidget = nullptr;
-    Fight* m_fightWidget = nullptr;
-    CampfireWidget* m_campfireWidget = nullptr;
-    NPCWidget* m_npcWidget = nullptr;
+    Fight* fightWidget = nullptr;
+    CampfireWidget* campfireWidget = nullptr;
+    NPCWidget* npcWidget = nullptr;
 
-    QMediaPlayer *player;
-    QAudioOutput *audioOutput;
+    QMediaPlayer* mediaPlayer;
+    QAudioOutput* audioOutput;
 
-    int MapRadius = 10;
+    int mapRadius = 10;
 
-    void CleanupGame();
-    void SetupPauseWidget();
-    void InitializeMenuUI();
+    void cleanupGame();
+    void setupPauseWidget();
+    void initializeMenuUI();
     void showEndGameDialog(const QString& title, const QString& message, bool isVictory);
 };
 #endif // MAINWINDOW_H

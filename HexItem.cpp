@@ -6,19 +6,19 @@
 #include <QStyle>
 
 HexItem::HexItem(Hex* modelHex, GameScene* scene, QGraphicsItem* parent)
-    : QGraphicsPolygonItem(parent), MHex(modelHex), MScene(scene)
+    : QGraphicsPolygonItem(parent), hexInner(modelHex), sceneInner(scene)
 {
     createPolygon();
     setAcceptHoverEvents(true);
-    QPointF center = MHex->GetCenter();
+    QPointF center = hexInner->getCenter();
     setPos(center);
 }
 
 void HexItem::createPolygon()
 {
     QPolygonF polygon;
-    for (const auto& corner : MHex->GetCorners()) {
-        polygon << (corner - MHex->GetCenter());
+    for (const auto& corner : hexInner->getCorners()) {
+        polygon << (corner - hexInner->getCenter());
     }
     setPolygon(polygon);
 }
@@ -28,7 +28,7 @@ void HexItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
-    QPixmap bgTexture = TextureManager::GetInstance().getTerrainTexture(MHex->VisibilityState(), MHex->ExplorationState());
+    QPixmap bgTexture = TextureManager::getInstance().getTerrainTexture(hexInner->visibilityState(), hexInner->explorationState());
 
     painter->save();
     painter->setClipPath(shape());
@@ -37,26 +37,26 @@ void HexItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
         painter->drawPixmap(-bgTexture.width()/2, -bgTexture.height()/2, bgTexture);
     } else {
         QColor color = Qt::black;
-        if (MHex->VisibilityState()) color = Qt::white;
-        else if (MHex->ExplorationState()) color = Qt::darkGray;
+        if (hexInner->visibilityState()) color = Qt::white;
+        else if (hexInner->explorationState()) color = Qt::darkGray;
         painter->setBrush(color);
         painter->drawPolygon(polygon());
     }
     painter->restore();
 
-    if (MHex->VisibilityState() || MHex->ExplorationState())
+    if (hexInner->visibilityState() || hexInner->explorationState())
     {
-        bool isHeroOnHex = (MHex == MScene->getHeroHex());
+        bool isHeroOnHex = (hexInner == sceneInner->getHeroHex());
         QPixmap unitTexture;
 
         if (isHeroOnHex) {
-            if (MHex->HaveUnit()) {
-                unitTexture = TextureManager::GetInstance().getUnitTexture(MHex->GetUnit()->GetType(), true);
+            if (hexInner->haveUnit()) {
+                unitTexture = TextureManager::getInstance().getUnitTexture(hexInner->getUnit()->getType(), true);
             } else {
-                unitTexture = TextureManager::GetInstance().getUnitTexture(UnitType::MainHero, false);
+                unitTexture = TextureManager::getInstance().getUnitTexture(UnitType::MainHero, false);
             }
-        } else if (MHex->HaveUnit()) {
-            unitTexture = TextureManager::GetInstance().getUnitTexture(MHex->GetUnit()->GetType(), false);
+        } else if (hexInner->haveUnit()) {
+            unitTexture = TextureManager::getInstance().getUnitTexture(hexInner->getUnit()->getType(), false);
         }
 
         if (!unitTexture.isNull()) {
@@ -64,22 +64,22 @@ void HexItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
             painter->setClipPath(shape());
             painter->drawPixmap(-unitTexture.width()/2, -unitTexture.height()/2, unitTexture);
 
-            if (!MHex->VisibilityState() && MHex->ExplorationState()) {
+            if (!hexInner->visibilityState() && hexInner->explorationState()) {
                 painter->setCompositionMode(QPainter::CompositionMode_SourceAtop);
                 painter->fillRect(boundingRect(), QColor(0, 0, 0, 100));
             }
             painter->restore();
         }
 
-        Unit* u = MHex->GetUnit();
-        if (u && u->IsEnemy() && (MHex->VisibilityState() || MHex->ExplorationState())) {
-            drawLevelBadge(painter, u->GetLevel());
+        Unit* u = hexInner->getUnit();
+        if (u && u->isEnemy() && (hexInner->visibilityState() || hexInner->explorationState())) {
+            drawLevelBadge(painter, u->getLevel());
         }
     }
 
     if (option->state & QStyle::State_MouseOver) {
-        if (!MScene->isPanning()){
-            if (MHex->VisibilityState() || MHex->ExplorationState()) {
+        if (!sceneInner->checkPanning()){
+            if (hexInner->visibilityState() || hexInner->explorationState()) {
                 painter->setBrush(QColor(255, 255, 255, 60));
                 painter->setPen(Qt::NoPen);
                 painter->drawPolygon(polygon());
@@ -87,12 +87,12 @@ void HexItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
         }
     }
 
-    Hex* heroHex = MScene->getHeroHex();
+    Hex* heroHex = sceneInner->getHeroHex();
     QPen pen(Qt::black, 1);
 
-    if (heroHex && heroHex->IsNeighbor(*MHex)) {
+    if (heroHex && heroHex->isNeighbor(*hexInner)) {
         bool isBlocked = false;
-        if (MHex->HaveUnit() && MHex->GetUnit()->GetType() == UnitType::StructUnBreak) {
+        if (hexInner->haveUnit() && hexInner->getUnit()->getType() == UnitType::StructUnBreak) {
             isBlocked = true;
         }
 
@@ -139,7 +139,7 @@ void HexItem::drawLevelBadge(QPainter* painter, int level)
 void HexItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton) {
-        MScene->handleHexClick(this);
+        sceneInner->handleHexClick(this);
     }
     QGraphicsPolygonItem::mousePressEvent(event);
 }
@@ -157,10 +157,10 @@ void HexItem::updateZValue()
         newZ = 10;
     }
     else {
-        Hex* heroHex = MScene->getHeroHex();
-        if (heroHex && heroHex->IsNeighbor(*MHex)) {
+        Hex* heroHex = sceneInner->getHeroHex();
+        if (heroHex && heroHex->isNeighbor(*hexInner)) {
             bool isBlocked = false;
-            if (MHex->HaveUnit() && MHex->GetUnit()->GetType() == UnitType::StructUnBreak) {
+            if (hexInner->haveUnit() && hexInner->getUnit()->getType() == UnitType::StructUnBreak) {
                 isBlocked = true;
             }
             newZ = isBlocked ? 2 : 1;

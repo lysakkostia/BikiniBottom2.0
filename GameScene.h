@@ -14,12 +14,11 @@ class GameScene : public QGraphicsScene
 {
     Q_OBJECT
 private:
-    bool isPaused = false;
-
-    HexMap Map;
-    MainHero Hero;
+    HexMap mapInner;
+    MainHero heroInner;
     QHash<QPoint, HexItem*> hexItemsMap;
-    bool MisPanning = false;
+    bool isPanning = false;
+    bool isPaused = false;
     bool isMoving;
     int currentPathIndex = 0;
     QPoint pendingTarget = QPoint(-999, -999);
@@ -50,25 +49,25 @@ public:
 
     Hex* getHeroHex();
 
-    void SaveMapToFile(const QString& filePath);
-    bool LoadMapFromFile(const QString& filePath);
+    void saveMapToFile(const QString& filePath);
+    bool loadMapFromFile(const QString& filePath);
 
     struct HeroStats {
-        double HP;
-        double MP;
-        double LVL;
+        double hp;
+        double mp;
+        double lvl;
     };
-    HeroStats GetStats();
+    HeroStats getStats();
 
     void setPanning(bool panning);
-    bool isPanning() const;
+    bool checkPanning() const;
 
-    void StartMovement();
-    bool IsHeroMoving() const { return isMoving; }
+    void startMovement();
+    bool isHeroMoving() const { return isMoving; }
 
-    MainHero* GetHero() { return &Hero; }
-    void SetPaused(bool paused);
-    bool IsPaused() const { return isPaused; }
+    MainHero* getHero() { return &heroInner; }
+    void setPaused(bool paused);
+    bool checkPaused() const { return isPaused; }
 
 signals:
     void heroStatsChanged();
@@ -84,9 +83,9 @@ signals:
 
 public slots:
     void processStep();
-    void FinishCombat(bool playerWon, bool playerEscaped, Unit* enemy);
-    void FinishCampfireInteraction(Unit* campfireUnit);
-    void FinishNPCInteraction();
+    void finishCombat(bool playerWon, bool playerEscaped, Unit* enemy);
+    void finishCampfireInteraction(Unit* campfireUnit);
+    void finishNPCInteraction();
 };
 
 #endif // GAMESCENE_H

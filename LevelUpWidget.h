@@ -15,11 +15,11 @@ class LevelUpWidget : public QWidget {
     Q_OBJECT
 public:
     explicit LevelUpWidget(QWidget *parent = nullptr);
-    void ShowOptions(const std::vector<UpgradeOption>& options);
-    UpgradeOption GetOption(int index) const;
+    void showOptions(const std::vector<UpgradeOption>& options);
+    UpgradeOption getOption(int index) const;
 
 signals:
-    void OptionSelected(int index);
+    void optionSelected(int index);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

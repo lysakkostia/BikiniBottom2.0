@@ -15,7 +15,7 @@ class CampfireWidget : public QWidget {
 public:
     explicit CampfireWidget(QWidget *parent = nullptr);
 
-    void ShowRestDetails(double oldHP, double newHP, double oldMana, double newMana, int remainingCharges);
+    void showRestDetails(double oldHP, double newHP, double oldMana, double newMana, int remainingCharges);
 
 signals:
     void finished();
@@ -33,7 +33,7 @@ private:
     QLabel* statusLabel;
     QPushButton* leaveBtn;
 
-    QString FormatStatChange(QString name, double oldVal, double newVal, QString color);
+    QString formatStatChange(QString name, double oldVal, double newVal, QString color);
 };
 
 #endif // CAMPFIREWIDGET_H

@@ -9,9 +9,9 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , m_menuWidget(nullptr)
-    , m_settingsWidget(nullptr)
-    , MapRadius(10)
+    , menuWidget(nullptr)
+    , settingsWidget(nullptr)
+    , mapRadius(10)
     , heroWidget(nullptr)
 {
     this->setFixedSize(1280, 720);
@@ -30,100 +30,100 @@ MainWindow::MainWindow(QWidget *parent)
         "}"
         );
 
-    m_stackedWidget = new QStackedWidget(this);
-    this->setCentralWidget(m_stackedWidget);
+    stackedWidget = new QStackedWidget(this);
+    this->setCentralWidget(stackedWidget);
 
-    InitializeMenuUI();
-    m_stackedWidget->addWidget(m_menuWidget);
+    initializeMenuUI();
+    stackedWidget->addWidget(menuWidget);
 
-    m_settingsWidget = new SettingsWidget(this);
-    m_stackedWidget->addWidget(m_settingsWidget);
+    settingsWidget = new SettingsWidget(this);
+    stackedWidget->addWidget(settingsWidget);
 
-    m_gameSelectWidget = new GameSelectionWidget(this);
-    m_stackedWidget->addWidget(m_gameSelectWidget);
+    gameSelectWidget = new GameSelectionWidget(this);
+    stackedWidget->addWidget(gameSelectWidget);
 
-    m_stackedWidget->setCurrentWidget(m_menuWidget);
+    stackedWidget->setCurrentWidget(menuWidget);
 
-    connect(m_settingsWidget, &SettingsWidget::MapRadChanged, this, &MainWindow::HandleMapRadiusChanged);
-    connect(m_settingsWidget, &SettingsWidget::VolumeChanged, this, &MainWindow::HandleVolumeChanged);
-    connect(m_settingsWidget, &SettingsWidget::BackClicked, this, &MainWindow::HandleBackToMenu);
+    connect(settingsWidget, &SettingsWidget::mapRadChanged, this, &MainWindow::handleMapRadiusChanged);
+    connect(settingsWidget, &SettingsWidget::volumeChanged, this, &MainWindow::handleVolumeChanged);
+    connect(settingsWidget, &SettingsWidget::backClicked, this, &MainWindow::handleBackToMenu);
 
-    connect(m_gameSelectWidget, &GameSelectionWidget::StartNewGameClicked, this, &MainWindow::StartNewGame);
-    connect(m_gameSelectWidget, &GameSelectionWidget::LoadGameClicked, this, &MainWindow::LoadSavedGame);
-    connect(m_gameSelectWidget, &GameSelectionWidget::BackClicked, this, &MainWindow::HandleBackToMenu);
+    connect(gameSelectWidget, &GameSelectionWidget::startNewGameClicked, this, &MainWindow::startNewGame);
+    connect(gameSelectWidget, &GameSelectionWidget::loadGameClicked, this, &MainWindow::loadSavedGame);
+    connect(gameSelectWidget, &GameSelectionWidget::backClicked, this, &MainWindow::handleBackToMenu);
 
-    connect(btn_play, &QPushButton::clicked, this, &MainWindow::on_btn_play_clicked);
-    connect(btn_settings, &QPushButton::clicked, this, &MainWindow::on_btn_settings_clicked);
-    connect(btn_exit, &QPushButton::clicked, this, &MainWindow::on_btn_exit_clicked);
+    connect(btnPlay, &QPushButton::clicked, this, &MainWindow::onBtnPlayClicked);
+    connect(btnSettings, &QPushButton::clicked, this, &MainWindow::onBtnSettingsClicked);
+    connect(btnExit, &QPushButton::clicked, this, &MainWindow::onBtnExitClicked);
 
-    player = new QMediaPlayer(this);
+    mediaPlayer = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this);
-    player->setAudioOutput(audioOutput);
-    player->setSource(QUrl::fromLocalFile("adventure.mp3"));
-    player->setLoops(QMediaPlayer::Infinite);
+    mediaPlayer->setAudioOutput(audioOutput);
+    mediaPlayer->setSource(QUrl::fromLocalFile("adventure.mp3"));
+    mediaPlayer->setLoops(QMediaPlayer::Infinite);
     audioOutput->setVolume(0);
-    player->play();
+    mediaPlayer->play();
 
     levelUpWidget = new LevelUpWidget(this);
     levelUpWidget->hide();
-    connect(levelUpWidget, &LevelUpWidget::OptionSelected, this, &MainWindow::OnLevelUpOptionSelected);
+    connect(levelUpWidget, &LevelUpWidget::optionSelected, this, &MainWindow::onLevelUpOptionSelected);
 }
 
 MainWindow::~MainWindow()
 {
-    CleanupGame();
-    delete player;
+    cleanupGame();
+    delete mediaPlayer;
     delete audioOutput;
 }
 
-void MainWindow::InitializeMenuUI()
+void MainWindow::initializeMenuUI()
 {
-    m_menuWidget = new QWidget(this);
-    m_menuWidget->setGeometry(0, 0, 1280, 720);
+    menuWidget = new QWidget(this);
+    menuWidget->setGeometry(0, 0, 1280, 720);
 
-    btn_play = new QPushButton(m_menuWidget);
-    btn_play->setObjectName("btn_play");
-    btn_play->setGeometry(535, 300, 210, 80);
+    btnPlay = new QPushButton(menuWidget);
+    btnPlay->setObjectName("btn_play");
+    btnPlay->setGeometry(535, 300, 210, 80);
     QFont fontPlay;
     fontPlay.setPointSize(10);
-    btn_play->setFont(fontPlay);
-    btn_play->setIconSize(QSize(410, 300));
-    btn_play->setStyleSheet(
+    btnPlay->setFont(fontPlay);
+    btnPlay->setIconSize(QSize(410, 300));
+    btnPlay->setStyleSheet(
         "QPushButton {"
         "    border-image: url(btn_play) 0 0 0 0 stretch stretch;"
         "    background: transparent;"
         "}"
         );
 
-    btn_settings = new QPushButton(m_menuWidget);
-    btn_settings->setObjectName("btn_settings");
-    btn_settings->setGeometry(535, 400, 210, 90);
-    btn_settings->setIconSize(QSize(410, 310));
-    btn_settings->setStyleSheet(
+    btnSettings = new QPushButton(menuWidget);
+    btnSettings->setObjectName("btn_settings");
+    btnSettings->setGeometry(535, 400, 210, 90);
+    btnSettings->setIconSize(QSize(410, 310));
+    btnSettings->setStyleSheet(
         "QPushButton {"
         "    border-image: url(btn_options) 0 0 0 0 stretch stretch;"
         "    background: transparent;"
         "}"
         );
 
-    btn_exit = new QPushButton(m_menuWidget);
-    btn_exit->setObjectName("btn_exit");
-    btn_exit->setGeometry(535, 500, 210, 90);
-    btn_exit->setStyleSheet(
+    btnExit = new QPushButton(menuWidget);
+    btnExit->setObjectName("btn_exit");
+    btnExit->setGeometry(535, 500, 210, 90);
+    btnExit->setStyleSheet(
         "QPushButton {"
         "    border-image: url(btn_exit) 0 0 0 0 stretch stretch;"
         "    background: transparent;"
         "}"
         );
 
-    lbl_title = new QLabel(m_menuWidget);
-    lbl_title->setObjectName("label");
-    lbl_title->setGeometry(490, 20, 300, 300);
+    lblTitle = new QLabel(menuWidget);
+    lblTitle->setObjectName("label");
+    lblTitle->setGeometry(490, 20, 300, 300);
     QFont fontTitle("Times New Roman", 14);
     fontTitle.setBold(true);
-    lbl_title->setFont(fontTitle);
-    lbl_title->setAlignment(Qt::AlignCenter);
-    lbl_title->setStyleSheet(
+    lblTitle->setFont(fontTitle);
+    lblTitle->setAlignment(Qt::AlignCenter);
+    lblTitle->setStyleSheet(
         "QLabel {"
         "    border: none;"
         "    border-image: url(icon) 0 0 0 0 stretch stretch;"
@@ -131,52 +131,52 @@ void MainWindow::InitializeMenuUI()
         "}"
         );
 
-    lbl_footer = new QLabel(m_menuWidget);
-    lbl_footer->setObjectName("label_2");
-    lbl_footer->setGeometry(-20, 670, 421, 71);
+    lblFooter = new QLabel(menuWidget);
+    lblFooter->setObjectName("label_2");
+    lblFooter->setGeometry(-20, 670, 421, 71);
     QFont fontFooter("Unispace", 17);
     fontFooter.setBold(true);
-    lbl_footer->setFont(fontFooter);
-    lbl_footer->setText("Made by BikiniBottom Group");
-    lbl_footer->setAlignment(Qt::AlignCenter);
+    lblFooter->setFont(fontFooter);
+    lblFooter->setText("Made by BikiniBottom Group");
+    lblFooter->setAlignment(Qt::AlignCenter);
 
-    btn_settings->raise();
-    btn_exit->raise();
-    lbl_title->raise();
-    btn_play->raise();
-    lbl_footer->raise();
+    btnSettings->raise();
+    btnExit->raise();
+    lblTitle->raise();
+    btnPlay->raise();
+    lblFooter->raise();
 }
 
 //радіус гри
-void MainWindow::HandleMapRadiusChanged(int NewRadius)
+void MainWindow::handleMapRadiusChanged(int NewRadius)
 {
     if(NewRadius > 0)
-        MapRadius = NewRadius;
+        mapRadius = NewRadius;
 }
 
 //кнопка виходу
-void MainWindow::on_btn_exit_clicked()
+void MainWindow::onBtnExitClicked()
 {
     this->close();
 }
 
 //кнопка налаштування
-void MainWindow::on_btn_settings_clicked()
+void MainWindow::onBtnSettingsClicked()
 {
-    m_settingsWidget->SetCurrentRadius(MapRadius);
-    m_stackedWidget->setCurrentWidget(m_settingsWidget);
+    settingsWidget->setCurrentRadius(mapRadius);
+    stackedWidget->setCurrentWidget(settingsWidget);
 }
 
-void MainWindow::HandleBackToMenu()
+void MainWindow::handleBackToMenu()
 {
-    if (m_pauseWidget) m_pauseWidget->hide();
-    m_stackedWidget->setCurrentWidget(m_menuWidget);
-    if(MapView) {
-        CleanupGame();
+    if (pauseWidget) pauseWidget->hide();
+    stackedWidget->setCurrentWidget(menuWidget);
+    if(mapView) {
+        cleanupGame();
     }
 }
 
-void MainWindow::HandleVolumeChanged(int volume)
+void MainWindow::handleVolumeChanged(int volume)
 {
     if(audioOutput)
     {
@@ -185,161 +185,161 @@ void MainWindow::HandleVolumeChanged(int volume)
 }
 
 //кнопка гри
-void MainWindow::on_btn_play_clicked()
+void MainWindow::onBtnPlayClicked()
 {
-    m_stackedWidget->setCurrentWidget(m_gameSelectWidget);
+    stackedWidget->setCurrentWidget(gameSelectWidget);
 }
 
-void MainWindow::StartNewGame()
+void MainWindow::startNewGame()
 {
-    CleanupGame();
+    cleanupGame();
 
-    MGameScene = new GameScene(MapRadius, this);
-    MapView = new GameView(MGameScene, this);
+    gameScene = new GameScene(mapRadius, this);
+    mapView = new GameView(gameScene, this);
 
-    m_stackedWidget->addWidget(MapView);
-    m_stackedWidget->setCurrentWidget(MapView);
-    MapView->setFocus();
+    stackedWidget->addWidget(mapView);
+    stackedWidget->setCurrentWidget(mapView);
+    mapView->setFocus();
 
-    MainHero* hero = MGameScene->GetHero();
+    MainHero* hero = gameScene->getHero();
     skillTreeWidget = new SkillTreeWidget(hero, this);
     skillTreeWidget->hide();
 
-    SetupPauseWidget();
+    setupPauseWidget();
 
-    m_treeBtn = new QPushButton(this);
-    m_treeBtn->setIcon(QIcon("icon.png"));
-    m_treeBtn->setGeometry(10, height() - 150, 50, 50);
-    m_treeBtn->show();
-    m_treeBtn->raise();
+    btnTree = new QPushButton(this);
+    btnTree->setIcon(QIcon("icon.png"));
+    btnTree->setGeometry(10, height() - 150, 50, 50);
+    btnTree->show();
+    btnTree->raise();
 
-    connect(m_treeBtn, &QPushButton::clicked, [this]() {
-        if (MGameScene) MGameScene->SetPaused(true);
+    connect(btnTree, &QPushButton::clicked, [this]() {
+        if (gameScene) gameScene->setPaused(true);
         if (skillTreeWidget) skillTreeWidget->show();
     });
 
     connect(skillTreeWidget, &SkillTreeWidget::closed, [this]() {
-        if (MGameScene) MGameScene->SetPaused(false);
+        if (gameScene) gameScene->setPaused(false);
     });
 
-    m_campfireWidget = new CampfireWidget(this);
-    m_campfireWidget->hide();
+    campfireWidget = new CampfireWidget(this);
+    campfireWidget->hide();
 
-    m_npcWidget = new NPCWidget(this);
-    m_npcWidget->hide();
+    npcWidget = new NPCWidget(this);
+    npcWidget->hide();
 
-    connect(MGameScene, &GameScene::npcInteractionRequested, this, &MainWindow::OnNPCInteractionRequested);
-    connect(MGameScene, &GameScene::combatRequested, this, &MainWindow::OnCombatRequested);
-    connect(MGameScene, &GameScene::campfireRequested, this, &MainWindow::OnCampfireRequested);
-    connect(MGameScene, &GameScene::combatStarted, this, &MainWindow::OnCombatStarted);
-    connect(MGameScene, &GameScene::combatEnded, this, &MainWindow::OnCombatEnded);
-    connect(MGameScene, &GameScene::combatStarted, this, &MainWindow::OnCombatStarted);
-    connect(MGameScene, &GameScene::combatEnded, this, &MainWindow::OnCombatEnded);
-    connect(MGameScene, &GameScene::gameOver, this, &MainWindow::HandleGameOver);
-    connect(MGameScene, &GameScene::victory, this, &MainWindow::HandleVictory);
-    connect(MGameScene, &GameScene::levelUpTriggered, this, &MainWindow::HandleLevelUp);
+    connect(gameScene, &GameScene::npcInteractionRequested, this, &MainWindow::onNPCInteractionRequested);
+    connect(gameScene, &GameScene::combatRequested, this, &MainWindow::onCombatRequested);
+    connect(gameScene, &GameScene::campfireRequested, this, &MainWindow::onCampfireRequested);
+    connect(gameScene, &GameScene::combatStarted, this, &MainWindow::onCombatStarted);
+    connect(gameScene, &GameScene::combatEnded, this, &MainWindow::onCombatEnded);
+    connect(gameScene, &GameScene::combatStarted, this, &MainWindow::onCombatStarted);
+    connect(gameScene, &GameScene::combatEnded, this, &MainWindow::onCombatEnded);
+    connect(gameScene, &GameScene::gameOver, this, &MainWindow::handleGameOver);
+    connect(gameScene, &GameScene::victory, this, &MainWindow::handleVictory);
+    connect(gameScene, &GameScene::levelUpTriggered, this, &MainWindow::handleLevelUp);
 
     QPixmap HeroTexture("NPC5Texture.png");
     if (!HeroTexture.isNull()) {
-        heroWidget = new HeroWidget(HeroTexture, MGameScene, this);
+        heroWidget = new HeroWidget(HeroTexture, gameScene, this);
         heroWidget->setFixedSize(200, 100);
         heroWidget->move(10, height() - heroWidget->height() - 10);
         heroWidget->raise();
         heroWidget->show();
 
-        connect(MGameScene, &GameScene::heroStatsChanged, heroWidget, &HeroWidget::Update_stats);
+        connect(gameScene, &GameScene::heroStatsChanged, heroWidget, &HeroWidget::updateStats);
     }
 }
 
-void MainWindow::LoadSavedGame()
+void MainWindow::loadSavedGame()
 {
-    CleanupGame();
+    cleanupGame();
 
-    MGameScene = new GameScene(MapRadius, this);
+    gameScene = new GameScene(mapRadius, this);
 
-    if (!MGameScene->LoadMapFromFile("map.dat")) {
+    if (!gameScene->loadMapFromFile("map.dat")) {
         QMessageBox::warning(this, tr("Помилка"), tr("Не вдалося завантажити збереження."));
-        delete MGameScene;
-        MGameScene = nullptr;
+        delete gameScene;
+        gameScene = nullptr;
         return;
     }
 
-    MapView = new GameView(MGameScene, this);
+    mapView = new GameView(gameScene, this);
 
-    m_stackedWidget->addWidget(MapView);
-    m_stackedWidget->setCurrentWidget(MapView);
-    MapView->setFocus();
+    stackedWidget->addWidget(mapView);
+    stackedWidget->setCurrentWidget(mapView);
+    mapView->setFocus();
 
-    MainHero* hero = MGameScene->GetHero();
+    MainHero* hero = gameScene->getHero();
     skillTreeWidget = new SkillTreeWidget(hero, this);
     skillTreeWidget->hide();
 
-    SetupPauseWidget();
+    setupPauseWidget();
 
-    m_treeBtn = new QPushButton(this);
-    m_treeBtn->setIcon(QIcon("icon.png"));
-    m_treeBtn->setGeometry(10, height() - 150, 50, 50);
-    m_treeBtn->show();
-    m_treeBtn->raise();
+    btnTree = new QPushButton(this);
+    btnTree->setIcon(QIcon("icon.png"));
+    btnTree->setGeometry(10, height() - 150, 50, 50);
+    btnTree->show();
+    btnTree->raise();
 
-    connect(m_treeBtn, &QPushButton::clicked, [this]() {
-        if (MGameScene) MGameScene->SetPaused(true);
+    connect(btnTree, &QPushButton::clicked, [this]() {
+        if (gameScene) gameScene->setPaused(true);
         if (skillTreeWidget) skillTreeWidget->show();
     });
 
     connect(skillTreeWidget, &SkillTreeWidget::closed, [this]() {
-        if (MGameScene) MGameScene->SetPaused(false);
+        if (gameScene) gameScene->setPaused(false);
     });
 
-    m_campfireWidget = new CampfireWidget(this);
-    m_campfireWidget->hide();
+    campfireWidget = new CampfireWidget(this);
+    campfireWidget->hide();
 
-    m_npcWidget = new NPCWidget(this);
-    m_npcWidget->hide();
+    npcWidget = new NPCWidget(this);
+    npcWidget->hide();
 
-    connect(MGameScene, &GameScene::npcInteractionRequested, this, &MainWindow::OnNPCInteractionRequested);
-    connect(MGameScene, &GameScene::combatRequested, this, &MainWindow::OnCombatRequested);
-    connect(MGameScene, &GameScene::campfireRequested, this, &MainWindow::OnCampfireRequested);
-    connect(MGameScene, &GameScene::combatStarted, this, &MainWindow::OnCombatStarted);
-    connect(MGameScene, &GameScene::combatEnded, this, &MainWindow::OnCombatEnded);
-    connect(MGameScene, &GameScene::gameOver, this, &MainWindow::HandleGameOver);
-    connect(MGameScene, &GameScene::victory, this, &MainWindow::HandleVictory);
-    connect(MGameScene, &GameScene::levelUpTriggered, this, &MainWindow::HandleLevelUp);
+    connect(gameScene, &GameScene::npcInteractionRequested, this, &MainWindow::onNPCInteractionRequested);
+    connect(gameScene, &GameScene::combatRequested, this, &MainWindow::onCombatRequested);
+    connect(gameScene, &GameScene::campfireRequested, this, &MainWindow::onCampfireRequested);
+    connect(gameScene, &GameScene::combatStarted, this, &MainWindow::onCombatStarted);
+    connect(gameScene, &GameScene::combatEnded, this, &MainWindow::onCombatEnded);
+    connect(gameScene, &GameScene::gameOver, this, &MainWindow::handleGameOver);
+    connect(gameScene, &GameScene::victory, this, &MainWindow::handleVictory);
+    connect(gameScene, &GameScene::levelUpTriggered, this, &MainWindow::handleLevelUp);
 
     QPixmap HeroTexture("NPC5Texture.png");
     if (!HeroTexture.isNull()) {
-        heroWidget = new HeroWidget(HeroTexture, MGameScene, this);
+        heroWidget = new HeroWidget(HeroTexture, gameScene, this);
         heroWidget->setFixedSize(200, 100);
         heroWidget->move(10, height() - heroWidget->height() - 10);
         heroWidget->raise();
         heroWidget->show();
 
-        connect(MGameScene, &GameScene::heroStatsChanged, heroWidget, &HeroWidget::Update_stats);
-        heroWidget->Update_stats();
+        connect(gameScene, &GameScene::heroStatsChanged, heroWidget, &HeroWidget::updateStats);
+        heroWidget->updateStats();
     }
 }
 
-void MainWindow::SetupPauseWidget()
+void MainWindow::setupPauseWidget()
 {
-    m_pauseWidget = new PauseWidget(this);
-    m_pauseWidget->hide();
+    pauseWidget = new PauseWidget(this);
+    pauseWidget->hide();
 
-    m_pauseWidget->resize(this->size());
+    pauseWidget->resize(this->size());
 
-    connect(m_pauseWidget, &PauseWidget::ContinueClicked, this, &MainWindow::OnPauseContinue);
-    connect(m_pauseWidget, &PauseWidget::ExitClicked, this, &MainWindow::OnPauseExit);
+    connect(pauseWidget, &PauseWidget::continueClicked, this, &MainWindow::onPauseContinue);
+    connect(pauseWidget, &PauseWidget::exitClicked, this, &MainWindow::onPauseExit);
 }
 
-void MainWindow::CleanupGame()
+void MainWindow::cleanupGame()
 {
-    if (MapView) {
-        m_stackedWidget->removeWidget(MapView);
-        MapView->deleteLater();
-        MapView = nullptr;
+    if (mapView) {
+        stackedWidget->removeWidget(mapView);
+        mapView->deleteLater();
+        mapView = nullptr;
     }
-    if (MGameScene) {
-        MGameScene->deleteLater();
-        MGameScene = nullptr;
+    if (gameScene) {
+        gameScene->deleteLater();
+        gameScene = nullptr;
     }
     if (heroWidget) {
         heroWidget->deleteLater();
@@ -349,25 +349,25 @@ void MainWindow::CleanupGame()
         skillTreeWidget->deleteLater();
         skillTreeWidget = nullptr;
     }
-    if (m_treeBtn) {
-        m_treeBtn->deleteLater();
-        m_treeBtn = nullptr;
+    if (btnTree) {
+        btnTree->deleteLater();
+        btnTree = nullptr;
     }
-    if (m_pauseWidget) {
-        m_pauseWidget->deleteLater();
-        m_pauseWidget = nullptr;
+    if (pauseWidget) {
+        pauseWidget->deleteLater();
+        pauseWidget = nullptr;
     }
-    if (m_fightWidget) {
-        m_fightWidget->deleteLater();
-        m_fightWidget = nullptr;
+    if (fightWidget) {
+        fightWidget->deleteLater();
+        fightWidget = nullptr;
     }
-    if (m_campfireWidget) {
-        m_campfireWidget->deleteLater();
-        m_campfireWidget = nullptr;
+    if (campfireWidget) {
+        campfireWidget->deleteLater();
+        campfireWidget = nullptr;
     }
-    if (m_npcWidget) {
-        m_npcWidget->deleteLater();
-        m_npcWidget = nullptr;
+    if (npcWidget) {
+        npcWidget->deleteLater();
+        npcWidget = nullptr;
     }
 }
 
@@ -375,7 +375,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape)
     {
-        on_btn_pause_clicked();
+        onBtnPauseClicked();
     }
     else
     {
@@ -384,53 +384,53 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 }
 
 //кнопка паузи
-void MainWindow::on_btn_pause_clicked()
+void MainWindow::onBtnPauseClicked()
 {
-    if (!MGameScene) return;
+    if (!gameScene) return;
 
-    MGameScene->SetPaused(true);
-    m_pauseWidget->resize(this->size());
-    m_pauseWidget->raise();
-    m_pauseWidget->show();
+    gameScene->setPaused(true);
+    pauseWidget->resize(this->size());
+    pauseWidget->raise();
+    pauseWidget->show();
 }
 
-void MainWindow::OnPauseContinue()
+void MainWindow::onPauseContinue()
 {
-    if (m_pauseWidget) m_pauseWidget->hide();
-    if (MGameScene) MGameScene->SetPaused(false);
-    if (MapView) MapView->setFocus();
+    if (pauseWidget) pauseWidget->hide();
+    if (gameScene) gameScene->setPaused(false);
+    if (mapView) mapView->setFocus();
 }
 
-void MainWindow::OnPauseExit()
+void MainWindow::onPauseExit()
 {
-    if (MGameScene) {
-        MGameScene->SaveMapToFile("map.dat");
+    if (gameScene) {
+        gameScene->saveMapToFile("map.dat");
     }
-    CleanupGame();
-    m_stackedWidget->setCurrentWidget(m_menuWidget);
+    cleanupGame();
+    stackedWidget->setCurrentWidget(menuWidget);
 }
 
 //подія програшу
-void MainWindow::HandleGameOver()
+void MainWindow::handleGameOver()
 {
     showEndGameDialog(tr("Гру завершено"), tr("На жаль, ваш герой загинув..."), false);
 }
 
 //подія перемоги
-void MainWindow::HandleVictory()
+void MainWindow::handleVictory()
 {
     showEndGameDialog(tr("ПЕРЕМОГА!"), tr("Вітаємо! Ви успішно пройшли гру!"), true);
 }
 
-void MainWindow::HandleLevelUp()
+void MainWindow::handleLevelUp()
 {
-    if (!MGameScene) return;
+    if (!gameScene) return;
 
-    MGameScene->SetPaused(true);
+    gameScene->setPaused(true);
 
-    std::vector<UpgradeOption> options = LevelUpGenerator::GenerateOptions();
+    std::vector<UpgradeOption> options = LevelUpGenerator::generateOptions();
 
-    levelUpWidget->ShowOptions(options);
+    levelUpWidget->showOptions(options);
 
     int x = (this->width() - levelUpWidget->width()) / 2;
     int y = (this->height() - levelUpWidget->height()) / 2;
@@ -440,106 +440,106 @@ void MainWindow::HandleLevelUp()
     levelUpWidget->show();
 }
 
-void MainWindow::OnLevelUpOptionSelected(int index)
+void MainWindow::onLevelUpOptionSelected(int index)
 {
-    if (!MGameScene) return;
+    if (!gameScene) return;
 
-    MainHero* hero = MGameScene->GetHero();
+    MainHero* hero = gameScene->getHero();
 
-    UpgradeOption option = levelUpWidget->GetOption(index);
-    hero->ApplyUpgrade(option);
+    UpgradeOption option = levelUpWidget->getOption(index);
+    hero->applyUpgrade(option);
 
-    hero->DecrementLevelUpPending();
+    hero->decrementLevelUpPending();
 
-    if (hero->IsLevelUpPending()) {
-        std::vector<UpgradeOption> newOptions = LevelUpGenerator::GenerateOptions();
-        levelUpWidget->ShowOptions(newOptions);
+    if (hero->isLevelUpPending()) {
+        std::vector<UpgradeOption> newOptions = LevelUpGenerator::generateOptions();
+        levelUpWidget->showOptions(newOptions);
 
         return;
     }
 
-    MGameScene->SetPaused(false);
-    if (MapView) {
-        MapView->setFocus();
+    gameScene->setPaused(false);
+    if (mapView) {
+        mapView->setFocus();
     }
 }
 
-void MainWindow::OnCombatStarted()
+void MainWindow::onCombatStarted()
 {
     if (heroWidget) heroWidget->hide();
-    if (m_treeBtn) m_treeBtn->hide();
+    if (btnTree) btnTree->hide();
 
     if (skillTreeWidget) skillTreeWidget->hide();
 }
 
-void MainWindow::OnCombatEnded()
+void MainWindow::onCombatEnded()
 {
     if (heroWidget) heroWidget->show();
-    if (m_treeBtn) m_treeBtn->show();
+    if (btnTree) btnTree->show();
 }
 
-void MainWindow::OnCombatRequested(Unit* enemy)
+void MainWindow::onCombatRequested(Unit* enemy)
 {
-    QPixmap heroTex = TextureManager::GetInstance().getUnitTexture(UnitType::MainHero);
-    QPixmap enemyTex = TextureManager::GetInstance().getUnitTexture(enemy->GetType());
+    QPixmap heroTex = TextureManager::getInstance().getUnitTexture(UnitType::MainHero);
+    QPixmap enemyTex = TextureManager::getInstance().getUnitTexture(enemy->getType());
 
-    MainHero* hero = MGameScene->GetHero();
+    MainHero* hero = gameScene->getHero();
 
-    m_fightWidget = new Fight(heroTex, enemyTex, hero, enemy, this);
-    m_fightWidget->resize(this->size());
-    m_fightWidget->show();
-    m_fightWidget->setFocus();
+    fightWidget = new Fight(heroTex, enemyTex, hero, enemy, this);
+    fightWidget->resize(this->size());
+    fightWidget->show();
+    fightWidget->setFocus();
 
-    connect(m_fightWidget, &Fight::battleEnded, [this, enemy](bool playerWon) {
+    connect(fightWidget, &Fight::battleEnded, [this, enemy](bool playerWon) {
 
-        bool escaped = m_fightWidget->didPlayerEscaped();
+        bool escaped = fightWidget->didPlayerEscaped();
 
-        if (MGameScene) {
-            MGameScene->FinishCombat(playerWon, escaped, enemy);
+        if (gameScene) {
+            gameScene->finishCombat(playerWon, escaped, enemy);
         }
 
-        m_fightWidget->deleteLater();
-        m_fightWidget = nullptr;
+        fightWidget->deleteLater();
+        fightWidget = nullptr;
     });
 }
 
-void MainWindow::OnCampfireRequested(double oldHP, double newHP, double oldMana, double newMana, int charges, Unit* campfireUnit)
+void MainWindow::onCampfireRequested(double oldHP, double newHP, double oldMana, double newMana, int charges, Unit* campfireUnit)
 {
-    if (!m_campfireWidget) return;
+    if (!campfireWidget) return;
 
-    m_campfireWidget->ShowRestDetails(oldHP, newHP, oldMana, newMana, charges);
-    m_campfireWidget->raise();
+    campfireWidget->showRestDetails(oldHP, newHP, oldMana, newMana, charges);
+    campfireWidget->raise();
 
-    m_campfireWidget->disconnect(SIGNAL(finished()));
+    campfireWidget->disconnect(SIGNAL(finished()));
 
-    connect(m_campfireWidget, &CampfireWidget::finished, [this, campfireUnit]() {
-        if (MGameScene) {
-            MGameScene->FinishCampfireInteraction(campfireUnit);
+    connect(campfireWidget, &CampfireWidget::finished, [this, campfireUnit]() {
+        if (gameScene) {
+            gameScene->finishCampfireInteraction(campfireUnit);
         }
     });
 }
 
-void MainWindow::OnNPCInteractionRequested(Unit* npcUnit, const QString& text)
+void MainWindow::onNPCInteractionRequested(Unit* npcUnit, const QString& text)
 {
-    if (!m_npcWidget) return;
+    if (!npcWidget) return;
 
     QString name = "Friendly Villager";
 
-    m_npcWidget->ShowDialogue(name, text);
+    npcWidget->showDialogue(name, text);
 
-    m_npcWidget->disconnect(SIGNAL(finished()));
+    npcWidget->disconnect(SIGNAL(finished()));
 
-    connect(m_npcWidget, &NPCWidget::finished, [this]() {
-        if (MGameScene) {
-            MGameScene->FinishNPCInteraction();
+    connect(npcWidget, &NPCWidget::finished, [this]() {
+        if (gameScene) {
+            gameScene->finishNPCInteraction();
         }
     });
 }
 
 void MainWindow::showEndGameDialog(const QString& title, const QString& message, bool isVictory)
 {
-    if (MGameScene) {
-        MGameScene->SetPaused(true);
+    if (gameScene) {
+        gameScene->setPaused(true);
     }
 
     QWidget* overlay = new QWidget(this);
@@ -594,8 +594,8 @@ void MainWindow::showEndGameDialog(const QString& title, const QString& message,
 
     connect(btnMenu, &QPushButton::clicked, [this, overlay]() {
         overlay->close();
-        CleanupGame();
-        m_stackedWidget->setCurrentWidget(m_menuWidget);
+        cleanupGame();
+        stackedWidget->setCurrentWidget(menuWidget);
     });
 
     frameLayout->addWidget(lblTitle);

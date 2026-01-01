@@ -14,16 +14,16 @@ public:
     AI();
     virtual ~AI() = default;
 
-    int TurnOver;
+    int turnOver;
 
-    virtual void InitializeSpells(int level, bool isHero, const std::vector<std::string>& heroSpells = {});
-    virtual const Spell* ChooseBestSpell(double currentMana) const;
-    const std::vector<Spell> &GetSpells() const;
-    void ApplyMultipliers(const QMap<SpellType, double>& multipliers);
-    void ApplyManaReductions(const QMap<SpellType, double>& reductions);
+    virtual void initializeSpells(int level, bool isHero, const std::vector<std::string>& heroSpells = {});
+    virtual const Spell* chooseBestSpell(double currentMana) const;
+    const std::vector<Spell> &getSpells() const;
+    void applyMultipliers(const QMap<SpellType, double>& multipliers);
+    void applyManaReductions(const QMap<SpellType, double>& reductions);
 
 protected:
-    std::vector<Spell> Spells;
+    std::vector<Spell> spells;
 };
 
 class Aggresive : public AI
@@ -36,14 +36,14 @@ class Confused : public AI
 {
 public:
     Confused();
-    const Spell* ChooseBestSpell(double currentMana) const override;
+    const Spell* chooseBestSpell(double currentMana) const override;
 };
 
 class Intelligent : public AI
 {
 public:
     Intelligent();
-    void UpgradeSpells();
+    void upgradeSpells();
 };
 
 class MainCharacter : public AI
@@ -63,7 +63,7 @@ public:
 class Campfire: public AI{
     public:
     Campfire();
-    void Heal(Unit* target);
+    void heal(Unit* target);
 };
 
 #endif

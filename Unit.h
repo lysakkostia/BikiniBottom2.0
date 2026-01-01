@@ -28,162 +28,162 @@ enum class UnitType
 class Unit
 {
 private:
-    double UHp;
-    double UMaxHp;
-    double UMana;
-    double UMaxMana;
-    double ULevel;
-    UnitType UType;
+    double hp;
+    double maxHp;
+    double mana;
+    double maxMana;
+    double level;
+    UnitType type;
 
 protected:
-    QPoint UPosition;
-    std::unique_ptr<AI> UAi;
+    QPoint position;
+    std::unique_ptr<AI> ai;
 
 public:
-    Unit(UnitType type, double level, double hp, double mana, QPoint pos = QPoint(-1, -1));
+    Unit(UnitType type_, double level_, double hp_, double mana_, QPoint pos_ = QPoint(-1, -1));
     virtual ~Unit() = default;
 
-    UnitType GetType() const { return UType; };
-    double GetHP() const { return UHp; };
-    double GetMaxHP() const { return UMaxHp; };
-    double GetMana() const { return UMana; };
-    double GetMaxMana() const { return UMaxMana; };
-    double GetLevel() const { return ULevel; };
-    QPoint GetPosition() const { return UPosition; }
-    AI* GetAI() const { return UAi.get(); };
+    UnitType getType() const { return type; };
+    double getHP() const { return hp; };
+    double getMaxHP() const { return maxHp; };
+    double getMana() const { return mana; };
+    double getMaxMana() const { return maxMana; };
+    double getLevel() const { return level; };
+    QPoint getPosition() const { return position; }
+    AI* getAI() const { return ai.get(); };
 
-    bool IsEnemy() const;
-    bool IsStructure() const;
-    bool IsInteractive() const;
-    std::string GetTypeString() const;
+    bool isEnemy() const;
+    bool isStructure() const;
+    bool isInteractive() const;
+    std::string getTypeString() const;
 
-    void SetPosition(const QPoint& pos);
-    void SetHP(double hp);
-    void SetMana(double mana);
-    void SetLevel(double level);
-    void SetMaxHP(double maxHp);
-    void SetMaxMana(double maxMana);
-    virtual void RecalculateStats() {};
-    void SetAI(std::unique_ptr<AI> newAI);
+    void setPosition(const QPoint& pos_);
+    void setHP(double hp_);
+    void setMana(double mana_);
+    void setLevel(double level_);
+    void setMaxHP(double maxHp_);
+    void setMaxMana(double maxMana_);
+    virtual void recalculateStats() {};
+    void setAI(std::unique_ptr<AI> newAI);
 
-    void TakeDamage(double damage);
-    bool CanUseMana(double cost) const;
-    void ConsumeMana(double cost);
-    virtual void LevelUp();
+    void takeDamage(double damage);
+    bool canUseMana(double cost) const;
+    void consumeMana(double cost);
+    virtual void levelUp();
 
-    virtual QJsonObject ToJson() const;
-    virtual void FromJson(const QJsonObject& json);
+    virtual QJsonObject toJson() const;
+    virtual void fromJson(const QJsonObject& json);
 };
 
 class MainHero : public Unit
 {
 private:
-    double UCurrentXP;
-    double UMaxXP;
-    int USkillPoints;
+    double currentXP;
+    double maxXP;
+    int skillPoints;
 
-    int PendingLevelUps;
+    int pendingLevelUps;
 
-    double UBonusMaxHP;
-    double UBonusMaxMana;
-    QMap<SpellType, double> USpellDamageMultipliers;
+    double bonusMaxHP;
+    double bonusMaxMana;
+    QMap<SpellType, double> spellDamageMultipliers;
 
-    std::vector<std::string> UnlockedSpellIds;
-    QSet<QString> UnlockedSkillNodes;
-    QMap<SpellType, double> ManaCostReductions;
-    void RefreshAISpells();
+    std::vector<std::string> unlockedSpellIds;
+    QSet<QString> unlockedSkillNodes;
+    QMap<SpellType, double> manaCostReductions;
+    void refreshAISpells();
 
 public:
     MainHero(QPoint Pos);
-    virtual void LevelUp() override;
-    virtual void RecalculateStats() override;
+    virtual void levelUp() override;
+    virtual void recalculateStats() override;
 
-    double GetCurrentXP() const { return UCurrentXP; }
-    double GetMaxXP() const { return UMaxXP; }
-    int GetSkillPoints() const { return USkillPoints; }
+    double getCurrentXP() const { return currentXP; }
+    double getMaxXP() const { return maxXP; }
+    int getSkillPoints() const { return skillPoints; }
 
-    void AddXP(double amount);
-    void AddSkillPoints();
+    void addXP(double amount);
+    void addSkillPoints();
 
-    void AddMaxHPBonus(double amount);
-    void AddMaxManaBonus(double amount);
-    void AddSpellDamageMultiplier(SpellType type, double multiplier);
-    double GetSpellDamageMultiplier(SpellType type) const;
+    void addMaxHPBonus(double amount);
+    void addMaxManaBonus(double amount);
+    void addSpellDamageMultiplier(SpellType type, double multiplier);
+    double getSpellDamageMultiplier(SpellType type) const;
 
-    bool IsLevelUpPending() const { return PendingLevelUps > 0; }
-    void DecrementLevelUpPending() { if(PendingLevelUps > 0) PendingLevelUps--; }
-    int GetPendingLevelUpsCount() const { return PendingLevelUps; }
+    bool isLevelUpPending() const { return pendingLevelUps > 0; }
+    void decrementLevelUpPending() { if(pendingLevelUps > 0) pendingLevelUps--; }
+    int getPendingLevelUpsCount() const { return pendingLevelUps; }
 
-    void ApplyUpgrade(const UpgradeOption& option);
+    void applyUpgrade(const UpgradeOption& option);
 
-    bool UnlockSkillNode(const std::string& nodeId, int cost);
-    bool IsNodeUnlocked(const std::string& nodeId) const;
-    void UnlockSpell(const std::string& spellId);
+    bool unlockSkillNode(const std::string& nodeId, int cost);
+    bool isNodeUnlocked(const std::string& nodeId) const;
+    void unlockSpell(const std::string& spellId);
 
-    double GetManaCostMultiplier(SpellType type) const;
-    void AddManaCostReduction(SpellType type, double reductionPercent);
+    double getManaCostMultiplier(SpellType type) const;
+    void addManaCostReduction(SpellType type, double reductionPercent);
 
-    const std::vector<std::string>& GetUnlockedSpellIds() const { return UnlockedSpellIds; }
+    const std::vector<std::string>& getUnlockedSpellIds() const { return unlockedSpellIds; }
 
-    virtual QJsonObject ToJson() const override;
-    virtual void FromJson(const QJsonObject& json) override;
+    virtual QJsonObject toJson() const override;
+    virtual void fromJson(const QJsonObject& json) override;
 };
 
 class Enemy : public Unit
 {
 public:
     Enemy(UnitType type, double level);
-    virtual void RecalculateStats() override;
+    virtual void recalculateStats() override;
 };
 
 class Friend : public Unit
 {
 public:
     Friend();
-    virtual void RecalculateStats() override;
+    virtual void recalculateStats() override;
 };
 
 class StructUnBreak : public Unit
 {
 public:
     StructUnBreak();
-    virtual void RecalculateStats() override;
+    virtual void recalculateStats() override;
 };
 
 class StructBreak : public Unit
 {
 public:
     StructBreak();
-    virtual void RecalculateStats() override;
+    virtual void recalculateStats() override;
 };
 
 class CampfireUnit : public Unit
 {
 public:
     CampfireUnit();
-    virtual void RecalculateStats() override;
-    Campfire* GetCampfireAI() const { return dynamic_cast<Campfire*>(UAi.get()); }
+    virtual void recalculateStats() override;
+    Campfire* getCampfireAI() const { return dynamic_cast<Campfire*>(ai.get()); }
 };
 
 class Wizard : public Enemy
 {
 public:
     Wizard(double level);
-    virtual void RecalculateStats() override;
+    virtual void recalculateStats() override;
 };
 
 class Barbarian : public Enemy
 {
 public:
     Barbarian(double level);
-    virtual void RecalculateStats() override;
+    virtual void recalculateStats() override;
 };
 
 class Warrior : public Enemy
 {
 public:
     Warrior(double level);
-    virtual void RecalculateStats() override;
+    virtual void recalculateStats() override;
 };
 
 #endif // UNIT_H_INCLUDE

@@ -38,60 +38,60 @@ SkillTreeWidget::SkillTreeWidget(MainHero* h, QWidget* parent)
     centerBtn->setIcon(QIcon("icon.png"));
     centerBtn->setIconSize(QSize(60, 60));
 
-    InitializeTree();
+    initializeTree();
 }
 
-void SkillTreeWidget::InitializeTree() {
-    auto nodes = SkillTreeData::GetAllNodes();
+void SkillTreeWidget::initializeTree() {
+    auto nodes = SkillTreeData::getAllNodes();
 
     for (const auto& node : nodes) {
         SkillNodeButton* btn = new SkillNodeButton(node, this);
         connect(btn, &QPushButton::clicked, [this, btn]() {
-            OnNodeClicked(btn);
+            onNodeClicked(btn);
         });
         buttons.push_back(btn);
     }
-    UpdateUI();
+    updateUI();
 }
 
-void SkillTreeWidget::OnNodeClicked(SkillNodeButton* btn) {
-    if (hero->IsNodeUnlocked(btn->nodeId)) return;
+void SkillTreeWidget::onNodeClicked(SkillNodeButton* btn) {
+    if (hero->isNodeUnlocked(btn->nodeId)) return;
 
     bool parentUnlocked = false;
     if (btn->nodeData.parentId == "root") {
         parentUnlocked = true;
     } else {
-        parentUnlocked = hero->IsNodeUnlocked(btn->nodeData.parentId);
+        parentUnlocked = hero->isNodeUnlocked(btn->nodeData.parentId);
     }
 
-    if (parentUnlocked && hero->GetSkillPoints() >= btn->nodeData.cost) {
-        if (hero->UnlockSkillNode(btn->nodeId, btn->nodeData.cost)) {
+    if (parentUnlocked && hero->getSkillPoints() >= btn->nodeData.cost) {
+        if (hero->unlockSkillNode(btn->nodeId, btn->nodeData.cost)) {
 
             if (btn->nodeData.effect == SkillEffect::UnlockSpell) {
-                hero->UnlockSpell(btn->nodeData.spellId);
+                hero->unlockSpell(btn->nodeData.spellId);
             }
             else if (btn->nodeData.effect == SkillEffect::IncreaseDamage) {
-                hero->AddSpellDamageMultiplier(btn->nodeData.branchType, btn->nodeData.value);
+                hero->addSpellDamageMultiplier(btn->nodeData.branchType, btn->nodeData.value);
             }
             else if (btn->nodeData.effect == SkillEffect::ReduceManaCost) {
-                hero->AddManaCostReduction(btn->nodeData.branchType, btn->nodeData.value);
+                hero->addManaCostReduction(btn->nodeData.branchType, btn->nodeData.value);
             }
 
-            UpdateUI();
+            updateUI();
         }
     }
 }
 
-void SkillTreeWidget::UpdateUI() {
-    pointsLabel->setText(QString("Skill Points: %1").arg(hero->GetSkillPoints()));
+void SkillTreeWidget::updateUI() {
+    pointsLabel->setText(QString("Skill Points: %1").arg(hero->getSkillPoints()));
     pointsLabel->adjustSize();
 
     for (auto btn : buttons) {
-        bool unlocked = hero->IsNodeUnlocked(btn->nodeId);
-        bool parentUnlocked = (btn->nodeData.parentId == "root") ? true : hero->IsNodeUnlocked(btn->nodeData.parentId);
-        bool canBuy = parentUnlocked && !unlocked && (hero->GetSkillPoints() >= btn->nodeData.cost);
+        bool unlocked = hero->isNodeUnlocked(btn->nodeId);
+        bool parentUnlocked = (btn->nodeData.parentId == "root") ? true : hero->isNodeUnlocked(btn->nodeData.parentId);
+        bool canBuy = parentUnlocked && !unlocked && (hero->getSkillPoints() >= btn->nodeData.cost);
 
-        QColor typeColor = GetColorForType(btn->nodeData.branchType);
+        QColor typeColor = getColorForType(btn->nodeData.branchType);
         QString colorStyle = typeColor.name();
 
         if (unlocked) {
@@ -124,7 +124,7 @@ void SkillTreeWidget::closeTree() {
     emit closed();
 }
 
-QColor SkillTreeWidget::GetColorForType(SpellType type) {
+QColor SkillTreeWidget::getColorForType(SpellType type) {
     switch(type) {
     case SpellType::Fire: return QColor(255, 69, 0);
     case SpellType::Ice: return QColor(0, 191, 255);
@@ -136,7 +136,7 @@ QColor SkillTreeWidget::GetColorForType(SpellType type) {
     }
 }
 
-double SkillTreeWidget::GetAngleForType(SpellType type) {
+double SkillTreeWidget::getAngleForType(SpellType type) {
     switch(type) {
     case SpellType::Fire: return 0.0;
     case SpellType::Ice: return 60.0;
@@ -149,7 +149,7 @@ double SkillTreeWidget::GetAngleForType(SpellType type) {
 }
 
 void SkillTreeWidget::showEvent(QShowEvent *event) {
-    UpdateUI();
+    updateUI();
     QWidget::showEvent(event);
 }
 
@@ -166,7 +166,7 @@ void SkillTreeWidget::resizeEvent(QResizeEvent* event) {
     centerBtn->move(cx - 40, cy - 40);
 
     for (auto btn : buttons) {
-        double angleDeg = GetAngleForType(btn->nodeData.branchType);
+        double angleDeg = getAngleForType(btn->nodeData.branchType);
         double angleRad = angleDeg * M_PI / 180.0;
         int dist = btn->nodeData.tier * RADIUS_STEP;
 
@@ -208,11 +208,11 @@ void SkillTreeWidget::paintEvent(QPaintEvent* event) {
 
         if (parentFound) {
             QPoint endPos = btn->geometry().center();
-            QColor lineColor = GetColorForType(btn->nodeData.branchType);
+            QColor lineColor = getColorForType(btn->nodeData.branchType);
 
-            if (hero->IsNodeUnlocked(btn->nodeId)) {
+            if (hero->isNodeUnlocked(btn->nodeId)) {
                 painter.setPen(QPen(lineColor, 4));
-            } else if (hero->IsNodeUnlocked(btn->nodeData.parentId) || btn->nodeData.parentId == "root") {
+            } else if (hero->isNodeUnlocked(btn->nodeData.parentId) || btn->nodeData.parentId == "root") {
                 painter.setPen(QPen(lineColor.darker(150), 2, Qt::DashLine));
             } else {
                 painter.setPen(QPen(QColor("#333"), 2));

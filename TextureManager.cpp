@@ -6,7 +6,7 @@ namespace Const_Scale = GlobalConst::TextureScale;
 
 TextureManager::TextureManager()
 {
-    InitializeTextures();
+    initializeTextures();
 }
 
 QPixmap TextureManager::loadTexture(const QString &fileName, double scaleFactor)
@@ -23,7 +23,7 @@ QPixmap TextureManager::loadTexture(const QString &fileName, double scaleFactor)
         Qt::KeepAspectRatio, Qt::SmoothTransformation);
 }
 
-void TextureManager::InitializeTextures()
+void TextureManager::initializeTextures()
 {
     unitTextures[UnitType::MainHero] = loadTexture("NPC5Texture.png", Const_Scale::UNIT);
     unitTextures[UnitType::Barbarian] = loadTexture("NPC4Texture.png", Const_Scale::UNIT);
@@ -46,11 +46,11 @@ void TextureManager::InitializeTextures()
     visibleHexTexture = loadTexture("StandartHex.jpg", Const_Scale::STANDART_HEX);
 
     if (!visibleHexTexture.isNull()) {
-        exploredHexTexture = TintPixmap(visibleHexTexture, 0.4);
+        exploredHexTexture = tintPixmap(visibleHexTexture, 0.4);
     }
 }
 
-QPixmap TextureManager::TintPixmap(const QPixmap& Source, qreal Strength)
+QPixmap TextureManager::tintPixmap(const QPixmap& Source, qreal Strength)
 {
     if(Source.isNull())
         return Source;

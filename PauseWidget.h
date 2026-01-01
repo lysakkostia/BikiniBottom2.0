@@ -14,8 +14,8 @@ public:
     explicit PauseWidget(QWidget *parent = nullptr);
 
 signals:
-    void ContinueClicked();
-    void ExitClicked();
+    void continueClicked();
+    void exitClicked();
 
 protected:
     void showEvent(QShowEvent *event) override;
@@ -23,10 +23,10 @@ protected:
 private:
     void setupUi();
 
-    QFrame *m_containerFrame;
-    QLabel *m_labelTitle;
-    QPushButton *m_btnContinue;
-    QPushButton *m_btnExit;
+    QFrame* containerFrame;
+    QLabel* labelTitle;
+    QPushButton* btnContinue;
+    QPushButton* btnExit;
 };
 
 #endif // PAUSEWIDGET_H

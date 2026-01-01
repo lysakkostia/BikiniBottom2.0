@@ -15,7 +15,7 @@ class NPCWidget : public QWidget {
 public:
     explicit NPCWidget(QWidget *parent = nullptr);
 
-    void ShowDialogue(const QString& unitName, const QString& dialogueText);
+    void showDialogue(const QString& unitName, const QString& dialogueText);
 
 signals:
     void finished();

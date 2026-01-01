@@ -1,10 +1,10 @@
 #include "Cell.h"
 
-std::pair<int, int> Hex::GetQR() const { return std::make_pair(q, r); }
-bool Hex::VisibilityState() const { return IsVisible; }
-bool Hex::ExplorationState() const { return IsExplored; }
+std::pair<int, int> Hex::getQR() const { return std::make_pair(q, r); }
+bool Hex::visibilityState() const { return isVisible; }
+bool Hex::explorationState() const { return isExplored; }
 
-QPointF Hex::GetCenter() const
+QPointF Hex::getCenter() const
 {
     float x = GlobalConst::HexSize * 3.0 / 2.0 * q;
     float y = GlobalConst::HexSize * std::sqrt(3.0) * (r + q / 2.0);
@@ -12,11 +12,11 @@ QPointF Hex::GetCenter() const
     return {x,y};
 }
 
-std::vector<QPointF> Hex::GetCorners() const
+std::vector<QPointF> Hex::getCorners() const
 {
     std::vector<QPointF> Corners;
     Corners.reserve(6);
-    QPointF Center = GetCenter();
+    QPointF Center = getCenter();
 
     for(int i = 0; i < 6; i++)
     {
@@ -29,7 +29,7 @@ std::vector<QPointF> Hex::GetCorners() const
     return Corners;
 }
 
-bool Hex::IsNeighbor(const Hex& OHex) const
+bool Hex::isNeighbor(const Hex& OHex) const
 {
     int dq = OHex.q - q;
     int dr = OHex.r - r;
@@ -46,22 +46,22 @@ bool Hex::IsNeighbor(const Hex& OHex) const
     return false;
 }
 
-void Hex::SetUnit(Unit* UnitTemp)
+void Hex::setUnit(Unit* UnitTemp)
 {
-    Unit_ = UnitTemp;
+    unit = UnitTemp;
 }
 
-Unit* Hex::GetUnit() const
+Unit* Hex::getUnit() const
 {
-    return Unit_;
+    return unit;
 }
 
-bool Hex::HaveUnit() const
+bool Hex::haveUnit() const
 {
-    return Unit_ != nullptr;
+    return unit != nullptr;
 }
 
-void Hex::ClearUnit()
+void Hex::clearUnit()
 {
-    Unit_ = nullptr;
+    unit = nullptr;
 }

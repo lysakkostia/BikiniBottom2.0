@@ -34,7 +34,7 @@ struct SkillNode {
 
 class SkillTreeData {
 public:
-    static std::vector<SkillNode> GetAllNodes() {
+    static std::vector<SkillNode> getAllNodes() {
         std::vector<SkillNode> nodes;
 
         // --- FIRE BRANCH ---

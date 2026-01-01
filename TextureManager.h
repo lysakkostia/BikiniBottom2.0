@@ -13,7 +13,7 @@ public:
     TextureManager(const TextureManager&) = delete;
     void operator=(const TextureManager&) = delete;
 
-    static TextureManager& GetInstance()
+    static TextureManager& getInstance()
     {
         static TextureManager instance;
         return instance;
@@ -26,9 +26,9 @@ public:
 private:
     TextureManager();
 
-    void InitializeTextures();
+    void initializeTextures();
     QPixmap loadTexture(const QString &fileName, double scaleFactor);
-    QPixmap TintPixmap(const QPixmap& Source, qreal Strength);
+    QPixmap tintPixmap(const QPixmap& Source, qreal Strength);
 
     QHash<UnitType, QPixmap> unitTextures;
     QHash<UnitType, QPixmap> heroWithUnitTextures;

@@ -3,28 +3,28 @@
 #include "GameConstants.h"
 #include "RandomGenerator.h"
 
-AI::AI() : TurnOver(0) {}
+AI::AI() : turnOver(0) {}
 
-void AI::InitializeSpells(int level, bool isHero, const std::vector<std::string>& heroSpells) {
-    Spells.clear();
+void AI::initializeSpells(int level, bool isHero, const std::vector<std::string>& heroSpells) {
+    spells.clear();
     if (isHero) {
-        Spells = SpellManager::Instance().GetHeroSpellsByIds(heroSpells, level);
+        spells = SpellManager::getInstance().getHeroSpellsByIds(heroSpells, level);
     } else {
-        Spells = SpellManager::Instance().GetEnemySpellsForLevel(level);
+        spells = SpellManager::getInstance().getEnemySpellsForLevel(level);
     }
 }
 
-const std::vector<Spell>& AI::GetSpells() const
+const std::vector<Spell>& AI::getSpells() const
 {
-    return Spells;
+    return spells;
 }
 
-const Spell* AI::ChooseBestSpell(double currentMana) const
+const Spell* AI::chooseBestSpell(double currentMana) const
 {
     const Spell* bestSpell = nullptr;
     double maxDamage = -1.0;
 
-    for (const Spell& spell : GetSpells()) {
+    for (const Spell& spell : getSpells()) {
         if (spell.manacost <= currentMana) {
             if (spell.damage > maxDamage) {
                 maxDamage = spell.damage;
@@ -35,9 +35,9 @@ const Spell* AI::ChooseBestSpell(double currentMana) const
     return bestSpell;
 }
 
-void AI::ApplyMultipliers(const QMap<SpellType, double>& multipliers)
+void AI::applyMultipliers(const QMap<SpellType, double>& multipliers)
 {
-    for (auto &spell : Spells) {
+    for (auto &spell : spells) {
         if (multipliers.contains(spell.type)) {
             double mult = multipliers.value(spell.type);
             spell.damage *= mult;
@@ -45,9 +45,9 @@ void AI::ApplyMultipliers(const QMap<SpellType, double>& multipliers)
     }
 }
 
-void AI::ApplyManaReductions(const QMap<SpellType, double>& reductions)
+void AI::applyManaReductions(const QMap<SpellType, double>& reductions)
 {
-    for (auto &spell : Spells) {
+    for (auto &spell : spells) {
         if (reductions.contains(spell.type)) {
             double reductionPercent = reductions.value(spell.type);
             spell.manacost = spell.manacost * (1.0 - reductionPercent);
@@ -59,17 +59,17 @@ void AI::ApplyManaReductions(const QMap<SpellType, double>& reductions)
 
 Aggresive::Aggresive()
 {
-    this->TurnOver = GlobalConst::AI::INIT_AGGRESSIVE;
+    this->turnOver = GlobalConst::AI::INIT_AGGRESSIVE;
 }
 
 Confused::Confused()
 {
-    this->TurnOver = GlobalConst::AI::INIT_CONFUSED;
+    this->turnOver = GlobalConst::AI::INIT_CONFUSED;
 }
 
-const Spell* Confused::ChooseBestSpell(double currentMana) const
+const Spell* Confused::chooseBestSpell(double currentMana) const
 {
-    const std::vector<Spell>& allSpells = this->GetSpells();
+    const std::vector<Spell>& allSpells = this->getSpells();
     std::vector<const Spell*> availableSpellPointers;
 
     for (const Spell& spell : allSpells) {
@@ -79,7 +79,7 @@ const Spell* Confused::ChooseBestSpell(double currentMana) const
     }
 
     if (!availableSpellPointers.empty()) {
-        int randomIndex = RandGenerator::RandIntInInterval(0, availableSpellPointers.size() - 1);
+        int randomIndex = RandGenerator::randIntInInterval(0, availableSpellPointers.size() - 1);
         return availableSpellPointers[randomIndex];
     }
 
@@ -88,12 +88,12 @@ const Spell* Confused::ChooseBestSpell(double currentMana) const
 
 Intelligent::Intelligent()
 {
-    this->TurnOver = GlobalConst::AI::INIT_INTELLIGENT;
+    this->turnOver = GlobalConst::AI::INIT_INTELLIGENT;
 }
 
-void Intelligent::UpgradeSpells()
+void Intelligent::upgradeSpells()
 {
-    for (auto &spell : Spells) {
+    for (auto &spell : spells) {
         spell.damage *= GlobalConst::AI::INTEL_DMG_MULT;
         spell.manacost *= GlobalConst::AI::INTEL_MANA_MULT;
     }
@@ -101,16 +101,16 @@ void Intelligent::UpgradeSpells()
 
 MainCharacter::MainCharacter()
 {
-    this->TurnOver = GlobalConst::AI::INIT_HERO;
+    this->turnOver = GlobalConst::AI::INIT_HERO;
 }
 
 void MainCharacter::updateSpellStats(int playerLevel, const std::vector<std::string>& heroSpells) {
-    InitializeSpells(playerLevel, true, heroSpells);
+    initializeSpells(playerLevel, true, heroSpells);
 }
 
 Friendly::Friendly()
 {
-    this->TurnOver = 0;
+    this->turnOver = 0;
 }
 
 std::string Friendly::getGreeting() const
@@ -120,12 +120,12 @@ std::string Friendly::getGreeting() const
 
 Campfire::Campfire()
 {
-    this->TurnOver = 0;
+    this->turnOver = 0;
 }
 
-void Campfire::Heal(Unit* target) {
+void Campfire::heal(Unit* target) {
     if (target) {
-        target->SetHP(target->GetMaxHP());
-        target->SetMana(target->GetMaxMana());
+        target->setHP(target->getMaxHP());
+        target->setMana(target->getMaxMana());
     }
 }

@@ -84,9 +84,9 @@ CampfireWidget::CampfireWidget(QWidget *parent) : QWidget(parent) {
     });
 }
 
-void CampfireWidget::ShowRestDetails(double oldHP, double newHP, double oldMana, double newMana, int remainingCharges) {
-    hpLabel->setText(FormatStatChange("HP", oldHP, newHP, "#32CD32"));
-    manaLabel->setText(FormatStatChange("Mana", oldMana, newMana, "#1E90FF"));
+void CampfireWidget::showRestDetails(double oldHP, double newHP, double oldMana, double newMana, int remainingCharges) {
+    hpLabel->setText(formatStatChange("HP", oldHP, newHP, "#32CD32"));
+    manaLabel->setText(formatStatChange("Mana", oldMana, newMana, "#1E90FF"));
 
     if (remainingCharges > 0) {
         statusLabel->setText(QString("The fire crackles warmly.\nRemaining firewood: %1").arg(remainingCharges));
@@ -104,7 +104,7 @@ void CampfireWidget::ShowRestDetails(double oldHP, double newHP, double oldMana,
     this->show();
 }
 
-QString CampfireWidget::FormatStatChange(QString name, double oldVal, double newVal, QString color) {
+QString CampfireWidget::formatStatChange(QString name, double oldVal, double newVal, QString color) {
     int diff = static_cast<int>(newVal - oldVal);
     QString sign = (diff >= 0) ? "+" : "";
 

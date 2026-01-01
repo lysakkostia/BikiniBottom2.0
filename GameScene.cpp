@@ -12,9 +12,9 @@
 namespace Const_Scale = GlobalConst::TextureScale;
 
 GameScene::GameScene(int NRadius, QObject *parent)
-    : QGraphicsScene(parent), Map(NRadius > 0 ? NRadius : 10), Hero(QPoint(0,0))
+    : QGraphicsScene(parent), mapInner(NRadius > 0 ? NRadius : 10), heroInner(QPoint(0,0))
 {
-    Map.UpdateVisibility(Hero.GetPosition());
+    mapInner.updateVisibility(heroInner.getPosition());
     generateMapItems();
     movementTimer = new QTimer(this);
     connect(movementTimer, &QTimer::timeout, this, &GameScene::processStep);
@@ -25,7 +25,7 @@ void GameScene::generateMapItems()
 {
     this->clear();
 
-    const auto& Grid = Map.GetMap();
+    const auto& Grid = mapInner.getMap();
     for (const auto& Col : Grid)
     {
         for (const auto& Hex_ : Col)
@@ -34,7 +34,7 @@ void GameScene::generateMapItems()
 
             HexItem* item = new HexItem(modelHex, this);
             this->addItem(item);
-            hexItemsMap.insert(QPoint(modelHex->GetQR().first, modelHex->GetQR().second), item);
+            hexItemsMap.insert(QPoint(modelHex->getQR().first, modelHex->getQR().second), item);
             item->updateZValue();
         }
     }
@@ -59,21 +59,21 @@ QWidget* GameScene::getViewWidget()
 
 bool GameScene::tryMoveHeroTo(const QPoint& targetHexCoords, bool npc_interaction)
 {
-    QPoint currentPos = Hero.GetPosition();
-    const Hex& currentHex = Map.GetQPointLoc(currentPos);
-    const Hex& targetHex = Map.GetQPointLoc(targetHexCoords);
+    QPoint currentPos = heroInner.getPosition();
+    const Hex& currentHex = mapInner.getQPointLoc(currentPos);
+    const Hex& targetHex = mapInner.getQPointLoc(targetHexCoords);
 
-    if (!currentHex.IsNeighbor(targetHex)) return false;
+    if (!currentHex.isNeighbor(targetHex)) return false;
 
-    if (targetHex.HaveUnit()) {
-        Unit* u = targetHex.GetUnit();
-        if (u && u->GetType() == UnitType::StructUnBreak) return false;
+    if (targetHex.haveUnit()) {
+        Unit* u = targetHex.getUnit();
+        if (u && u->getType() == UnitType::StructUnBreak) return false;
     }
 
-    Hero.SetPosition(targetHexCoords);
+    heroInner.setPosition(targetHexCoords);
 
-    const Hex& newHexLocation = Map.GetQPointLoc(Hero.GetPosition());
-    if (newHexLocation.HaveUnit() && npc_interaction == true) {
+    const Hex& newHexLocation = mapInner.getQPointLoc(heroInner.getPosition());
+    if (newHexLocation.haveUnit() && npc_interaction == true) {
         interactWithContentOnHex(newHexLocation, currentPos);
     }
 
@@ -90,22 +90,22 @@ bool GameScene::tryMoveHeroTo(const QPoint& targetHexCoords, bool npc_interactio
 
 void GameScene::interactWithContentOnHex(const Hex& hex, const QPoint& previousPos)
 {
-    Unit* unit = hex.GetUnit();
+    Unit* unit = hex.getUnit();
     if (!unit) return;
 
-    if (unit->IsEnemy())
+    if (unit->isEnemy())
     {
         processCombat(unit, previousPos);
     }
-    else if (unit->GetType() == UnitType::Friend)
+    else if (unit->getType() == UnitType::Friend)
     {
         processFriendly(unit);
     }
-    else if (unit->GetType() == UnitType::CampfireUnit)
+    else if (unit->getType() == UnitType::CampfireUnit)
     {
         processCampfire(unit);
     }
-    else if (unit->GetType() == UnitType::StructBreak)
+    else if (unit->getType() == UnitType::StructBreak)
     {
         processTreasure(unit);
     }
@@ -119,7 +119,7 @@ void GameScene::processCombat(Unit* enemy, const QPoint& previousPos)
     emit combatRequested(enemy);
 }
 
-void GameScene::FinishCombat(bool playerWon, bool playerEscaped, Unit* enemy)
+void GameScene::finishCombat(bool playerWon, bool playerEscaped, Unit* enemy)
 {
     emit combatEnded();
 
@@ -127,35 +127,35 @@ void GameScene::FinishCombat(bool playerWon, bool playerEscaped, Unit* enemy)
     {
         qDebug("Fight won!");
 
-        double xpReward = GlobalConst::Progression::ENEMY_XP_REWARD * enemy->GetLevel();
-        if (enemy->GetType() == UnitType::Wizard || enemy->GetType() == UnitType::Barbarian) {
+        double xpReward = GlobalConst::Progression::ENEMY_XP_REWARD * enemy->getLevel();
+        if (enemy->getType() == UnitType::Wizard || enemy->getType() == UnitType::Barbarian) {
             xpReward *= 1.2;
         }
 
-        Hero.AddXP(xpReward);
+        heroInner.addXP(xpReward);
         emit heroStatsChanged();
 
         qDebug() << "Gained XP:" << xpReward;
 
-        Map.ClearUnitAt(Hero.GetPosition());
+        mapInner.clearUnitAt(heroInner.getPosition());
 
-        if (Hero.IsLevelUpPending()) {
+        if (heroInner.isLevelUpPending()) {
             emit levelUpTriggered();
         }
-        if (Map.GetEnemyCount() <= 0) {
+        if (mapInner.getEnemyCount() <= 0) {
             emit victory();
         }
     }
     else
     {
-        if (Hero.GetHP() <= 0) {
+        if (heroInner.getHP() <= 0) {
             qDebug("Fight lost. Game Over.");
             emit gameOver();
         }
         else {
             qDebug() << (playerEscaped ? "Hero escaped" : "Dialog closed unexpectedly");
             this->tryMoveHeroTo(lastPreCombatPos);
-            Map.UpdateVisibility(Hero.GetPosition());
+            mapInner.updateVisibility(heroInner.getPosition());
         }
     }
 
@@ -166,29 +166,29 @@ void GameScene::FinishCombat(bool playerWon, bool playerEscaped, Unit* enemy)
 void GameScene::processCampfire(Unit* campfireUnit)
 {
     CampfireUnit* campfire = dynamic_cast<CampfireUnit*>(campfireUnit);
-    if (!campfire || !campfire->GetAI()) return;
+    if (!campfire || !campfire->getAI()) return;
 
-    Campfire* campfireAI = dynamic_cast<Campfire*>(campfire->GetAI());
+    Campfire* campfireAI = dynamic_cast<Campfire*>(campfire->getAI());
     if (!campfireAI) return;
 
-    double oldHP = Hero.GetHP();
-    double oldMana = Hero.GetMana();
+    double oldHP = heroInner.getHP();
+    double oldMana = heroInner.getMana();
 
-    campfireAI->Heal(&Hero);
+    campfireAI->heal(&heroInner);
 
-    float currentCharges = campfire->GetHP();
-    campfire->SetHP(currentCharges - 1);
+    float currentCharges = campfire->getHP();
+    campfire->setHP(currentCharges - 1);
 
-    int remainingCharges = static_cast<int>(campfire->GetHP());
+    int remainingCharges = static_cast<int>(campfire->getHP());
 
-    emit campfireRequested(oldHP, Hero.GetHP(), oldMana, Hero.GetMana(), remainingCharges, campfireUnit);
+    emit campfireRequested(oldHP, heroInner.getHP(), oldMana, heroInner.getMana(), remainingCharges, campfireUnit);
 }
 
-void GameScene::FinishCampfireInteraction(Unit* campfireUnit)
+void GameScene::finishCampfireInteraction(Unit* campfireUnit)
 {
     CampfireUnit* campfire = dynamic_cast<CampfireUnit*>(campfireUnit);
-    if (campfire && campfire->GetHP() <= 0) {
-        Map.ClearUnitAt(Hero.GetPosition());
+    if (campfire && campfire->getHP() <= 0) {
+        mapInner.clearUnitAt(heroInner.getPosition());
         this->update();
     }
 
@@ -198,8 +198,8 @@ void GameScene::FinishCampfireInteraction(Unit* campfireUnit)
 
 void GameScene::processFriendly(Unit* friendUnit)
 {
-    if (friendUnit->GetAI()) {
-        Friendly* friendlyAI = dynamic_cast<Friendly*>(friendUnit->GetAI());
+    if (friendUnit->getAI()) {
+        Friendly* friendlyAI = dynamic_cast<Friendly*>(friendUnit->getAI());
         if (friendlyAI) {
             QString greeting = QString::fromStdString(friendlyAI->getGreeting());
             emit npcInteractionRequested(friendUnit, greeting);
@@ -207,7 +207,7 @@ void GameScene::processFriendly(Unit* friendUnit)
     }
 }
 
-void GameScene::FinishNPCInteraction()
+void GameScene::finishNPCInteraction()
 {
     QWidget* view = getViewWidget();
     if (view) view->setFocus();
@@ -215,29 +215,29 @@ void GameScene::FinishNPCInteraction()
 
 void GameScene::processTreasure(Unit* treasureUnit)
 {
-    double neededXP = Hero.GetMaxXP() - Hero.GetCurrentXP();
+    double neededXP = heroInner.getMaxXP() - heroInner.getCurrentXP();
     if (neededXP > 0) {
-        Hero.AddXP(neededXP);
+        heroInner.addXP(neededXP);
     } else {
-        Hero.AddXP(1);
+        heroInner.addXP(1);
     }
 
-    Map.ClearUnitAt(Hero.GetPosition());
-    if (Hero.IsLevelUpPending()) {
+    mapInner.clearUnitAt(heroInner.getPosition());
+    if (heroInner.isLevelUpPending()) {
         emit levelUpTriggered();
     }
 }
 
 void GameScene::handleHexClick(HexItem* item)
 {
-    if (IsHeroMoving() || IsPaused()) return;
+    if (isHeroMoving() || checkPaused()) return;
 
     Hex* targetHex = item->getModelHex();
-    QPoint targetPos(targetHex->GetQR().first, targetHex->GetQR().second);
+    QPoint targetPos(targetHex->getQR().first, targetHex->getQR().second);
 
     if (tryMoveHeroTo(targetPos))
     {
-        Map.UpdateVisibility(Hero.GetPosition());
+        mapInner.updateVisibility(heroInner.getPosition());
 
         this->update();
         emit heroStatsChanged();
@@ -245,7 +245,7 @@ void GameScene::handleHexClick(HexItem* item)
 
     if (targetPos == pendingTarget)
     {
-        StartMovement();
+        startMovement();
         clearPathHighlight();
         pendingTarget = QPoint(-999, -999);
     }
@@ -253,7 +253,7 @@ void GameScene::handleHexClick(HexItem* item)
     {
         clearPathHighlight();
 
-        currentPath = Map.FindPath(Hero.GetPosition(), targetPos);
+        currentPath = mapInner.findPath(heroInner.getPosition(), targetPos);
 
         if (!currentPath.empty()) {
             highlightPath();
@@ -266,42 +266,42 @@ void GameScene::handleHexClick(HexItem* item)
 
 Hex* GameScene::getHeroHex()
 {
-    return const_cast<Hex*>(&Map.GetQPointLoc(Hero.GetPosition()));
+    return const_cast<Hex*>(&mapInner.getQPointLoc(heroInner.getPosition()));
 }
 
-void GameScene::SaveMapToFile(const QString& filePath)
+void GameScene::saveMapToFile(const QString& filePath)
 {
-    Map.SaveToFile(filePath, Hero);
+    mapInner.saveToFile(filePath, heroInner);
 }
 
-bool GameScene::LoadMapFromFile(const QString& filePath)
+bool GameScene::loadMapFromFile(const QString& filePath)
 {
-    bool Success = Map.LoadFromFile(filePath, Hero);
+    bool Success = mapInner.loadFromFile(filePath, heroInner);
 
     if(Success)
     {
-        Map.UpdateVisibility(Hero.GetPosition());
+        mapInner.updateVisibility(heroInner.getPosition());
         generateMapItems();
         emit heroStatsChanged();
     }
     return Success;
 }
 
-GameScene::HeroStats GameScene::GetStats()
+GameScene::HeroStats GameScene::getStats()
 {
     HeroStats stats;
-    stats.HP = Hero.GetHP();
-    stats.MP = Hero.GetMana();
-    stats.LVL = Hero.GetLevel();
+    stats.hp = heroInner.getHP();
+    stats.mp = heroInner.getMana();
+    stats.lvl = heroInner.getLevel();
     return stats;
 }
 
 void GameScene::setPanning(bool panning) {
-    MisPanning = panning;
+    isPanning = panning;
     update();
 }
 
-bool GameScene::isPanning() const { return MisPanning; }
+bool GameScene::checkPanning() const { return isPanning; }
 
 void GameScene::clearPathHighlight()
 {
@@ -322,7 +322,7 @@ void GameScene::highlightPath()
     }
 }
 
-void GameScene::StartMovement()
+void GameScene::startMovement()
 {
     if (isMoving) return;
 
@@ -348,7 +348,7 @@ void GameScene::processStep()
     currentPathIndex++;
 
     this->tryMoveHeroTo(nextPos, false);
-    Map.UpdateVisibility(Hero.GetPosition());
+    mapInner.updateVisibility(heroInner.getPosition());
 
     this->update();
 
@@ -360,7 +360,7 @@ void GameScene::processStep()
     }
 }
 
-void GameScene::SetPaused(bool paused) {
+void GameScene::setPaused(bool paused) {
     isPaused = paused;
     if (paused) {
         movementTimer->stop();

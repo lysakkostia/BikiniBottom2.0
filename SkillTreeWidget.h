@@ -28,12 +28,12 @@ class SkillTreeWidget : public QWidget {
 public:
     explicit SkillTreeWidget(MainHero* h, QWidget* parent = nullptr);
 
-    void InitializeTree();
-    void UpdateUI();
+    void initializeTree();
+    void updateUI();
 
 private slots:
     void closeTree();
-    void OnNodeClicked(SkillNodeButton* btn);
+    void onNodeClicked(SkillNodeButton* btn);
 
 signals:
     void closed();
@@ -59,8 +59,8 @@ private:
 
     const int RADIUS_STEP = 110;
 
-    QColor GetColorForType(SpellType type);
-    double GetAngleForType(SpellType type);
+    QColor getColorForType(SpellType type);
+    double getAngleForType(SpellType type);
 };
 
 #endif // SKILLTREEWIDGET_H

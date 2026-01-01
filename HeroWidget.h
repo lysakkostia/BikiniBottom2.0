@@ -15,21 +15,21 @@ public:
     explicit HeroWidget(const QPixmap& Hero, GameScene* mappa, QWidget *parent = nullptr);
     ~HeroWidget();
 
-    void Update_stats();
+    void updateStats();
 
 private:
     void setupUi();
 
-    GameScene* Mappa;
-    QPixmap HeroTexture;
+    GameScene* mapInner;
+    QPixmap heroTexture;
 
-    QFrame* m_containerFrame;
-    QLabel* m_avatarLabel;
-    QLabel* m_levelLabel;
+    QFrame* containerFrame;
+    QLabel* avatarLabel;
+    QLabel* levelLabel;
 
-    QProgressBar* m_hpBar;
-    QProgressBar* m_manaBar;
-    QProgressBar* m_xpBar;
+    QProgressBar* hpBar;
+    QProgressBar* manaBar;
+    QProgressBar* xpBar;
 };
 
 #endif // HEROWIDGET_H

@@ -14,12 +14,12 @@ SettingsWidget::SettingsWidget(QWidget *parent)
 {
     setupUi();
 
-    if(m_sldMapSize)
+    if(sldMapSize)
     {
-        m_sldMapSize->setMinimum(0);
-        m_sldMapSize->setMaximum(MapRads.size() - 1);
-        m_sldMapSize->setTickInterval(1);
-        m_sldMapSize->setPageStep(1);
+        sldMapSize->setMinimum(0);
+        sldMapSize->setMaximum(mapRads.size() - 1);
+        sldMapSize->setTickInterval(1);
+        sldMapSize->setPageStep(1);
     }
 }
 
@@ -32,17 +32,17 @@ void SettingsWidget::setupUi()
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setAlignment(Qt::AlignCenter);
 
-    m_containerFrame = new QFrame(this);
-    m_containerFrame->setFixedSize(500, 400);
-    m_containerFrame->setObjectName("Container");
+    containerFrame = new QFrame(this);
+    containerFrame->setFixedSize(500, 400);
+    containerFrame->setObjectName("Container");
 
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
     shadow->setBlurRadius(30);
     shadow->setColor(QColor(0, 0, 0, 100));
     shadow->setOffset(0, 10);
-    m_containerFrame->setGraphicsEffect(shadow);
+    containerFrame->setGraphicsEffect(shadow);
 
-    mainLayout->addWidget(m_containerFrame);
+    mainLayout->addWidget(containerFrame);
 
     QString styles = R"(
         QFrame#Container {
@@ -105,14 +105,14 @@ void SettingsWidget::setupUi()
 
     this->setStyleSheet(styles);
 
-    QVBoxLayout *containerLayout = new QVBoxLayout(m_containerFrame);
+    QVBoxLayout *containerLayout = new QVBoxLayout(containerFrame);
     containerLayout->setContentsMargins(40, 30, 40, 40);
     containerLayout->setSpacing(10);
 
-    m_labelTitle = new QLabel("SETTINGS", m_containerFrame);
-    m_labelTitle->setObjectName("Title");
-    m_labelTitle->setAlignment(Qt::AlignCenter);
-    containerLayout->addWidget(m_labelTitle);
+    labelTitle = new QLabel("SETTINGS", containerFrame);
+    labelTitle->setObjectName("Title");
+    labelTitle->setAlignment(Qt::AlignCenter);
+    containerLayout->addWidget(labelTitle);
 
     containerLayout->addSpacing(10);
 
@@ -120,87 +120,87 @@ void SettingsWidget::setupUi()
     settingsGrid->setVerticalSpacing(25);
     settingsGrid->setHorizontalSpacing(20);
 
-    m_labelVolume = new QLabel("Volume", m_containerFrame);
-    m_labelVolume->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    settingsGrid->addWidget(m_labelVolume, 0, 0);
+    labelVolume = new QLabel("Volume", containerFrame);
+    labelVolume->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    settingsGrid->addWidget(labelVolume, 0, 0);
 
-    m_sldVolume = new QSlider(Qt::Horizontal, m_containerFrame);
-    m_sldVolume->setCursor(Qt::PointingHandCursor);
-    m_sldVolume->setMinimumHeight(40);
-    settingsGrid->addWidget(m_sldVolume, 0, 1);
+    sldVolume = new QSlider(Qt::Horizontal, containerFrame);
+    sldVolume->setCursor(Qt::PointingHandCursor);
+    sldVolume->setMinimumHeight(40);
+    settingsGrid->addWidget(sldVolume, 0, 1);
 
-    m_labelMapSize = new QLabel("Map Size", m_containerFrame);
-    m_labelMapSize->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    settingsGrid->addWidget(m_labelMapSize, 1, 0);
+    labelMapSize = new QLabel("Map Size", containerFrame);
+    labelMapSize->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    settingsGrid->addWidget(labelMapSize, 1, 0);
 
-    m_sldMapSize = new QSlider(Qt::Horizontal, m_containerFrame);
-    m_sldMapSize->setCursor(Qt::PointingHandCursor);
-    m_sldMapSize->setMinimumHeight(40);
-    settingsGrid->addWidget(m_sldMapSize, 1, 1);
+    sldMapSize = new QSlider(Qt::Horizontal, containerFrame);
+    sldMapSize->setCursor(Qt::PointingHandCursor);
+    sldMapSize->setMinimumHeight(40);
+    settingsGrid->addWidget(sldMapSize, 1, 1);
 
-    m_labelCurrentMapSizeName = new QLabel("Small", m_containerFrame);
-    m_labelCurrentMapSizeName->setAlignment(Qt::AlignCenter);
-    m_labelCurrentMapSizeName->setStyleSheet("color: #0277BD; font-size: 14pt;");
-    settingsGrid->addWidget(m_labelCurrentMapSizeName, 2, 1);
+    labelCurrentMapSizeName = new QLabel("Small", containerFrame);
+    labelCurrentMapSizeName->setAlignment(Qt::AlignCenter);
+    labelCurrentMapSizeName->setStyleSheet("color: #0277BD; font-size: 14pt;");
+    settingsGrid->addWidget(labelCurrentMapSizeName, 2, 1);
 
     containerLayout->addLayout(settingsGrid);
 
     containerLayout->addStretch();
 
-    m_btnClose = new QPushButton(m_containerFrame);
-    m_btnClose->setFixedSize(140, 55);
-    m_btnClose->setCursor(Qt::PointingHandCursor);
+    btnClose = new QPushButton(containerFrame);
+    btnClose->setFixedSize(140, 55);
+    btnClose->setCursor(Qt::PointingHandCursor);
 
     QHBoxLayout *btnLayout = new QHBoxLayout();
     btnLayout->addStretch();
-    btnLayout->addWidget(m_btnClose);
+    btnLayout->addWidget(btnClose);
     btnLayout->addStretch();
 
     containerLayout->addLayout(btnLayout);
 
-    connect(m_btnClose, &QPushButton::clicked, this, &SettingsWidget::onBtnCloseClicked);
-    connect(m_sldVolume, &QSlider::valueChanged, this, &SettingsWidget::onVolumeValueChanged);
-    connect(m_sldMapSize, &QSlider::valueChanged, this, &SettingsWidget::onMapSizeValueChanged);
+    connect(btnClose, &QPushButton::clicked, this, &SettingsWidget::onBtnCloseClicked);
+    connect(sldVolume, &QSlider::valueChanged, this, &SettingsWidget::onVolumeValueChanged);
+    connect(sldMapSize, &QSlider::valueChanged, this, &SettingsWidget::onMapSizeValueChanged);
 }
 
 void SettingsWidget::onBtnCloseClicked()
 {
-    emit BackClicked();
+    emit backClicked();
     this->hide();
 }
 
 void SettingsWidget::onVolumeValueChanged(int value)
 {
-    emit VolumeChanged(value);
+    emit volumeChanged(value);
 }
 
-void SettingsWidget::UpdateMapSizeLabel(int sliderValue)
+void SettingsWidget::updateMapSizeLabel(int sliderValue)
 {
-    if(m_labelCurrentMapSizeName && sliderValue >= 0 && sliderValue < MapSizeNames.size())
-        m_labelCurrentMapSizeName->setText(MapSizeNames.at(sliderValue));
+    if(labelCurrentMapSizeName && sliderValue >= 0 && sliderValue < mapSizeNames.size())
+        labelCurrentMapSizeName->setText(mapSizeNames.at(sliderValue));
 }
 
-void SettingsWidget::SetCurrentRadius(int Radius)
+void SettingsWidget::setCurrentRadius(int Radius)
 {
-    int sliderValue = MapRads.indexOf(Radius);
+    int sliderValue = mapRads.indexOf(Radius);
     if(sliderValue == -1)
         sliderValue = 1;
 
-    if(m_sldMapSize)
+    if(sldMapSize)
     {
-        bool OldSignalState = m_sldMapSize->blockSignals(true);
-        m_sldMapSize->setValue(sliderValue);
-        m_sldMapSize->blockSignals(OldSignalState);
+        bool OldSignalState = sldMapSize->blockSignals(true);
+        sldMapSize->setValue(sliderValue);
+        sldMapSize->blockSignals(OldSignalState);
     }
-    UpdateMapSizeLabel(sliderValue);
+    updateMapSizeLabel(sliderValue);
 }
 
 void SettingsWidget::onMapSizeValueChanged(int sliderValue)
 {
-    if(sliderValue >= 0 && sliderValue < MapRads.size())
+    if(sliderValue >= 0 && sliderValue < mapRads.size())
     {
-        int ActualRadius = MapRads.at(sliderValue);
-        emit MapRadChanged(ActualRadius);
-        UpdateMapSizeLabel(sliderValue);
+        int ActualRadius = mapRads.at(sliderValue);
+        emit mapRadChanged(ActualRadius);
+        updateMapSizeLabel(sliderValue);
     }
 }

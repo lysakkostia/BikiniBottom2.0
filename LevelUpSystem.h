@@ -33,7 +33,7 @@ struct UpgradeOption {
 
 class LevelUpGenerator {
 private:
-    static QString GetSpellTypeName(SpellType type) {
+    static QString getSpellTypeName(SpellType type) {
         switch (type) {
         case SpellType::Fire: return "Fire";
         case SpellType::Ice: return "Ice";
@@ -46,7 +46,7 @@ private:
     }
 
 public:
-    static std::vector<UpgradeOption> GenerateOptions() {
+    static std::vector<UpgradeOption> generateOptions() {
         std::vector<UpgradeOption> pool;
 
         pool.push_back(UpgradeOption("Vitality Boost", "Increases Max HP by 50.", UpgradeType::StatIncrease, 50.0, SpellType::Unknown, 0));
@@ -58,7 +58,7 @@ public:
         };
 
         for (const auto& el : elements) {
-            QString name = GetSpellTypeName(el);
+            QString name = getSpellTypeName(el);
             pool.push_back(UpgradeOption(
                 name + " Mastery",
                 QString("Increases %1 damage by 5%.").arg(name),

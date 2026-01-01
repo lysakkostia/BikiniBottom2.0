@@ -2,13 +2,13 @@
 #include <QDebug>
 #include <cmath>
 
-SpellManager& SpellManager::Instance()
+SpellManager& SpellManager::getInstance()
 {
     static SpellManager instance;
     return instance;
 }
 
-bool SpellManager::LoadHeroSpells(const QString& path)
+bool SpellManager::loadHeroSpells(const QString& path)
 {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -18,11 +18,11 @@ bool SpellManager::LoadHeroSpells(const QString& path)
     QByteArray data = file.readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
     heroSpellDefinitions.clear();
-    ParseJsonToVector(doc.array(), heroSpellDefinitions);
+    parseJsonToVector(doc.array(), heroSpellDefinitions);
     return true;
 }
 
-bool SpellManager::LoadEnemySpells(const QString& path)
+bool SpellManager::loadEnemySpells(const QString& path)
 {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -32,11 +32,11 @@ bool SpellManager::LoadEnemySpells(const QString& path)
     QByteArray data = file.readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
     enemySpellDefinitions.clear();
-    ParseJsonToVector(doc.array(), enemySpellDefinitions);
+    parseJsonToVector(doc.array(), enemySpellDefinitions);
     return true;
 }
 
-SpellType SpellManager::StringToSpellType(const QString& typeStr) {
+SpellType SpellManager::stringToSpellType(const QString& typeStr) {
     if (typeStr == "fire_spell") return SpellType::Fire;
     if (typeStr == "ice_spell") return SpellType::Ice;
     if (typeStr == "electric_spell") return SpellType::Electric;
@@ -47,14 +47,14 @@ SpellType SpellManager::StringToSpellType(const QString& typeStr) {
     return SpellType::Unknown;
 }
 
-void SpellManager::ParseJsonToVector(const QJsonArray& jsonArr, std::vector<SpellDefinition>& targetList)
+void SpellManager::parseJsonToVector(const QJsonArray& jsonArr, std::vector<SpellDefinition>& targetList)
 {
     for (const QJsonValue& val : jsonArr) {
         QJsonObject obj = val.toObject();
         SpellDefinition definition;
         definition.id = obj["id"].toString().toStdString();
         definition.name = obj["name"].toString().toStdString();
-        definition.type = StringToSpellType(obj["type"].toString());
+        definition.type = stringToSpellType(obj["type"].toString());
         definition.baseMana = obj["base_mana"].toDouble();
         definition.baseDamage = obj["base_damage"].toDouble();
         definition.dmgGrowth = obj["dmg_growth"].toDouble();
@@ -65,7 +65,7 @@ void SpellManager::ParseJsonToVector(const QJsonArray& jsonArr, std::vector<Spel
     }
 }
 
-Spell SpellManager::CalculateSpellStats(const SpellDefinition& definition, int level)
+Spell SpellManager::calculateSpellStats(const SpellDefinition& definition, int level)
 {
     int levelsAboveOne = (level > 1) ? (level - 1) : 0;
 
@@ -88,13 +88,13 @@ Spell SpellManager::CalculateSpellStats(const SpellDefinition& definition, int l
     return Spell(definition.id, definition.name, definition.type, currentManacost, currentDamage);
 }
 
-std::vector<Spell> SpellManager::GetHeroSpellsByIds(const std::vector<std::string>& unlockedIds, int level)
+std::vector<Spell> SpellManager::getHeroSpellsByIds(const std::vector<std::string>& unlockedIds, int level)
 {
     std::vector<Spell> result;
     for (const auto& definition : heroSpellDefinitions) {
         for(const std::string& id : unlockedIds) {
             if(definition.id == id) {
-                result.push_back(CalculateSpellStats(definition, level));
+                result.push_back(calculateSpellStats(definition, level));
                 break;
             }
         }
@@ -102,19 +102,19 @@ std::vector<Spell> SpellManager::GetHeroSpellsByIds(const std::vector<std::strin
     return result;
 }
 
-bool SpellManager::HeroSpellExists(const std::string& id) {
+bool SpellManager::heroSpellExists(const std::string& id) {
     for (const auto& def : heroSpellDefinitions) {
         if (def.id == id) return true;
     }
     return false;
 }
 
-std::vector<Spell> SpellManager::GetEnemySpellsForLevel(int level)
+std::vector<Spell> SpellManager::getEnemySpellsForLevel(int level)
 {
     std::vector<Spell> result;
     for (const auto& definition : enemySpellDefinitions) {
         if (level >= definition.requiredLevel) {
-            result.push_back(CalculateSpellStats(definition, level));
+            result.push_back(calculateSpellStats(definition, level));
         }
     }
     return result;

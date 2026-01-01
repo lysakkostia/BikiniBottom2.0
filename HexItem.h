@@ -11,8 +11,8 @@ class GameScene;
 class HexItem : public QGraphicsPolygonItem
 {
 private:
-    Hex* MHex;
-    GameScene* MScene;
+    Hex* hexInner;
+    GameScene* sceneInner;
     bool isPathHighlighted = false;
 
     void createPolygon();
@@ -27,7 +27,7 @@ protected:
 
 public:
     HexItem(Hex* modelHex, GameScene* scene, QGraphicsItem* parent = nullptr);
-    Hex* getModelHex() const { return MHex; }
+    Hex* getModelHex() const { return hexInner; }
     void updateState();
     void updateZValue();
     void setPathHighlight(bool active);

@@ -16,18 +16,18 @@ public:
     ~GameSelectionWidget();
 
 signals:
-    void StartNewGameClicked();
-    void LoadGameClicked();
-    void BackClicked();
+    void startNewGameClicked();
+    void loadGameClicked();
+    void backClicked();
 
 private:
     void setupUi();
 
-    QFrame *m_containerFrame;
-    QLabel *m_labelTitle;
-    QPushButton *m_btnNewGame;
-    QPushButton *m_btnLoadGame;
-    QPushButton *m_btnBack;
+    QFrame* containerFrame;
+    QLabel* labelTitle;
+    QPushButton* btnNewGame;
+    QPushButton* btnLoadGame;
+    QPushButton* btnBack;
 };
 
 #endif // GAMESELECTIONWIDGET_H

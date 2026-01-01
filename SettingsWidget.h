@@ -17,32 +17,29 @@ public:
     explicit SettingsWidget(QWidget *parent = nullptr);
     ~SettingsWidget();
 
-    void SetCurrentRadius(int Radius);
+    void setCurrentRadius(int Radius);
 
 signals:
-    void MapRadChanged(int NewRad);
-    void VolumeChanged(int volume);
-    void BackClicked();
+    void mapRadChanged(int NewRad);
+    void volumeChanged(int volume);
+    void backClicked();
 
 private:
-    const QList<int> MapRads = {10, 15, 20};
-    const QList<QString> MapSizeNames = {"Small", "Medium", "Big"};
+    const QList<int> mapRads = {10, 15, 20};
+    const QList<QString> mapSizeNames = {"Small", "Medium", "Big"};
 
-    QFrame *m_containerFrame;
+    QFrame* containerFrame;
 
-    QLabel *m_labelTitle;
-
-    QLabel *m_labelVolume;
-    QSlider *m_sldVolume;
-
-    QLabel *m_labelMapSize;
-    QSlider *m_sldMapSize;
-    QLabel *m_labelCurrentMapSizeName;
-
-    QPushButton *m_btnClose;
+    QLabel* labelTitle;
+    QLabel* labelVolume;
+    QSlider* sldVolume;
+    QLabel* labelMapSize;
+    QSlider* sldMapSize;
+    QLabel* labelCurrentMapSizeName;
+    QPushButton* btnClose;
 
     void setupUi();
-    void UpdateMapSizeLabel(int sliderValue);
+    void updateMapSizeLabel(int sliderValue);
 
 private slots:
     void onBtnCloseClicked();

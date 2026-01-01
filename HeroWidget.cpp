@@ -6,11 +6,11 @@
 
 HeroWidget::HeroWidget(const QPixmap& Hero, GameScene* mappa, QWidget *parent)
     : QWidget(parent)
-    , Mappa(mappa)
-    , HeroTexture(Hero)
+    , mapInner(mappa)
+    , heroTexture(Hero)
 {
     setupUi();
-    Update_stats();
+    updateStats();
 }
 
 HeroWidget::~HeroWidget()
@@ -25,59 +25,59 @@ void HeroWidget::setupUi()
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
-    m_containerFrame = new QFrame(this);
-    m_containerFrame->setObjectName("HeroFrame");
-    mainLayout->addWidget(m_containerFrame);
+    containerFrame = new QFrame(this);
+    containerFrame->setObjectName("HeroFrame");
+    mainLayout->addWidget(containerFrame);
 
     QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect(this);
     shadow->setBlurRadius(15);
     shadow->setColor(QColor(0, 0, 0, 180));
     shadow->setOffset(2, 2);
-    m_containerFrame->setGraphicsEffect(shadow);
+    containerFrame->setGraphicsEffect(shadow);
 
-    QHBoxLayout* hLayout = new QHBoxLayout(m_containerFrame);
+    QHBoxLayout* hLayout = new QHBoxLayout(containerFrame);
     hLayout->setContentsMargins(10, 10, 10, 10);
     hLayout->setSpacing(10);
 
-    m_avatarLabel = new QLabel(m_containerFrame);
-    m_avatarLabel->setFixedSize(70, 70);
-    m_avatarLabel->setAlignment(Qt::AlignCenter);
-    m_avatarLabel->setStyleSheet("border: 2px solid #5D4037; border-radius: 5px; background-color: #3E2723;");
+    avatarLabel = new QLabel(containerFrame);
+    avatarLabel->setFixedSize(70, 70);
+    avatarLabel->setAlignment(Qt::AlignCenter);
+    avatarLabel->setStyleSheet("border: 2px solid #5D4037; border-radius: 5px; background-color: #3E2723;");
 
-    if (!HeroTexture.isNull()) {
-        m_avatarLabel->setPixmap(HeroTexture.scaled(m_avatarLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    if (!heroTexture.isNull()) {
+        avatarLabel->setPixmap(heroTexture.scaled(avatarLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     } else {
-        m_avatarLabel->setText("?");
+        avatarLabel->setText("?");
     }
 
-    hLayout->addWidget(m_avatarLabel);
+    hLayout->addWidget(avatarLabel);
 
     QVBoxLayout* statsLayout = new QVBoxLayout();
     statsLayout->setSpacing(4);
     statsLayout->setContentsMargins(0, 2, 0, 2);
 
-    m_levelLabel = new QLabel("Lvl 1", m_containerFrame);
-    m_levelLabel->setObjectName("LevelLabel");
-    m_levelLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    statsLayout->addWidget(m_levelLabel);
+    levelLabel = new QLabel("Lvl 1", containerFrame);
+    levelLabel->setObjectName("LevelLabel");
+    levelLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    statsLayout->addWidget(levelLabel);
 
-    m_hpBar = new QProgressBar(m_containerFrame);
-    m_hpBar->setObjectName("HPBar");
-    m_hpBar->setFixedHeight(14);
-    m_hpBar->setTextVisible(true);
-    statsLayout->addWidget(m_hpBar);
+    hpBar = new QProgressBar(containerFrame);
+    hpBar->setObjectName("HPBar");
+    hpBar->setFixedHeight(14);
+    hpBar->setTextVisible(true);
+    statsLayout->addWidget(hpBar);
 
-    m_manaBar = new QProgressBar(m_containerFrame);
-    m_manaBar->setObjectName("ManaBar");
-    m_manaBar->setFixedHeight(14);
-    m_manaBar->setTextVisible(true);
-    statsLayout->addWidget(m_manaBar);
+    manaBar = new QProgressBar(containerFrame);
+    manaBar->setObjectName("ManaBar");
+    manaBar->setFixedHeight(14);
+    manaBar->setTextVisible(true);
+    statsLayout->addWidget(manaBar);
 
-    m_xpBar = new QProgressBar(m_containerFrame);
-    m_xpBar->setObjectName("XPBar");
-    m_xpBar->setFixedHeight(8);
-    m_xpBar->setTextVisible(false);
-    statsLayout->addWidget(m_xpBar);
+    xpBar = new QProgressBar(containerFrame);
+    xpBar->setObjectName("XPBar");
+    xpBar->setFixedHeight(8);
+    xpBar->setTextVisible(false);
+    statsLayout->addWidget(xpBar);
 
     hLayout->addLayout(statsLayout);
 
@@ -128,33 +128,33 @@ void HeroWidget::setupUi()
     this->setStyleSheet(style);
 }
 
-void HeroWidget::Update_stats()
+void HeroWidget::updateStats()
 {
-    if (!Mappa) return;
+    if (!mapInner) return;
 
-    MainHero* hero = Mappa->GetHero();
+    MainHero* hero = mapInner->getHero();
 
     if (hero) {
-        m_levelLabel->setText(QString("Lvl %1").arg(static_cast<int>(hero->GetLevel())));
+        levelLabel->setText(QString("Lvl %1").arg(static_cast<int>(hero->getLevel())));
 
-        double currentHP = hero->GetHP();
-        double maxHP = hero->GetMaxHP();
-        m_hpBar->setRange(0, static_cast<int>(maxHP));
-        m_hpBar->setValue(static_cast<int>(currentHP));
-        m_hpBar->setFormat(QString("%1/%2").arg(static_cast<int>(currentHP)).arg(static_cast<int>(maxHP)));
+        double currentHP = hero->getHP();
+        double maxHP = hero->getMaxHP();
+        hpBar->setRange(0, static_cast<int>(maxHP));
+        hpBar->setValue(static_cast<int>(currentHP));
+        hpBar->setFormat(QString("%1/%2").arg(static_cast<int>(currentHP)).arg(static_cast<int>(maxHP)));
 
-        double currentMana = hero->GetMana();
-        double maxMana = hero->GetMaxMana();
-        m_manaBar->setRange(0, static_cast<int>(maxMana));
-        m_manaBar->setValue(static_cast<int>(currentMana));
-        m_manaBar->setFormat(QString("%1/%2").arg(static_cast<int>(currentMana)).arg(static_cast<int>(maxMana)));
+        double currentMana = hero->getMana();
+        double maxMana = hero->getMaxMana();
+        manaBar->setRange(0, static_cast<int>(maxMana));
+        manaBar->setValue(static_cast<int>(currentMana));
+        manaBar->setFormat(QString("%1/%2").arg(static_cast<int>(currentMana)).arg(static_cast<int>(maxMana)));
 
-        double currentXP = hero->GetCurrentXP();
-        double maxXP = hero->GetMaxXP();
+        double currentXP = hero->getCurrentXP();
+        double maxXP = hero->getMaxXP();
 
-        m_xpBar->setRange(0, static_cast<int>(maxXP));
-        m_xpBar->setValue(static_cast<int>(currentXP));
+        xpBar->setRange(0, static_cast<int>(maxXP));
+        xpBar->setValue(static_cast<int>(currentXP));
 
-        m_xpBar->setToolTip(QString("XP: %1 / %2").arg(static_cast<int>(currentXP)).arg(static_cast<int>(maxXP)));
+        xpBar->setToolTip(QString("XP: %1 / %2").arg(static_cast<int>(currentXP)).arg(static_cast<int>(maxXP)));
     }
 }

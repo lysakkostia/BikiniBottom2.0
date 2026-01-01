@@ -17,17 +17,17 @@ void PauseWidget::setupUi()
     mainLayout->setAlignment(Qt::AlignCenter);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
-    m_containerFrame = new QFrame(this);
-    m_containerFrame->setFixedSize(420, 160);
-    m_containerFrame->setObjectName("Container");
+    containerFrame = new QFrame(this);
+    containerFrame->setFixedSize(420, 160);
+    containerFrame->setObjectName("Container");
 
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
     shadow->setBlurRadius(20);
     shadow->setColor(QColor(0, 0, 0, 150));
     shadow->setOffset(0, 10);
-    m_containerFrame->setGraphicsEffect(shadow);
+    containerFrame->setGraphicsEffect(shadow);
 
-    mainLayout->addWidget(m_containerFrame);
+    mainLayout->addWidget(containerFrame);
 
     QString styles = R"(
         QWidget#PauseOverlay {
@@ -69,35 +69,35 @@ void PauseWidget::setupUi()
     )";
     this->setStyleSheet(styles);
 
-    QVBoxLayout *frameLayout = new QVBoxLayout(m_containerFrame);
+    QVBoxLayout *frameLayout = new QVBoxLayout(containerFrame);
     frameLayout->setContentsMargins(20, 10, 20, 20);
     frameLayout->setSpacing(10);
 
-    m_labelTitle = new QLabel("Pause", m_containerFrame);
-    m_labelTitle->setAlignment(Qt::AlignCenter);
-    frameLayout->addWidget(m_labelTitle);
+    labelTitle = new QLabel("Pause", containerFrame);
+    labelTitle->setAlignment(Qt::AlignCenter);
+    frameLayout->addWidget(labelTitle);
 
     QHBoxLayout *buttonsLayout = new QHBoxLayout();
     buttonsLayout->setSpacing(20);
     buttonsLayout->setAlignment(Qt::AlignCenter);
 
-    m_btnContinue = new QPushButton(m_containerFrame);
-    m_btnContinue->setObjectName("BtnContinue");
-    m_btnContinue->setFixedSize(140, 65);
-    m_btnContinue->setCursor(Qt::PointingHandCursor);
+    btnContinue = new QPushButton(containerFrame);
+    btnContinue->setObjectName("BtnContinue");
+    btnContinue->setFixedSize(140, 65);
+    btnContinue->setCursor(Qt::PointingHandCursor);
 
-    m_btnExit = new QPushButton(m_containerFrame);
-    m_btnExit->setObjectName("BtnExit");
-    m_btnExit->setFixedSize(140, 68);
-    m_btnExit->setCursor(Qt::PointingHandCursor);
+    btnExit = new QPushButton(containerFrame);
+    btnExit->setObjectName("BtnExit");
+    btnExit->setFixedSize(140, 68);
+    btnExit->setCursor(Qt::PointingHandCursor);
 
-    buttonsLayout->addWidget(m_btnContinue);
-    buttonsLayout->addWidget(m_btnExit);
+    buttonsLayout->addWidget(btnContinue);
+    buttonsLayout->addWidget(btnExit);
 
     frameLayout->addLayout(buttonsLayout);
 
-    connect(m_btnContinue, &QPushButton::clicked, this, &PauseWidget::ContinueClicked);
-    connect(m_btnExit, &QPushButton::clicked, this, &PauseWidget::ExitClicked);
+    connect(btnContinue, &QPushButton::clicked, this, &PauseWidget::continueClicked);
+    connect(btnExit, &QPushButton::clicked, this, &PauseWidget::exitClicked);
 }
 
 void PauseWidget::showEvent(QShowEvent *event)

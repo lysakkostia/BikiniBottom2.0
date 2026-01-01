@@ -118,73 +118,73 @@ void Fight::initUI()
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(20, 20, 20, 20);
 
-    m_turnLabel = new QLabel(tr("Підготовка до бою..."), this);
-    m_turnLabel->setAlignment(Qt::AlignCenter);
-    m_turnLabel->setStyleSheet("font-size: 24px; font-weight: bold; color: #FFD54F; text-shadow: 2px 2px #000;");
-    mainLayout->addWidget(m_turnLabel);
+    turnLabel = new QLabel(tr("Підготовка до бою..."), this);
+    turnLabel->setAlignment(Qt::AlignCenter);
+    turnLabel->setStyleSheet("font-size: 24px; font-weight: bold; color: #FFD54F; text-shadow: 2px 2px #000;");
+    mainLayout->addWidget(turnLabel);
 
     QHBoxLayout* arenaLayout = new QHBoxLayout();
 
     QVBoxLayout* heroStatsLayout = new QVBoxLayout();
-    m_heroAvatar = new QLabel(this);
-    m_heroAvatar->setFixedSize(120, 120);
-    m_heroAvatar->setAlignment(Qt::AlignCenter);
+    heroAvatar = new QLabel(this);
+    heroAvatar->setFixedSize(120, 120);
+    heroAvatar->setAlignment(Qt::AlignCenter);
 
-    m_heroAvatar->setStyleSheet(
+    heroAvatar->setStyleSheet(
         "border: 3px solid #FFD54F;"
         "border-radius: 10px;"
         "background-color: rgba(0,0,0,100);"
         );
 
     if (!currentHeroTexture.isNull()) {
-        m_heroAvatar->setPixmap(currentHeroTexture.scaled(m_heroAvatar->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        heroAvatar->setPixmap(currentHeroTexture.scaled(heroAvatar->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     } else {
-        m_heroAvatar->setText("HERO");
+        heroAvatar->setText("HERO");
     }
 
-    heroStatsLayout->addWidget(m_heroAvatar, 0, Qt::AlignCenter);
+    heroStatsLayout->addWidget(heroAvatar, 0, Qt::AlignCenter);
 
-    m_heroHpBar = new QProgressBar(this);
-    m_heroHpBar->setObjectName("hp");
-    m_heroHpBar->setFormat("HP: %v/%m");
-    m_heroHpBar->setFixedSize(180, 22);
+    heroHpBar = new QProgressBar(this);
+    heroHpBar->setObjectName("hp");
+    heroHpBar->setFormat("HP: %v/%m");
+    heroHpBar->setFixedSize(180, 22);
 
-    m_heroManaBar = new QProgressBar(this);
-    m_heroManaBar->setObjectName("mana");
-    m_heroManaBar->setFormat("MP: %v/%m");
-    m_heroManaBar->setFixedSize(180, 22);
+    heroManaBar = new QProgressBar(this);
+    heroManaBar->setObjectName("mana");
+    heroManaBar->setFormat("MP: %v/%m");
+    heroManaBar->setFixedSize(180, 22);
 
-    heroStatsLayout->addWidget(m_heroHpBar, 0, Qt::AlignCenter);
-    heroStatsLayout->addWidget(m_heroManaBar, 0, Qt::AlignCenter);
+    heroStatsLayout->addWidget(heroHpBar, 0, Qt::AlignCenter);
+    heroStatsLayout->addWidget(heroManaBar, 0, Qt::AlignCenter);
     heroStatsLayout->addStretch();
 
     QVBoxLayout* enemyStatsLayout = new QVBoxLayout();
-    m_enemyImageLabel = new QLabel(this);
-    m_enemyImageLabel->setFixedSize(120, 120);
-    m_enemyImageLabel->setAlignment(Qt::AlignCenter);
-    m_enemyImageLabel->setStyleSheet(
+    enemyImageLabel = new QLabel(this);
+    enemyImageLabel->setFixedSize(120, 120);
+    enemyImageLabel->setAlignment(Qt::AlignCenter);
+    enemyImageLabel->setStyleSheet(
         "border: 3px solid #EF5350;"
         "border-radius: 10px;"
         "background-color: rgba(0,0,0,100);"
         );
 
     if (!currentEnemyTexture.isNull()) {
-        m_enemyImageLabel->setPixmap(currentEnemyTexture.scaled(m_enemyImageLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        enemyImageLabel->setPixmap(currentEnemyTexture.scaled(enemyImageLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
-    enemyStatsLayout->addWidget(m_enemyImageLabel, 0, Qt::AlignCenter);
+    enemyStatsLayout->addWidget(enemyImageLabel, 0, Qt::AlignCenter);
 
-    m_enemyHpBar = new QProgressBar(this);
-    m_enemyHpBar->setObjectName("hp");
-    m_enemyHpBar->setFormat("HP: %v/%m");
-    m_enemyHpBar->setFixedSize(180, 22);
+    enemyHpBar = new QProgressBar(this);
+    enemyHpBar->setObjectName("hp");
+    enemyHpBar->setFormat("HP: %v/%m");
+    enemyHpBar->setFixedSize(180, 22);
 
-    m_enemyManaBar = new QProgressBar(this);
-    m_enemyManaBar->setObjectName("mana");
-    m_enemyManaBar->setFormat("MP: %v/%m");
-    m_enemyManaBar->setFixedSize(180, 22);
+    enemyManaBar = new QProgressBar(this);
+    enemyManaBar->setObjectName("mana");
+    enemyManaBar->setFormat("MP: %v/%m");
+    enemyManaBar->setFixedSize(180, 22);
 
-    enemyStatsLayout->addWidget(m_enemyHpBar, 0, Qt::AlignCenter);
-    enemyStatsLayout->addWidget(m_enemyManaBar, 0, Qt::AlignCenter);
+    enemyStatsLayout->addWidget(enemyHpBar, 0, Qt::AlignCenter);
+    enemyStatsLayout->addWidget(enemyManaBar, 0, Qt::AlignCenter);
     enemyStatsLayout->addStretch();
 
     arenaLayout->addLayout(heroStatsLayout, 1);
@@ -222,13 +222,13 @@ void Fight::initUI()
     QWidget* spellContentWidget = new QWidget(spellScrollArea);
     spellContentWidget->setStyleSheet("background-color: rgba(0, 0, 0, 150); border-radius: 10px;");
 
-    m_spellsContainer = spellContentWidget;
+    spellsContainer = spellContentWidget;
 
-    m_spellsGrid = new QGridLayout(spellContentWidget);
-    m_spellsGrid->setSpacing(10);
-    m_spellsGrid->setContentsMargins(10, 10, 10, 10);
+    spellsGrid = new QGridLayout(spellContentWidget);
+    spellsGrid->setSpacing(10);
+    spellsGrid->setContentsMargins(10, 10, 10, 10);
 
-    m_spellsGrid->setRowStretch(999, 1);
+    spellsGrid->setRowStretch(999, 1);
 
     spellScrollArea->setWidget(spellContentWidget);
 
@@ -237,10 +237,10 @@ void Fight::initUI()
     QVBoxLayout* centerCtrlLayout = new QVBoxLayout();
     centerCtrlLayout->setAlignment(Qt::AlignCenter);
 
-    m_btnEscape = new QPushButton("ESCAPE", this);
-    m_btnEscape->setFixedSize(120, 60);
-    m_btnEscape->setCursor(Qt::PointingHandCursor);
-    m_btnEscape->setStyleSheet(
+    btnEscape = new QPushButton("ESCAPE", this);
+    btnEscape->setFixedSize(120, 60);
+    btnEscape->setCursor(Qt::PointingHandCursor);
+    btnEscape->setStyleSheet(
         "QPushButton {"
         "   background-color: #5D4037;"
         "   color: white;"
@@ -253,14 +253,14 @@ void Fight::initUI()
         "QPushButton:pressed { background-color: #3E2723; }"
         "QPushButton:disabled { background-color: gray; border-color: #444; }"
         );
-    connect(m_btnEscape, &QPushButton::clicked, this, &Fight::onEscapeButtonClicked);
+    connect(btnEscape, &QPushButton::clicked, this, &Fight::onEscapeButtonClicked);
 
-    centerCtrlLayout->addWidget(m_btnEscape);
+    centerCtrlLayout->addWidget(btnEscape);
     bottomPanel->addLayout(centerCtrlLayout, 1);
 
-    m_combatLog = new QTextEdit(this);
-    m_combatLog->setReadOnly(true);
-    m_combatLog->setStyleSheet(
+    combatLog = new QTextEdit(this);
+    combatLog->setReadOnly(true);
+    combatLog->setStyleSheet(
         "QTextEdit {"
         "   background-color: rgba(0, 0, 0, 180);"
         "   color: #EEEEEE;"
@@ -270,7 +270,7 @@ void Fight::initUI()
         "   font-size: 12px;"
         "}"
         );
-    bottomPanel->addWidget(m_combatLog, 2);
+    bottomPanel->addWidget(combatLog, 2);
 
     mainLayout->addLayout(bottomPanel, 2);
 
@@ -282,17 +282,17 @@ void Fight::startBattle()
     determineFirstTurn();
 
     if (isPlayerTurn) {
-        m_turnLabel->setText(tr("ВАШ ХІД"));
-        m_turnLabel->setStyleSheet("color: #66BB6A; font-size: 24px; font-weight: bold;");
+        turnLabel->setText(tr("ВАШ ХІД"));
+        turnLabel->setStyleSheet("color: #66BB6A; font-size: 24px; font-weight: bold;");
         logMessage(tr("Хід Гравця. Оберіть заклинання:"));
         populatePlayerSpellGrid();
-        m_btnEscape->setEnabled(true);
+        btnEscape->setEnabled(true);
     } else {
-        m_turnLabel->setText(tr("ХІД ВОРОГА"));
-        m_turnLabel->setStyleSheet("color: #EF5350; font-size: 24px; font-weight: bold;");
+        turnLabel->setText(tr("ХІД ВОРОГА"));
+        turnLabel->setStyleSheet("color: #EF5350; font-size: 24px; font-weight: bold;");
         logMessage(tr("Хід Ворога."));
         populatePlayerSpellGrid();
-        m_btnEscape->setEnabled(false);
+        btnEscape->setEnabled(false);
         prepareAiTurn();
     }
 }
@@ -301,30 +301,30 @@ void Fight::updateStatsDisplay()
 {
     if (!fightingHero || !currentEnemy) return;
 
-    m_heroHpBar->setRange(0, static_cast<int>(fightingHero->GetMaxHP()));
-    m_heroHpBar->setValue(static_cast<int>(fightingHero->GetHP()));
+    heroHpBar->setRange(0, static_cast<int>(fightingHero->getMaxHP()));
+    heroHpBar->setValue(static_cast<int>(fightingHero->getHP()));
 
-    m_heroManaBar->setRange(0, static_cast<int>(fightingHero->GetMaxMana()));
-    m_heroManaBar->setValue(static_cast<int>(fightingHero->GetMana()));
+    heroManaBar->setRange(0, static_cast<int>(fightingHero->getMaxMana()));
+    heroManaBar->setValue(static_cast<int>(fightingHero->getMana()));
 
-    m_enemyHpBar->setRange(0, static_cast<int>(currentEnemy->GetMaxHP()));
-    m_enemyHpBar->setValue(static_cast<int>(currentEnemy->GetHP()));
+    enemyHpBar->setRange(0, static_cast<int>(currentEnemy->getMaxHP()));
+    enemyHpBar->setValue(static_cast<int>(currentEnemy->getHP()));
 
-    m_enemyManaBar->setRange(0, static_cast<int>(currentEnemy->GetMaxMana()));
-    m_enemyManaBar->setValue(static_cast<int>(currentEnemy->GetMana()));
+    enemyManaBar->setRange(0, static_cast<int>(currentEnemy->getMaxMana()));
+    enemyManaBar->setValue(static_cast<int>(currentEnemy->getMana()));
 }
 
 void Fight::populatePlayerSpellGrid()
 {
     QLayoutItem* item;
-    while ((item = m_spellsGrid->takeAt(0)) != nullptr) {
+    while ((item = spellsGrid->takeAt(0)) != nullptr) {
         delete item->widget();
         delete item;
     }
 
-    if (!fightingHero || !fightingHero->GetAI()) return;
+    if (!fightingHero || !fightingHero->getAI()) return;
 
-    const std::vector<Spell>& spells = fightingHero->GetAI()->GetSpells();
+    const std::vector<Spell>& spells = fightingHero->getAI()->getSpells();
 
     int row = 0;
     int col = 0;
@@ -341,7 +341,7 @@ void Fight::populatePlayerSpellGrid()
             this
             );
 
-        if (!isPlayerTurn || !fightingHero->CanUseMana(spell.manacost)) {
+        if (!isPlayerTurn || !fightingHero->canUseMana(spell.manacost)) {
             btn->setEnabled(false);
             if(isPlayerTurn) {
                 btn->setToolTip(tr("Недостатньо мани"));
@@ -352,7 +352,7 @@ void Fight::populatePlayerSpellGrid()
             });
         }
 
-        m_spellsGrid->addWidget(btn, row, col);
+        spellsGrid->addWidget(btn, row, col);
 
         col++;
         if (col >= maxCols) {
@@ -366,12 +366,12 @@ void Fight::onSpellBtnClicked(int spellIndex)
 {
     if (!isPlayerTurn) return;
 
-    AI* heroAI = fightingHero->GetAI();
-    const auto& spells = heroAI->GetSpells();
+    AI* heroAI = fightingHero->getAI();
+    const auto& spells = heroAI->getSpells();
 
     if (spellIndex >= 0 && spellIndex < static_cast<int>(spells.size())) {
         const Spell& spell = spells[spellIndex];
-        if (fightingHero->CanUseMana(spell.manacost)) {
+        if (fightingHero->canUseMana(spell.manacost)) {
             executePlayerTurn(spell);
         }
     }
@@ -379,8 +379,8 @@ void Fight::onSpellBtnClicked(int spellIndex)
 
 void Fight::logMessage(const QString& message)
 {
-    m_combatLog->append(message);
-    QScrollBar *sb = m_combatLog->verticalScrollBar();
+    combatLog->append(message);
+    QScrollBar *sb = combatLog->verticalScrollBar();
     sb->setValue(sb->maximum());
 }
 
@@ -391,23 +391,23 @@ void Fight::logCombatAction(const QString& actorName, const QString& actionName,
                       .arg(actionName)
                       .arg(damage)
                       .arg(manaCost);
-    m_combatLog->append(msg);
-    QScrollBar *sb = m_combatLog->verticalScrollBar();
+    combatLog->append(msg);
+    QScrollBar *sb = combatLog->verticalScrollBar();
     sb->setValue(sb->maximum());
 }
 
 void Fight::determineFirstTurn()
 {
-    if (!fightingHero || !currentEnemy || !fightingHero->GetAI() || !currentEnemy->GetAI()) {
+    if (!fightingHero || !currentEnemy || !fightingHero->getAI() || !currentEnemy->getAI()) {
         isPlayerTurn = true;
         return;
     }
 
-    int heroRoll = RandGenerator::RandIntInInterval(0, 20);
-    int enemyRoll = RandGenerator::RandIntInInterval(0, 20);
+    int heroRoll = RandGenerator::randIntInInterval(0, 20);
+    int enemyRoll = RandGenerator::randIntInInterval(0, 20);
 
-    int heroScore = fightingHero->GetAI()->TurnOver + heroRoll + (fightingHero->GetLevel() * 2);
-    int enemyScore = currentEnemy->GetAI()->TurnOver + enemyRoll + (currentEnemy->GetLevel() * 2);
+    int heroScore = fightingHero->getAI()->turnOver + heroRoll + (fightingHero->getLevel() * 2);
+    int enemyScore = currentEnemy->getAI()->turnOver + enemyRoll + (currentEnemy->getLevel() * 2);
 
     isPlayerTurn = (heroScore >= enemyScore);
 
@@ -417,8 +417,8 @@ void Fight::determineFirstTurn()
 
 void Fight::executePlayerTurn(const Spell& spell)
 {
-    fightingHero->ConsumeMana(spell.manacost);
-    currentEnemy->TakeDamage(spell.damage);
+    fightingHero->consumeMana(spell.manacost);
+    currentEnemy->takeDamage(spell.damage);
 
     logCombatAction(tr("Гравець"), QString::fromStdString(spell.name), spell.damage, spell.manacost);
     updateStatsDisplay();
@@ -426,13 +426,13 @@ void Fight::executePlayerTurn(const Spell& spell)
     if (isBattleOver()) return;
 
     isPlayerTurn = false;
-    m_turnLabel->setText(tr("ХІД ВОРОГА"));
-    m_turnLabel->setStyleSheet("color: #EF5350; font-size: 24px; font-weight: bold;");
+    turnLabel->setText(tr("ХІД ВОРОГА"));
+    turnLabel->setStyleSheet("color: #EF5350; font-size: 24px; font-weight: bold;");
 
     populatePlayerSpellGrid();
-    m_btnEscape->setEnabled(false);
+    btnEscape->setEnabled(false);
 
-    QTimer::singleShot(GlobalConst::FightAI::AI_AFTER_PLAYER_DELAY_MS + RandGenerator::RandIntInInterval(0, 500), this, &Fight::onAiTurnTimeout);
+    QTimer::singleShot(GlobalConst::FightAI::AI_AFTER_PLAYER_DELAY_MS + RandGenerator::randIntInInterval(0, 500), this, &Fight::onAiTurnTimeout);
 }
 
 void Fight::prepareAiTurn()
@@ -451,18 +451,18 @@ void Fight::executeAiTurn()
 
     logMessage(tr("Ворог розмірковує..."));
 
-    AI* enemyAI = currentEnemy->GetAI();
+    AI* enemyAI = currentEnemy->getAI();
     if (!enemyAI) {
         logMessage(tr("Ворог розгублений."));
         isPlayerTurn = true;
         return;
     }
 
-    const Spell* chosenSpell = enemyAI->ChooseBestSpell(currentEnemy->GetMana());
+    const Spell* chosenSpell = enemyAI->chooseBestSpell(currentEnemy->getMana());
 
-    if (chosenSpell && currentEnemy->CanUseMana(chosenSpell->manacost)) {
-        currentEnemy->ConsumeMana(chosenSpell->manacost);
-        fightingHero->TakeDamage(chosenSpell->damage);
+    if (chosenSpell && currentEnemy->canUseMana(chosenSpell->manacost)) {
+        currentEnemy->consumeMana(chosenSpell->manacost);
+        fightingHero->takeDamage(chosenSpell->damage);
 
         logCombatAction(tr("Ворог"), QString::fromStdString(chosenSpell->name), chosenSpell->damage, chosenSpell->manacost);
     } else {
@@ -474,22 +474,22 @@ void Fight::executeAiTurn()
     if (isBattleOver()) return;
 
     isPlayerTurn = true;
-    m_turnLabel->setText(tr("ВАШ ХІД"));
-    m_turnLabel->setStyleSheet("color: #66BB6A; font-size: 24px; font-weight: bold;");
+    turnLabel->setText(tr("ВАШ ХІД"));
+    turnLabel->setStyleSheet("color: #66BB6A; font-size: 24px; font-weight: bold;");
 
     logMessage(tr("Хід Гравця."));
     populatePlayerSpellGrid();
-    m_btnEscape->setEnabled(true);
+    btnEscape->setEnabled(true);
 }
 
 bool Fight::isBattleOver()
 {
-    if (fightingHero->GetHP() <= 0) {
+    if (fightingHero->getHP() <= 0) {
         logMessage(tr("Герой переможений!"));
         endBattle(false);
         return true;
     }
-    if (currentEnemy->GetHP() <= 0) {
+    if (currentEnemy->getHP() <= 0) {
         logMessage(tr("Ворог переможений!"));
         endBattle(true);
         return true;
@@ -499,8 +499,8 @@ bool Fight::isBattleOver()
 
 void Fight::endBattle(bool playerWon)
 {
-    if(m_spellsContainer) m_spellsContainer->setEnabled(false);
-    if(m_btnEscape) m_btnEscape->setEnabled(false);
+    if(spellsContainer) spellsContainer->setEnabled(false);
+    if(btnEscape) btnEscape->setEnabled(false);
 
     QString title = playerWon ? tr("Перемога!") : tr("Поразка");
     QString message = playerWon ? tr("Ви перемогли ворога!") : tr("Вас було переможено...");
@@ -518,14 +518,14 @@ void Fight::onEscapeButtonClicked()
     logMessage(tr("Спроба втечі..."));
 
     populatePlayerSpellGrid();
-    m_btnEscape->setEnabled(false);
+    btnEscape->setEnabled(false);
 
-    bool success = (RandGenerator::RandDoubleInInterval(0.0, 1.0) <= 0.5);
+    bool success = (RandGenerator::randDoubleInInterval(0.0, 1.0) <= 0.5);
 
     if (success) {
         logMessage(tr("Втеча вдалася!"));
-        currentEnemy->SetHP(currentEnemy->GetMaxHP());
-        currentEnemy->SetMana(currentEnemy->GetMaxMana());
+        currentEnemy->setHP(currentEnemy->getMaxHP());
+        currentEnemy->setMana(currentEnemy->getMaxMana());
         showInternalDialog(tr("Втеча"), tr("Ви успішно втекли!"), [this]() {
             playerEscaped = true;
             emit battleEnded(false);
@@ -535,8 +535,8 @@ void Fight::onEscapeButtonClicked()
         logMessage(tr("Втекти не вдалося! Хід втрачено."));
         showInternalDialog(tr("Невдача"), tr("Втекти не вдалося!"), [this]() {
             isPlayerTurn = false;
-            m_turnLabel->setText(tr("ХІД ВОРОГА"));
-            m_turnLabel->setStyleSheet("color: #EF5350; font-size: 24px; font-weight: bold;");
+            turnLabel->setText(tr("ХІД ВОРОГА"));
+            turnLabel->setStyleSheet("color: #EF5350; font-size: 24px; font-weight: bold;");
 
             QTimer::singleShot(GlobalConst::FightAI::AI_AFTER_PLAYER_DELAY_MS, this, &Fight::onAiTurnTimeout);
         });
@@ -551,25 +551,25 @@ bool Fight::didPlayerEscaped() const
 void Fight::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
-    if (m_currentOverlay) {
-        m_currentOverlay->setGeometry(rect());
+    if (currentOverlay) {
+        currentOverlay->setGeometry(rect());
     }
 }
 
 void Fight::showInternalDialog(const QString& title, const QString& message, std::function<void()> onOk)
 {
-    if (m_currentOverlay) {
-        m_currentOverlay->deleteLater();
+    if (currentOverlay) {
+        currentOverlay->deleteLater();
     }
 
-    m_currentOverlay = new QWidget(this);
-    m_currentOverlay->setGeometry(rect());
-    m_currentOverlay->setStyleSheet("background-color: rgba(0, 0, 0, 180);");
+    currentOverlay = new QWidget(this);
+    currentOverlay->setGeometry(rect());
+    currentOverlay->setStyleSheet("background-color: rgba(0, 0, 0, 180);");
 
-    QVBoxLayout* overlayLayout = new QVBoxLayout(m_currentOverlay);
+    QVBoxLayout* overlayLayout = new QVBoxLayout(currentOverlay);
     overlayLayout->setAlignment(Qt::AlignCenter);
 
-    QFrame* dialogPanel = new QFrame(m_currentOverlay);
+    QFrame* dialogPanel = new QFrame(currentOverlay);
     dialogPanel->setFixedSize(380, 220);
     dialogPanel->setStyleSheet(
         "QFrame {"
@@ -606,9 +606,9 @@ void Fight::showInternalDialog(const QString& title, const QString& message, std
         );
 
     connect(btnOk, &QPushButton::clicked, [this, onOk]() {
-        if (m_currentOverlay) {
-            m_currentOverlay->deleteLater();
-            m_currentOverlay = nullptr;
+        if (currentOverlay) {
+            currentOverlay->deleteLater();
+            currentOverlay = nullptr;
         }
         if (onOk) {
             onOk();
@@ -620,5 +620,5 @@ void Fight::showInternalDialog(const QString& title, const QString& message, std
     dialogLayout->addWidget(btnOk, 0, Qt::AlignCenter);
 
     overlayLayout->addWidget(dialogPanel);
-    m_currentOverlay->show();
+    currentOverlay->show();
 }

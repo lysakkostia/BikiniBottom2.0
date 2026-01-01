@@ -13,28 +13,28 @@ class Hex
 {
 private:
     int q,r;
-    bool IsVisible;
-    bool IsExplored;
-    Unit* Unit_;
+    bool isVisible;
+    bool isExplored;
+    Unit* unit;
 
 public:
-    Hex(int q_, int r_) : q(q_), r(r_), IsVisible(false), IsExplored(false), Unit_(nullptr)
+    Hex(int q_, int r_) : q(q_), r(r_), isVisible(false), isExplored(false), unit(nullptr)
     {}
 
     friend class HexMap;
 
-    std::pair<int, int> GetQR() const;
-    QPointF GetCenter() const;
-    std::vector<QPointF> GetCorners() const;
-    bool IsNeighbor(const Hex& OHex) const;
+    std::pair<int, int> getQR() const;
+    QPointF getCenter() const;
+    std::vector<QPointF> getCorners() const;
+    bool isNeighbor(const Hex& OHex) const;
 
-    bool VisibilityState() const;
-    bool ExplorationState() const;
+    bool visibilityState() const;
+    bool explorationState() const;
 
-    void SetUnit(Unit* UnitTemp);
-    Unit* GetUnit() const;
-    bool HaveUnit() const;
-    void ClearUnit();
+    void setUnit(Unit* UnitTemp);
+    Unit* getUnit() const;
+    bool haveUnit() const;
+    void clearUnit();
 };
 
 #endif //CELL_H_DEFINED

@@ -35,8 +35,8 @@ int main(int argc, char *argv[])
          }
     }
 
-    SpellManager::Instance().LoadHeroSpells("hero_spells.json");
-    SpellManager::Instance().LoadEnemySpells("enemy_spells.json");
+    SpellManager::getInstance().loadHeroSpells("hero_spells.json");
+    SpellManager::getInstance().loadEnemySpells("enemy_spells.json");
 
     MainWindow w;
     w.show();

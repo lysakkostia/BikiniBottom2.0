@@ -24,17 +24,17 @@ void GameSelectionWidget::setupUi()
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setAlignment(Qt::AlignCenter);
 
-    m_containerFrame = new QFrame(this);
-    m_containerFrame->setFixedSize(550, 420);
-    m_containerFrame->setObjectName("Container");
+    containerFrame = new QFrame(this);
+    containerFrame->setFixedSize(550, 420);
+    containerFrame->setObjectName("Container");
 
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
     shadow->setBlurRadius(20);
     shadow->setColor(QColor(0,0,0, 150));
     shadow->setOffset(0, 10);
-    m_containerFrame->setGraphicsEffect(shadow);
+    containerFrame->setGraphicsEffect(shadow);
 
-    mainLayout->addWidget(m_containerFrame);
+    mainLayout->addWidget(containerFrame);
 
     QString styles = R"(
         QFrame#Container {
@@ -74,45 +74,45 @@ void GameSelectionWidget::setupUi()
     )";
     this->setStyleSheet(styles);
 
-    QVBoxLayout *frameLayout = new QVBoxLayout(m_containerFrame);
+    QVBoxLayout *frameLayout = new QVBoxLayout(containerFrame);
     frameLayout->setContentsMargins(40, 50, 40, 40);
     frameLayout->setSpacing(20);
 
-    m_labelTitle = new QLabel("Start a new game?", m_containerFrame);
-    m_labelTitle->setAlignment(Qt::AlignCenter);
-    m_labelTitle->setWordWrap(true);
-    frameLayout->addWidget(m_labelTitle);
+    labelTitle = new QLabel("Start a new game?", containerFrame);
+    labelTitle->setAlignment(Qt::AlignCenter);
+    labelTitle->setWordWrap(true);
+    frameLayout->addWidget(labelTitle);
 
     frameLayout->addStretch();
 
     QHBoxLayout *buttonsLayout = new QHBoxLayout();
     buttonsLayout->setSpacing(20);
 
-    m_btnNewGame = new QPushButton(m_containerFrame);
-    m_btnNewGame->setObjectName("BtnNew");
-    m_btnNewGame->setFixedSize(150, 70);
-    m_btnNewGame->setCursor(Qt::PointingHandCursor);
+    btnNewGame = new QPushButton(containerFrame);
+    btnNewGame->setObjectName("BtnNew");
+    btnNewGame->setFixedSize(150, 70);
+    btnNewGame->setCursor(Qt::PointingHandCursor);
 
-    m_btnLoadGame = new QPushButton(m_containerFrame);
-    m_btnLoadGame->setObjectName("BtnLoad");
-    m_btnLoadGame->setFixedSize(150, 70);
-    m_btnLoadGame->setCursor(Qt::PointingHandCursor);
+    btnLoadGame = new QPushButton(containerFrame);
+    btnLoadGame->setObjectName("BtnLoad");
+    btnLoadGame->setFixedSize(150, 70);
+    btnLoadGame->setCursor(Qt::PointingHandCursor);
 
-    buttonsLayout->addWidget(m_btnNewGame);
-    buttonsLayout->addWidget(m_btnLoadGame);
+    buttonsLayout->addWidget(btnNewGame);
+    buttonsLayout->addWidget(btnLoadGame);
 
     frameLayout->addLayout(buttonsLayout);
 
     frameLayout->addSpacing(10);
 
-    m_btnBack = new QPushButton(m_containerFrame);
-    m_btnBack->setObjectName("BtnBack");
-    m_btnBack->setFixedSize(150, 70);
-    m_btnBack->setCursor(Qt::PointingHandCursor);
+    btnBack = new QPushButton(containerFrame);
+    btnBack->setObjectName("BtnBack");
+    btnBack->setFixedSize(150, 70);
+    btnBack->setCursor(Qt::PointingHandCursor);
 
-    frameLayout->addWidget(m_btnBack, 0, Qt::AlignCenter);
+    frameLayout->addWidget(btnBack, 0, Qt::AlignCenter);
 
-    connect(m_btnNewGame, &QPushButton::clicked, this, &GameSelectionWidget::StartNewGameClicked);
-    connect(m_btnLoadGame, &QPushButton::clicked, this, &GameSelectionWidget::LoadGameClicked);
-    connect(m_btnBack, &QPushButton::clicked, this, &GameSelectionWidget::BackClicked);
+    connect(btnNewGame, &QPushButton::clicked, this, &GameSelectionWidget::startNewGameClicked);
+    connect(btnLoadGame, &QPushButton::clicked, this, &GameSelectionWidget::loadGameClicked);
+    connect(btnBack, &QPushButton::clicked, this, &GameSelectionWidget::backClicked);
 }

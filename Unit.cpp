@@ -6,41 +6,41 @@
 
 const double HEALTH_EPSILON = 1e-9;
 
-Unit::Unit(UnitType type, double level, double hp, double mana, QPoint pos)
+Unit::Unit(UnitType type_, double level_, double hp_, double mana_, QPoint pos_)
 {
-    UType = type;
-    UMaxHp = (hp > 0) ? hp : 100;
-    UMaxMana = (mana > 0) ? mana : 100;
-    SetHP(hp);
-    SetMana(mana);
-    SetLevel(level);
-    SetPosition(pos);
-    UAi = nullptr;
+    type = type_;
+    maxHp = (hp_ > 0) ? hp_ : 100;
+    maxMana = (mana_ > 0) ? mana_ : 100;
+    setHP(hp_);
+    setMana(mana_);
+    setLevel(level_);
+    setPosition(pos_);
+    ai = nullptr;
 }
 
-bool Unit::IsEnemy() const
+bool Unit::isEnemy() const
 {
-    return UType == UnitType::Enemy ||
-           UType == UnitType::Wizard ||
-           UType == UnitType::Barbarian ||
-           UType == UnitType::Warrior;
+    return type == UnitType::Enemy ||
+           type == UnitType::Wizard ||
+           type == UnitType::Barbarian ||
+           type == UnitType::Warrior;
 }
 
-bool Unit::IsStructure() const
+bool Unit::isStructure() const
 {
-    return UType == UnitType::StructBreak ||
-           UType == UnitType::StructUnBreak ||
-           UType == UnitType::CampfireUnit;
+    return type == UnitType::StructBreak ||
+           type == UnitType::StructUnBreak ||
+           type == UnitType::CampfireUnit;
 }
 
-bool Unit::IsInteractive() const
+bool Unit::isInteractive() const
 {
-    return UType == UnitType::CampfireUnit ||
-           UType == UnitType::Friend;
+    return type == UnitType::CampfireUnit ||
+           type == UnitType::Friend;
 }
 
-std::string Unit::GetTypeString() const {
-    switch (UType) {
+std::string Unit::getTypeString() const {
+    switch (type) {
     case UnitType::MainHero: return "MainHero";
     case UnitType::Enemy: return "Enemy";
     case UnitType::Wizard: return "Wizard";
@@ -54,100 +54,100 @@ std::string Unit::GetTypeString() const {
     }
 }
 
-void Unit::SetPosition(const QPoint& pos)
+void Unit::setPosition(const QPoint& pos_)
 {
-    UPosition = pos;
+    position = pos_;
 }
 
-void Unit::SetHP(double hp)
+void Unit::setHP(double hp_)
 {
-    UHp = hp;
+    hp = hp_;
 
-    if (UHp > UMaxHp) UHp = UMaxHp;
-    if (UHp < 0) UHp = 0;
+    if (hp > maxHp) hp = maxHp;
+    if (hp < 0) hp = 0;
 }
 
-void Unit::SetMaxHP(double maxHp)
+void Unit::setMaxHP(double maxHp_)
 {
-    if (maxHp < 1) maxHp = 1;
-    UMaxHp = maxHp;
-    if (UHp > UMaxHp) UHp = UMaxHp;
+    if (maxHp_ < 1) maxHp_ = 1;
+    maxHp = maxHp_;
+    if (hp > maxHp) hp = maxHp;
 }
 
-void Unit::SetMana(double mana)
+void Unit::setMana(double mana_)
 {
-    UMana = mana;
+    mana = mana_;
 
-    if (UMana > UMaxMana) UMana = UMaxMana;
-    if (UMana < 0) UMana = 0;
+    if (mana > maxMana) mana = maxMana;
+    if (mana < 0) mana = 0;
 }
 
-void Unit::SetMaxMana(double maxMana)
+void Unit::setMaxMana(double maxMana_)
 {
-    if (maxMana < 0) maxMana = 0;
-    UMaxMana = maxMana;
-    if (UMana > UMaxMana) UMana = UMaxMana;
+    if (maxMana_ < 0) maxMana_ = 0;
+    maxMana = maxMana_;
+    if (mana > maxMana) mana = maxMana;
 }
 
-void Unit::SetLevel(double level)
+void Unit::setLevel(double level_)
 {
-    ULevel = level;
+    level = level_;
 }
 
-void Unit::SetAI(std::unique_ptr<AI> newAI)
+void Unit::setAI(std::unique_ptr<AI> newAI)
 {
-    UAi = std::move(newAI);
+    ai = std::move(newAI);
 }
 
-void Unit::TakeDamage(double damage) {
-    UHp -= damage;
-    if (UHp < HEALTH_EPSILON) UHp = 0;
+void Unit::takeDamage(double damage) {
+    hp -= damage;
+    if (hp < HEALTH_EPSILON) hp = 0;
 }
 
-bool Unit::CanUseMana(double cost) const {
-    return UMana >= cost;
+bool Unit::canUseMana(double cost) const {
+    return mana >= cost;
 }
 
-void Unit::ConsumeMana(double cost) {
-    if (CanUseMana(cost)) {
-        UMana -= cost;
+void Unit::consumeMana(double cost) {
+    if (canUseMana(cost)) {
+        mana -= cost;
     }
 }
 
-void Unit::LevelUp()
+void Unit::levelUp()
 {
-    SetLevel(ULevel + 1);
-    RecalculateStats();
-    UHp = UMaxHp;
-    UMana = UMaxMana;
+    setLevel(level + 1);
+    recalculateStats();
+    hp = maxHp;
+    mana = maxMana;
 }
 
-QJsonObject Unit::ToJson() const
+QJsonObject Unit::toJson() const
 {
     QJsonObject json;
 
-    json["type"] = static_cast<int>(UType);
-    json["hp"] = UHp;
-    json["mana"] = UMana;
-    json["level"] = ULevel;
-    json["x"] = UPosition.x();
-    json["y"] = UPosition.y();
+    json["type"] = static_cast<int>(type);
+    json["hp"] = hp;
+    json["mana"] = mana;
+    json["level"] = level;
+    json["x"] = position.x();
+    json["y"] = position.y();
 
     return json;
 }
 
-void Unit::FromJson(const QJsonObject& json)
+void Unit::fromJson(const QJsonObject& json)
 {
-    if (json.contains("type")) UType = static_cast<UnitType>(json["type"].toInt());
-    if (json.contains("level")) ULevel = json["level"].toDouble();
+    if (json.contains("type")) type = static_cast<UnitType>(json["type"].toInt());
+    if (json.contains("level")) level = json["level"].toDouble();
 
-    RecalculateStats();
+    recalculateStats();
 
-    if (json.contains("hp")) SetHP(json["hp"].toDouble());
-    if (json.contains("mana")) SetMana(json["mana"].toDouble());
+    if (json.contains("hp")) setHP(json["hp"].toDouble());
+    if (json.contains("mana")) setMana(json["mana"].toDouble());
 
     if (json.contains("x") && json.contains("y")) {
-        UPosition = QPoint(json["x"].toInt(), json["y"].toInt());
+        position = QPoint(json["x"].toInt(), json["y"].toInt());
     }
 }
 
@@ -156,196 +156,196 @@ void Unit::FromJson(const QJsonObject& json)
 MainHero::MainHero(QPoint Pos)
     : Unit(UnitType::MainHero, 1, 0, 0, Pos)
 {
-    UCurrentXP = 0;
-    UMaxXP = GlobalConst::Progression::BASE_XP_REQ;
-    USkillPoints = 0;
-    UBonusMaxHP = 0;
-    UBonusMaxMana = 0;
-    PendingLevelUps = 0;
+    currentXP = 0;
+    maxXP = GlobalConst::Progression::BASE_XP_REQ;
+    skillPoints = 0;
+    bonusMaxHP = 0;
+    bonusMaxMana = 0;
+    pendingLevelUps = 0;
 
-    SetAI(std::make_unique<MainCharacter>());
+    setAI(std::make_unique<MainCharacter>());
 
-    UnlockedSpellIds.push_back("ember");
-    UnlockedSpellIds.push_back("icicle");
-    UnlockedSpellIds.push_back("spark");
-    UnlockedSpellIds.push_back("poison_dart");
-    UnlockedSpellIds.push_back("dark_orb");
-    UnlockedSpellIds.push_back("energy_pulse");
+    unlockedSpellIds.push_back("ember");
+    unlockedSpellIds.push_back("icicle");
+    unlockedSpellIds.push_back("spark");
+    unlockedSpellIds.push_back("poison_dart");
+    unlockedSpellIds.push_back("dark_orb");
+    unlockedSpellIds.push_back("energy_pulse");
 
-    if (UAi) {
-        MainCharacter* heroAI = dynamic_cast<MainCharacter*>(UAi.get());
-        if(heroAI) heroAI->updateSpellStats(1, UnlockedSpellIds);
+    if (ai) {
+        MainCharacter* heroAI = dynamic_cast<MainCharacter*>(ai.get());
+        if(heroAI) heroAI->updateSpellStats(1, unlockedSpellIds);
     }
 
-    RecalculateStats();
-    SetHP(GetMaxHP());
-    SetMana(GetMaxMana());
+    recalculateStats();
+    setHP(getMaxHP());
+    setMana(getMaxMana());
 }
 
-void MainHero::AddXP(double amount)
+void MainHero::addXP(double amount)
 {
-    UCurrentXP += amount;
-    while(UCurrentXP >= UMaxXP)
+    currentXP += amount;
+    while(currentXP >= maxXP)
     {
-        LevelUp();
+        levelUp();
     }
 }
 
-void MainHero::LevelUp()
+void MainHero::levelUp()
 {
-    UCurrentXP -= UMaxXP;
-    SetLevel(GetLevel() + 1);
+    currentXP -= maxXP;
+    setLevel(getLevel() + 1);
 
-    UMaxXP = UMaxXP * GlobalConst::Progression::XP_GROWTH_FACTOR;
-    AddSkillPoints();
-    PendingLevelUps++;
+    maxXP = maxXP * GlobalConst::Progression::XP_GROWTH_FACTOR;
+    addSkillPoints();
+    pendingLevelUps++;
 
-    RefreshAISpells();
+    refreshAISpells();
 
-    RecalculateStats();
-    SetHP(GetMaxHP());
-    SetMana(GetMaxMana());
+    recalculateStats();
+    setHP(getMaxHP());
+    setMana(getMaxMana());
 }
 
-void MainHero::AddSkillPoints()
+void MainHero::addSkillPoints()
 {
-    int currentLevelInt = static_cast<int>(GetLevel());
+    int currentLevelInt = static_cast<int>(getLevel());
     int pointsToGain = 1;
 
     if (currentLevelInt % 5 == 0) {
         pointsToGain = 2;
         qDebug() << "Bonus Level! Gained 2 Skill Points.";
     }
-    USkillPoints += pointsToGain;
+    skillPoints += pointsToGain;
 }
 
-void MainHero::AddMaxHPBonus(double amount) {
-    UBonusMaxHP += amount;
-    RecalculateStats();
-    SetHP(GetHP() + amount);
+void MainHero::addMaxHPBonus(double amount) {
+    bonusMaxHP += amount;
+    recalculateStats();
+    setHP(getHP() + amount);
 }
 
-void MainHero::AddMaxManaBonus(double amount) {
-    UBonusMaxMana += amount;
-    RecalculateStats();
-    SetMana(GetMana() + amount);
+void MainHero::addMaxManaBonus(double amount) {
+    bonusMaxMana += amount;
+    recalculateStats();
+    setMana(getMana() + amount);
 }
 
-void MainHero::AddSpellDamageMultiplier(SpellType type, double multiplier) {
-    if(!USpellDamageMultipliers.contains(type)) {
-        USpellDamageMultipliers[type] = 1.0;
+void MainHero::addSpellDamageMultiplier(SpellType type, double multiplier) {
+    if(!spellDamageMultipliers.contains(type)) {
+        spellDamageMultipliers[type] = 1.0;
     }
-    USpellDamageMultipliers[type] += multiplier;
-    RefreshAISpells();
+    spellDamageMultipliers[type] += multiplier;
+    refreshAISpells();
 }
 
-double MainHero::GetSpellDamageMultiplier(SpellType type) const {
-    return USpellDamageMultipliers.value(type, 1.0);
+double MainHero::getSpellDamageMultiplier(SpellType type) const {
+    return spellDamageMultipliers.value(type, 1.0);
 }
 
-void MainHero::RecalculateStats()
+void MainHero::recalculateStats()
 {
-    double baseMaxHp = GlobalConst::GLOBAL_BASE_HP + (GetLevel() * GlobalConst::Hero::HP_GROWTH);
-    double baseMaxMana = GlobalConst::GLOBAL_BASE_MANA + (GetLevel() * GlobalConst::Hero::MANA_GROWTH);
+    double baseMaxHp = GlobalConst::GLOBAL_BASE_HP + (getLevel() * GlobalConst::Hero::HP_GROWTH);
+    double baseMaxMana = GlobalConst::GLOBAL_BASE_MANA + (getLevel() * GlobalConst::Hero::MANA_GROWTH);
 
-    SetMaxHP(baseMaxHp + UBonusMaxHP);
-    SetMaxMana(baseMaxMana + UBonusMaxMana);
+    setMaxHP(baseMaxHp + bonusMaxHP);
+    setMaxMana(baseMaxMana + bonusMaxMana);
 }
 
-void MainHero::ApplyUpgrade(const UpgradeOption& option)
+void MainHero::applyUpgrade(const UpgradeOption& option)
 {
     if (option.type == UpgradeType::StatIncrease) {
         if (option.statIndex == 0) {
-            AddMaxHPBonus(option.value);
-            SetHP(GetHP() + option.value);
+            addMaxHPBonus(option.value);
+            setHP(getHP() + option.value);
         } else if (option.statIndex == 1) {
-            AddMaxManaBonus(option.value);
-            SetMana(GetMana() + option.value);
+            addMaxManaBonus(option.value);
+            setMana(getMana() + option.value);
         }
     }
     else if (option.type == UpgradeType::SpellTypeBuff) {
-        AddSpellDamageMultiplier(option.specificType, option.value);
+        addSpellDamageMultiplier(option.specificType, option.value);
         qDebug() << "Buffed" << (int)option.specificType << "by" << option.value;
     }
 }
 
-bool MainHero::UnlockSkillNode(const std::string& nodeId, int cost) {
-    if (USkillPoints >= cost) {
-        USkillPoints -= cost;
-        UnlockedSkillNodes.insert(QString::fromStdString(nodeId));
+bool MainHero::unlockSkillNode(const std::string& nodeId, int cost) {
+    if (skillPoints >= cost) {
+        skillPoints -= cost;
+        unlockedSkillNodes.insert(QString::fromStdString(nodeId));
         return true;
     }
     return false;
 }
 
-bool MainHero::IsNodeUnlocked(const std::string& nodeId) const {
-    return UnlockedSkillNodes.contains(QString::fromStdString(nodeId));
+bool MainHero::isNodeUnlocked(const std::string& nodeId) const {
+    return unlockedSkillNodes.contains(QString::fromStdString(nodeId));
 }
 
-void MainHero::UnlockSpell(const std::string& spellId) {
-    for(const auto& id : UnlockedSpellIds) {
+void MainHero::unlockSpell(const std::string& spellId) {
+    for(const auto& id : unlockedSpellIds) {
         if(id == spellId) return;
     }
-    UnlockedSpellIds.push_back(spellId);
+    unlockedSpellIds.push_back(spellId);
 
-    RefreshAISpells();
+    refreshAISpells();
 }
 
-void MainHero::AddManaCostReduction(SpellType type, double reductionPercent) {
-    if (!ManaCostReductions.contains(type)) ManaCostReductions[type] = 0.0;
-    ManaCostReductions[type] += reductionPercent;
-    RefreshAISpells();
+void MainHero::addManaCostReduction(SpellType type, double reductionPercent) {
+    if (!manaCostReductions.contains(type)) manaCostReductions[type] = 0.0;
+    manaCostReductions[type] += reductionPercent;
+    refreshAISpells();
 }
 
-double MainHero::GetManaCostMultiplier(SpellType type) const {
-    double reduction = ManaCostReductions.value(type, 0.0);
+double MainHero::getManaCostMultiplier(SpellType type) const {
+    double reduction = manaCostReductions.value(type, 0.0);
     double mult = 1.0 - reduction;
     if (mult < 0.1) mult = 0.1;
     return mult;
 }
 
-void MainHero::RefreshAISpells()
+void MainHero::refreshAISpells()
 {
-    if (!UAi) return;
+    if (!ai) return;
 
-    MainCharacter* heroAI = dynamic_cast<MainCharacter*>(UAi.get());
+    MainCharacter* heroAI = dynamic_cast<MainCharacter*>(ai.get());
     if (heroAI) {
-        heroAI->updateSpellStats(this->GetLevel(), UnlockedSpellIds);
-        UAi->ApplyMultipliers(USpellDamageMultipliers);
-        UAi->ApplyManaReductions(ManaCostReductions);
+        heroAI->updateSpellStats(this->getLevel(), unlockedSpellIds);
+        ai->applyMultipliers(spellDamageMultipliers);
+        ai->applyManaReductions(manaCostReductions);
     }
 }
 
-QJsonObject MainHero::ToJson() const
+QJsonObject MainHero::toJson() const
 {
-    QJsonObject json = Unit::ToJson();
+    QJsonObject json = Unit::toJson();
 
-    json["xp"] = UCurrentXP;
-    json["skillPoints"] = USkillPoints;
-    json["pendingLevelUps"] = PendingLevelUps;
-    json["bonusHp"] = UBonusMaxHP;
-    json["bonusMana"] = UBonusMaxMana;
+    json["xp"] = currentXP;
+    json["skillPoints"] = skillPoints;
+    json["pendingLevelUps"] = pendingLevelUps;
+    json["bonusHp"] = bonusMaxHP;
+    json["bonusMana"] = bonusMaxMana;
 
     QJsonArray spellsArr;
-    for(const auto& s : UnlockedSpellIds) {
+    for(const auto& s : unlockedSpellIds) {
         spellsArr.append(QString::fromStdString(s));
     }
     json["unlockedSpells"] = spellsArr;
 
     QJsonArray nodesArr;
-    for(const auto& node : UnlockedSkillNodes) {
+    for(const auto& node : unlockedSkillNodes) {
         nodesArr.append(node);
     }
     json["unlockedNodes"] = nodesArr;
 
     QJsonObject dmgMultObj;
-    for(auto it = USpellDamageMultipliers.begin(); it != USpellDamageMultipliers.end(); ++it) {
+    for(auto it = spellDamageMultipliers.begin(); it != spellDamageMultipliers.end(); ++it) {
         dmgMultObj[QString::number(static_cast<int>(it.key()))] = it.value();
     }
     json["dmgMultipliers"] = dmgMultObj;
 
     QJsonObject manaRedObj;
-    for(auto it = ManaCostReductions.begin(); it != ManaCostReductions.end(); ++it) {
+    for(auto it = manaCostReductions.begin(); it != manaCostReductions.end(); ++it) {
         manaRedObj[QString::number(static_cast<int>(it.key()))] = it.value();
     }
     json["manaReductions"] = manaRedObj;
@@ -353,53 +353,53 @@ QJsonObject MainHero::ToJson() const
     return json;
 }
 
-void MainHero::FromJson(const QJsonObject& json)
+void MainHero::fromJson(const QJsonObject& json)
 {
-    Unit::FromJson(json);
+    Unit::fromJson(json);
 
-    if (json.contains("xp")) UCurrentXP = json["xp"].toDouble();
-    if (json.contains("skillPoints")) USkillPoints = json["skillPoints"].toInt();
-    if (json.contains("pendingLevelUps")) PendingLevelUps = json["pendingLevelUps"].toInt();
-    if (json.contains("bonusHp")) UBonusMaxHP = json["bonusHp"].toDouble();
-    if (json.contains("bonusMana")) UBonusMaxMana = json["bonusMana"].toDouble();
+    if (json.contains("xp")) currentXP = json["xp"].toDouble();
+    if (json.contains("skillPoints")) skillPoints = json["skillPoints"].toInt();
+    if (json.contains("pendingLevelUps")) pendingLevelUps = json["pendingLevelUps"].toInt();
+    if (json.contains("bonusHp")) bonusMaxHP = json["bonusHp"].toDouble();
+    if (json.contains("bonusMana")) bonusMaxMana = json["bonusMana"].toDouble();
 
     if (json.contains("unlockedSpells")) {
-        UnlockedSpellIds.clear();
+        unlockedSpellIds.clear();
         QJsonArray spellsArr = json["unlockedSpells"].toArray();
         for(const auto& val : spellsArr) {
-            UnlockedSpellIds.push_back(val.toString().toStdString());
+            unlockedSpellIds.push_back(val.toString().toStdString());
         }
     }
 
     if (json.contains("unlockedNodes")) {
-        UnlockedSkillNodes.clear();
+        unlockedSkillNodes.clear();
         QJsonArray nodesArr = json["unlockedNodes"].toArray();
         for(const auto& val : nodesArr) {
-            UnlockedSkillNodes.insert(val.toString());
+            unlockedSkillNodes.insert(val.toString());
         }
     }
 
     if (json.contains("dmgMultipliers")) {
-        USpellDamageMultipliers.clear();
+        spellDamageMultipliers.clear();
         QJsonObject obj = json["dmgMultipliers"].toObject();
         for(auto it = obj.begin(); it != obj.end(); ++it) {
-            USpellDamageMultipliers[static_cast<SpellType>(it.key().toInt())] = it.value().toDouble();
+            spellDamageMultipliers[static_cast<SpellType>(it.key().toInt())] = it.value().toDouble();
         }
     }
 
     if (json.contains("manaReductions")) {
-        ManaCostReductions.clear();
+        manaCostReductions.clear();
         QJsonObject obj = json["manaReductions"].toObject();
         for(auto it = obj.begin(); it != obj.end(); ++it) {
-            ManaCostReductions[static_cast<SpellType>(it.key().toInt())] = it.value().toDouble();
+            manaCostReductions[static_cast<SpellType>(it.key().toInt())] = it.value().toDouble();
         }
     }
 
-    RecalculateStats();
-    RefreshAISpells();
+    recalculateStats();
+    refreshAISpells();
 
-    if (json.contains("hp")) SetHP(json["hp"].toDouble());
-    if (json.contains("mana")) SetMana(json["mana"].toDouble());
+    if (json.contains("hp")) setHP(json["hp"].toDouble());
+    if (json.contains("mana")) setMana(json["mana"].toDouble());
 }
 
 //----Enemy----
@@ -407,135 +407,135 @@ void MainHero::FromJson(const QJsonObject& json)
 Enemy::Enemy(UnitType type, double level)
     : Unit(type, level, 0, 0)
 {
-    SetAI(std::make_unique<Aggresive>());
-    if (UAi) {
-        UAi->InitializeSpells(static_cast<int>(level), false);
+    setAI(std::make_unique<Aggresive>());
+    if (ai) {
+        ai->initializeSpells(static_cast<int>(level), false);
     }
 }
 
-void Enemy::RecalculateStats()
+void Enemy::recalculateStats()
 {
     //real values in child classes
-    SetMaxHP(100);
-    SetMaxMana(0);
+    setMaxHP(100);
+    setMaxMana(0);
 }
 
 Wizard::Wizard(double level)
     : Enemy(UnitType::Wizard, level)
 {
-    SetAI(std::make_unique<Intelligent>());
+    setAI(std::make_unique<Intelligent>());
 
-    RecalculateStats();
-    SetHP(GetMaxHP());
-    SetMana(GetMaxMana());
+    recalculateStats();
+    setHP(getMaxHP());
+    setMana(getMaxMana());
 
-    if (UAi) {
-        UAi->InitializeSpells(static_cast<int>(level), false);
-        static_cast<Intelligent*>(UAi.get())->UpgradeSpells();
+    if (ai) {
+        ai->initializeSpells(static_cast<int>(level), false);
+        static_cast<Intelligent*>(ai.get())->upgradeSpells();
     }
 }
 
-void Wizard::RecalculateStats()
+void Wizard::recalculateStats()
 {
-    double level = GetLevel();
+    double level = getLevel();
     double finalHp = (GlobalConst::Wizard::HP_MULT + level / GlobalConst::Wizard::HP_DIV) * GlobalConst::GLOBAL_BASE_HP;
     double finalMana = (GlobalConst::Wizard::MANA_MULT + level / GlobalConst::Wizard::MANA_DIV) * GlobalConst::GLOBAL_BASE_MANA;
 
-    SetMaxHP(finalHp);
-    SetMaxMana(finalMana);
+    setMaxHP(finalHp);
+    setMaxMana(finalMana);
 }
 
 Barbarian::Barbarian(double level)
     : Enemy(UnitType::Barbarian, level)
 {
-    SetAI(std::make_unique<Aggresive>());
+    setAI(std::make_unique<Aggresive>());
 
-    RecalculateStats();
-    SetHP(GetMaxHP());
-    SetMana(GetMaxMana());
+    recalculateStats();
+    setHP(getMaxHP());
+    setMana(getMaxMana());
 
-    if (UAi) {
-        UAi->InitializeSpells(static_cast<int>(level), false);
+    if (ai) {
+        ai->initializeSpells(static_cast<int>(level), false);
     }
 }
 
-void Barbarian::RecalculateStats()
+void Barbarian::recalculateStats()
 {
-    double level = GetLevel();
+    double level = getLevel();
     double finalHp = (GlobalConst::Barbarian::HP_MULT + level / GlobalConst::Barbarian::HP_DIV) * GlobalConst::GLOBAL_BASE_HP;
     double finalMana = (GlobalConst::Barbarian::MANA_MULT + level / GlobalConst::Barbarian::MANA_DIV) * GlobalConst::GLOBAL_BASE_MANA;
 
-    SetMaxHP(finalHp);
-    SetMaxMana(finalMana);
+    setMaxHP(finalHp);
+    setMaxMana(finalMana);
 }
 
 Warrior::Warrior(double level)
     : Enemy(UnitType::Warrior, level)
 {
-    SetAI(std::make_unique<Confused>());
+    setAI(std::make_unique<Confused>());
 
-    RecalculateStats();
-    SetHP(GetMaxHP());
-    SetMana(GetMaxMana());
+    recalculateStats();
+    setHP(getMaxHP());
+    setMana(getMaxMana());
 
-    if (UAi) {
-        UAi->InitializeSpells(static_cast<int>(level), false);
+    if (ai) {
+        ai->initializeSpells(static_cast<int>(level), false);
     }
 }
 
-void Warrior::RecalculateStats()
+void Warrior::recalculateStats()
 {
-    double level = GetLevel();
+    double level = getLevel();
     double finalHp = (GlobalConst::Warrior::HP_MULT + level / GlobalConst::Warrior::HP_DIV) * GlobalConst::GLOBAL_BASE_HP;
     double finalMana = (GlobalConst::Warrior::MANA_MULT + level / GlobalConst::Warrior::MANA_DIV) * GlobalConst::GLOBAL_BASE_MANA;
 
-    SetMaxHP(finalHp);
-    SetMaxMana(finalMana);
+    setMaxHP(finalHp);
+    setMaxMana(finalMana);
 }
 
 Friend::Friend() : Unit(UnitType::Friend, 1, 100, 0)
 {
-    SetAI(std::make_unique<Friendly>());
-    RecalculateStats();
+    setAI(std::make_unique<Friendly>());
+    recalculateStats();
 }
-void Friend::RecalculateStats()
+void Friend::recalculateStats()
 {
-    SetMaxHP(100);
-    SetMaxMana(0);
+    setMaxHP(100);
+    setMaxMana(0);
 }
 
 StructBreak::StructBreak() : Unit(UnitType::StructBreak, 1, 0, 0)
 {
-    SetAI(nullptr);
-    RecalculateStats();
-    SetHP(GetMaxHP());
+    setAI(nullptr);
+    recalculateStats();
+    setHP(getMaxHP());
 }
-void StructBreak::RecalculateStats()
+void StructBreak::recalculateStats()
 {
-    SetMaxHP(GlobalConst::Structures::BREAKABLE_HP);
-    SetMaxMana(0);
+    setMaxHP(GlobalConst::Structures::BREAKABLE_HP);
+    setMaxMana(0);
 }
 
 StructUnBreak::StructUnBreak() : Unit(UnitType::StructUnBreak, 1, 0, 0)
 {
-    SetAI(nullptr);
-    RecalculateStats();
+    setAI(nullptr);
+    recalculateStats();
 }
-void StructUnBreak::RecalculateStats()
+void StructUnBreak::recalculateStats()
 {
-    SetMaxHP(99999);
-    SetMaxMana(0);
+    setMaxHP(99999);
+    setMaxMana(0);
 }
 
 
 CampfireUnit::CampfireUnit() : Unit(UnitType::CampfireUnit, 1, 0, 0)
 {
-    SetAI(std::make_unique<Campfire>());
-    RecalculateStats();
-    SetHP(GetMaxHP());
+    setAI(std::make_unique<Campfire>());
+    recalculateStats();
+    setHP(getMaxHP());
 }
-void CampfireUnit::RecalculateStats()
+void CampfireUnit::recalculateStats()
 {
-    SetMaxHP(GlobalConst::Structures::CAMPFIRE_HP);
-    SetMaxMana(0);
+    setMaxHP(GlobalConst::Structures::CAMPFIRE_HP);
+    setMaxMana(0);
 }

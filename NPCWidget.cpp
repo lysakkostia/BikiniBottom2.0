@@ -68,7 +68,7 @@ NPCWidget::NPCWidget(QWidget *parent) : QWidget(parent) {
     contentLayout->addLayout(btnLayout);
 }
 
-void NPCWidget::ShowDialogue(const QString& unitName, const QString& dialogueText) {
+void NPCWidget::showDialogue(const QString& unitName, const QString& dialogueText) {
     nameLabel->setText(unitName);
     textLabel->setText(dialogueText);
 

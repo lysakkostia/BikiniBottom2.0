@@ -8,17 +8,17 @@
 class UnitFabric
 {
 private:
-    std::vector<std::unique_ptr<Unit>> Units;
+    std::vector<std::unique_ptr<Unit>> units;
 
 public:
     UnitFabric();
     ~UnitFabric();
 
-    Unit* Create(UnitType type, double level, QPoint pos = QPoint(0, 0));
-    Unit* Get(int pos);
-    int HowMany();
-    void Remove(int pos);
-    void ClearAll();
+    Unit* create(UnitType type, double level, QPoint pos = QPoint(0, 0));
+    Unit* get(int pos);
+    int howMany();
+    void remove(int pos);
+    void clearAll();
 };
 
 #endif //UNITFABRIC_H_INCLUDE

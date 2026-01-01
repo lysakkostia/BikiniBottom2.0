@@ -13,39 +13,44 @@
 class HexMap
 {
 private:
-    int Radius;
-    std::vector<std::vector<Hex>> MapGrid;
-    UnitFabric UnitFabric_;
-    int EnemyCounter=0;
+    int radiusInner;
+    std::vector<std::vector<Hex>> mapGrid;
+    UnitFabric unitFabric;
+    int enemyCounter=0;
     std::vector<Hex*> visibleNow;
     unsigned int mapSeed;
 
-    int GetHexDistance(int q, int r) const;
-    Hex& GetChangeableLocation(int q, int r);
-    Hex& GetChangeableQPointLoc(const QPoint& OHex);
+    int getHexDistance(int q, int r) const;
+    Hex& getChangeableLocation(int q, int r);
+    Hex& getChangeableQPointLoc(const QPoint& OHex);
 
-    void GenerateUnits();
-    void PlaceGuaranteedCampfire();
-    void SpawnEnemyInHex(Hex& hex, bool isDangerZone);
-    int CalculateUnitLevel(int q, int r, bool isDangerZone) const;
-    UnitType ChooseRandomEnemyType() const;
+    void generateUnits();
+    void placeGuaranteedCampfire();
+    void spawnEnemyInHex(Hex& hex, bool isDangerZone);
+    int calculateUnitLevel(int q, int r, bool isDangerZone) const;
+    UnitType chooseRandomEnemyType() const;
 
 public:
     HexMap(int radius);
-    int GetRadius() const;
-    const Hex& GetLocation(int q, int r) const;
-    const Hex& GetQPointLoc(const QPoint& OHex) const;
-    const std::vector<std::vector<Hex>>& GetMap() const;
-    bool ContainsHex(int q, int r) const;
-    void UpdateVisibility(const QPoint& HeroPos);
-    void SaveToFile(const QString& filePath, const MainHero& hero) const;
-    bool LoadFromFile(const QString& filePath, MainHero& hero);
-    void Clear();
-    void ClearUnitAt(const QPoint& position);
-    int GetEnemyCount() const;
-    void DecrementEnemyCount();
+    int getRadius() const;
+    const Hex& getLocation(int q, int r) const;
+    const Hex& getQPointLoc(const QPoint& OHex) const;
+    const std::vector<std::vector<Hex>>& getMap() const;
+    bool containsHex(int q, int r) const;
+    void updateVisibility(const QPoint& HeroPos);
+
+    void saveToFile(const QString& filePath, const MainHero& hero) const;
+    bool loadFromFile(const QString& filePath, MainHero& hero);
+
+    void clear();
+    void clearUnitAt(const QPoint& position);
+
+    int getEnemyCount() const;
+    void decrementEnemyCount();
+
     unsigned int getSeed() const { return mapSeed; }
-    std::vector<QPoint> FindPath(QPoint start, QPoint target); //A*
+
+    std::vector<QPoint> findPath(QPoint start, QPoint target); //A*
 };
 
 #endif //MAP_H_DEFINED

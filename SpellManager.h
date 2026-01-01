@@ -56,20 +56,20 @@ private:
     std::vector<SpellDefinition> heroSpellDefinitions;
     std::vector<SpellDefinition> enemySpellDefinitions;
 
-    void ParseJsonToVector(const QJsonArray& jsonArr, std::vector<SpellDefinition>& targetList);
-    Spell CalculateSpellStats(const SpellDefinition& definition, int level);
+    void parseJsonToVector(const QJsonArray& jsonArr, std::vector<SpellDefinition>& targetList);
+    Spell calculateSpellStats(const SpellDefinition& definition, int level);
 
-    SpellType StringToSpellType(const QString& typeStr);
+    SpellType stringToSpellType(const QString& typeStr);
 
 public:
-    static SpellManager& Instance();
+    static SpellManager& getInstance();
 
-    bool LoadHeroSpells(const QString& path);
-    bool LoadEnemySpells(const QString& path);
+    bool loadHeroSpells(const QString& path);
+    bool loadEnemySpells(const QString& path);
 
-    std::vector<Spell> GetHeroSpellsByIds(const std::vector<std::string>& unlockedIds, int level);
-    std::vector<Spell> GetEnemySpellsForLevel(int level);
-    bool HeroSpellExists(const std::string& id);
+    std::vector<Spell> getHeroSpellsByIds(const std::vector<std::string>& unlockedIds, int level);
+    std::vector<Spell> getEnemySpellsForLevel(int level);
+    bool heroSpellExists(const std::string& id);
 };
 
 #endif // SPELLMANAGER_H

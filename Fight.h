@@ -46,23 +46,18 @@ private:
     bool isPlayerTurn;
     bool playerEscaped = false;
 
-    QLabel* m_enemyImageLabel;
-    QLabel* m_turnLabel;
-
-    QLabel* m_heroAvatar;
-    QProgressBar* m_heroHpBar;
-    QProgressBar* m_heroManaBar;
-
-    QProgressBar* m_enemyHpBar;
-    QProgressBar* m_enemyManaBar;
-
-    QWidget* m_spellsContainer;
-    QGridLayout* m_spellsGrid;
-
-    QPushButton* m_btnEscape;
-    QTextEdit* m_combatLog;
-
-    QWidget* m_currentOverlay = nullptr;
+    QLabel* enemyImageLabel;
+    QLabel* turnLabel;
+    QLabel* heroAvatar;
+    QProgressBar* heroHpBar;
+    QProgressBar* heroManaBar;
+    QProgressBar* enemyHpBar;
+    QProgressBar* enemyManaBar;
+    QWidget* spellsContainer;
+    QGridLayout* spellsGrid;
+    QPushButton* btnEscape;
+    QTextEdit* combatLog;
+    QWidget* currentOverlay = nullptr;
 
     void initUI();
     void startBattle();

@@ -53,7 +53,7 @@ LevelUpWidget::LevelUpWidget(QWidget *parent) : QWidget(parent) {
     contentLayout->addLayout(optionsLayout);
 }
 
-void LevelUpWidget::ShowOptions(const std::vector<UpgradeOption>& options) {
+void LevelUpWidget::showOptions(const std::vector<UpgradeOption>& options) {
     QLayoutItem* item;
     while ((item = optionsLayout->takeAt(0)) != nullptr) {
         if (item->widget()) delete item->widget();
@@ -99,7 +99,7 @@ void LevelUpWidget::ShowOptions(const std::vector<UpgradeOption>& options) {
         btnLayout->addWidget(descLbl);
 
         connect(btn, &QPushButton::clicked, [this, i]() {
-            emit OptionSelected(i);
+            emit optionSelected(i);
             this->hide();
         });
 
@@ -114,7 +114,7 @@ void LevelUpWidget::ShowOptions(const std::vector<UpgradeOption>& options) {
     this->raise();
 }
 
-UpgradeOption LevelUpWidget::GetOption(int index) const {
+UpgradeOption LevelUpWidget::getOption(int index) const {
     if (index >= 0 && index < static_cast<int>(currentOptions.size())) {
         return currentOptions[index];
     }
