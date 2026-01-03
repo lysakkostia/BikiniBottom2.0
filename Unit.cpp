@@ -420,6 +420,29 @@ void Enemy::recalculateStats()
     setMaxMana(0);
 }
 
+void Enemy::applyUpgrade(const UpgradeOption& option)
+{
+    if (option.type == UpgradeType::StatIncrease) {
+        if (option.statIndex == 0) {
+            setMaxHP(getMaxHP() + option.value);
+            setHP(getMaxHP());
+        } else if (option.statIndex == 1) {
+            setMaxMana(getMaxMana() + option.value);
+            setMana(getMaxMana());
+        }
+    }
+    else if (option.type == UpgradeType::SpellTypeBuff) {
+        if (!dmgMultipliers.contains(option.specificType)) {
+            dmgMultipliers[option.specificType] = 1.0;
+        }
+        dmgMultipliers[option.specificType] += option.value;
+
+        if (ai) {
+            ai->applyMultipliers(dmgMultipliers);
+        }
+    }
+}
+
 Wizard::Wizard(double level)
     : Enemy(UnitType::Wizard, level)
 {

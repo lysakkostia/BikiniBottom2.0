@@ -458,7 +458,7 @@ void Fight::executeAiTurn()
         return;
     }
 
-    const Spell* chosenSpell = enemyAI->chooseBestSpell(currentEnemy->getMana());
+    const Spell* chosenSpell = enemyAI->chooseBestSpell(currentEnemy->getMana(), fightingHero->getHP(), currentEnemy->getHP());
 
     if (chosenSpell && currentEnemy->canUseMana(chosenSpell->manacost)) {
         currentEnemy->consumeMana(chosenSpell->manacost);

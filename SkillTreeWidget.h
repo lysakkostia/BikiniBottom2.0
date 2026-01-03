@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QPushButton>
+#include <QFrame>
 #include <vector>
 #include "SkillTreeSystem.h"
 
@@ -18,6 +19,7 @@ class SkillNodeButton : public QPushButton {
 public:
     std::string nodeId;
     SkillNode nodeData;
+    QPointF logicalPosition;
 
     SkillNodeButton(const SkillNode& data, QWidget* parent);
 };
@@ -34,6 +36,7 @@ public:
 private slots:
     void closeTree();
     void onNodeClicked(SkillNodeButton* btn);
+    void onUnlockBtnClicked();
 
 signals:
     void closed();
@@ -52,12 +55,28 @@ protected:
 private:
     MainHero* hero;
     std::vector<SkillNodeButton*> buttons;
+    SkillNodeButton* selectedBtn;
 
     QLabel* pointsLabel;
     QPushButton* closeBtn;
     QPushButton* centerBtn;
 
-    const int RADIUS_STEP = 110;
+    QFrame* infoPanel;
+    QLabel* infoTitleLabel;
+    QLabel* infoDescLabel;
+    QLabel* infoCostLabel;
+    QPushButton* infoUnlockBtn;
+
+    double scaleFactor;
+    QPoint panOffset;
+    QPoint lastMousePos;
+    bool isDragging;
+
+    const int RADIUS_STEP = 130;
+
+    void setupInfoPanel();
+    void updateNodePositions();
+    void updateInfoPanel();
 
     QColor getColorForType(SpellType type);
     double getAngleForType(SpellType type);

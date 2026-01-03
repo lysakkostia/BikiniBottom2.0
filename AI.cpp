@@ -19,7 +19,7 @@ const std::vector<Spell>& AI::getSpells() const
     return spells;
 }
 
-const Spell* AI::chooseBestSpell(double currentMana) const
+const Spell* AI::chooseBestSpell(double currentMana, double targetHP, double casterHP) const
 {
     const Spell* bestSpell = nullptr;
     double maxDamage = -1.0;
@@ -67,7 +67,7 @@ Confused::Confused()
     this->turnOver = GlobalConst::AI::INIT_CONFUSED;
 }
 
-const Spell* Confused::chooseBestSpell(double currentMana) const
+const Spell* Confused::chooseBestSpell(double currentMana, double targetHP, double casterHP) const
 {
     const std::vector<Spell>& allSpells = this->getSpells();
     std::vector<const Spell*> availableSpellPointers;
@@ -89,6 +89,40 @@ const Spell* Confused::chooseBestSpell(double currentMana) const
 Intelligent::Intelligent()
 {
     this->turnOver = GlobalConst::AI::INIT_INTELLIGENT;
+}
+
+const Spell* Intelligent::chooseBestSpell(double currentMana, double targetHP, double casterHP) const
+{
+    const Spell* bestSpell = nullptr;
+    double bestScore = -1000.0;
+
+    bool isDesperate = (casterHP < 40.0);
+
+    for (const Spell& spell : getSpells()) {
+        if (spell.manacost > currentMana) continue;
+
+        double score = 0.0;
+
+        if (spell.damage >= targetHP) {
+            score += 10000.0;
+            score -= spell.manacost;
+        }
+        else {
+            if (isDesperate) {
+                score += spell.damage * 2.0;
+            } else {
+                double dpm = spell.damage / std::max(1.0, spell.manacost);
+                score += spell.damage * 0.5 + (dpm * 10.0);
+            }
+        }
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestSpell = &spell;
+        }
+    }
+
+    return bestSpell;
 }
 
 void Intelligent::upgradeSpells()

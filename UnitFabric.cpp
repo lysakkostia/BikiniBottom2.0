@@ -1,5 +1,6 @@
 #include "UnitFabric.h"
 #include "AI.h"
+#include "LevelUpSystem.h"
 #include <iostream>
 
 UnitFabric::UnitFabric() {}
@@ -61,6 +62,20 @@ Unit* UnitFabric::create(UnitType type, double level, QPoint pos)
 
     if (!newUnit) {
         return nullptr;
+    }
+
+    if (newUnit && newUnit->isEnemy() && level > 1) {
+        int upgradesCount = static_cast<int>(level) - 1;
+
+        for (int i = 0; i < upgradesCount; ++i) {
+            auto options = LevelUpGenerator::generateOptions();
+            if (!options.empty()) {
+                newUnit->applyUpgrade(options[0]);
+            }
+        }
+
+        newUnit->setHP(newUnit->getMaxHP());
+        newUnit->setMana(newUnit->getMaxMana());
     }
 
     newUnit->setPosition(pos);

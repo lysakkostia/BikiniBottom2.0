@@ -73,15 +73,20 @@ void HexMap::placeGuaranteedCampfire()
 int HexMap::calculateUnitLevel(int q, int r, bool isDangerZone) const
 {
     int dist = getHexDistance(q, r);
-    double distRatio = static_cast<double>(dist) / radiusInner;
 
-    double baseLevel = Const_MZones::DISTANCE_BASE + (distRatio * Const_MZones::DISTANCE_MULT);
+    if (dist <= Const_MZones::SAFE_RADIUS) {
+        return 1;
+    }
 
-    int variance = RandGenerator::randIntInInterval(Const_MZones::RAND_NEG_BONUS, Const_MZones::RAND_POS_BONUS);
+    double effectiveDist = static_cast<double>(dist - Const_MZones::SAFE_RADIUS);
+    double calculatedLevel = 1.0 + (effectiveDist * Const_MZones::LEVELS_PER_HEX);
 
-    int dangerBonus = isDangerZone ? Const_MZones::DANGER_BONUS : Const_MZones::NO_DANGER_BONUS;
+    if (isDangerZone) {
+        calculatedLevel = (calculatedLevel * Const_MZones::DANGER_ZONE_MULT) + Const_MZones::DANGER_ZONE_FLAT_ADD;
+    }
 
-    int finalLevel = static_cast<int>(baseLevel) + variance + dangerBonus;
+    int variance = RandGenerator::randIntInInterval(Const_MZones::RAND_VAR_MIN, Const_MZones::RAND_VAR_MAX);
+    int finalLevel = static_cast<int>(calculatedLevel) + variance;
 
     if (finalLevel < 1) finalLevel = 1;
 

@@ -17,7 +17,7 @@ public:
     int turnOver;
 
     virtual void initializeSpells(int level, bool isHero, const std::vector<std::string>& heroSpells = {});
-    virtual const Spell* chooseBestSpell(double currentMana) const;
+    virtual const Spell* chooseBestSpell(double currentMana, double targetHP, double casterHP) const;
     const std::vector<Spell> &getSpells() const;
     void applyMultipliers(const QMap<SpellType, double>& multipliers);
     void applyManaReductions(const QMap<SpellType, double>& reductions);
@@ -36,7 +36,7 @@ class Confused : public AI
 {
 public:
     Confused();
-    const Spell* chooseBestSpell(double currentMana) const override;
+    const Spell* chooseBestSpell(double currentMana, double targetHP, double casterHP) const override;
 };
 
 class Intelligent : public AI
@@ -44,6 +44,7 @@ class Intelligent : public AI
 public:
     Intelligent();
     void upgradeSpells();
+    const Spell* chooseBestSpell(double currentMana, double targetHP, double casterHP) const override;
 };
 
 class MainCharacter : public AI

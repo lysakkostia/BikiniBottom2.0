@@ -15,24 +15,24 @@ namespace GlobalConst
 
     namespace Wizard {
         //(BASE_MULT + level / DIVIDER) * GLOBAL
-        const double HP_MULT = 0.8;
-        const double HP_DIV = 7.0;
-        const double MANA_MULT = 1.3;
-        const double MANA_DIV = 0.8;
+        const double HP_MULT = 0.7;
+        const double HP_DIV = 15.0;
+        const double MANA_MULT = 1.5;
+        const double MANA_DIV = 5.0;
     }
 
     namespace Barbarian {
         const double HP_MULT = 1.0;
-        const double HP_DIV = 4.5;
-        const double MANA_MULT = 1.2;
-        const double MANA_DIV = 6.0;
+        const double HP_DIV = 10.0;
+        const double MANA_MULT = 1.0;
+        const double MANA_DIV = 8.0;
     }
 
     namespace Warrior {
-        const double HP_MULT = 2.0;
-        const double HP_DIV = 4.0;
-        const double MANA_MULT = 1.3;
-        const double MANA_DIV = 5.0;
+        const double HP_MULT = 1.3;
+        const double HP_DIV = 8.0;
+        const double MANA_MULT = 0.8;
+        const double MANA_DIV = 12.0;
     }
 
     namespace Structures {
@@ -46,8 +46,8 @@ namespace GlobalConst
         const int INIT_INTELLIGENT = 60;
         const int INIT_HERO = 50;
 
-        const double INTEL_DMG_MULT = 1.40;
-        const double INTEL_MANA_MULT = 0.70;
+        const double INTEL_DMG_MULT = 1.10;
+        const double INTEL_MANA_MULT = 0.90;
     }
 
     namespace TextureScale{
@@ -60,12 +60,12 @@ namespace GlobalConst
     namespace MapGeneration
     {
         namespace Zones {
-            constexpr double DISTANCE_BASE = 0.5;
-            constexpr double DISTANCE_MULT = 4.5;
-            constexpr int RAND_NEG_BONUS = -1;
-            constexpr int RAND_POS_BONUS = 1;
-            constexpr int DANGER_BONUS = 1;
-            constexpr int NO_DANGER_BONUS = 0;
+            constexpr int SAFE_RADIUS = 3;
+            constexpr double LEVELS_PER_HEX = 0.75;
+            constexpr double DANGER_ZONE_MULT = 1.1;
+            constexpr int DANGER_ZONE_FLAT_ADD = 2;
+            constexpr int RAND_VAR_MIN = -1;
+            constexpr int RAND_VAR_MAX = 2;
         }
 
         namespace EnemyTypes {

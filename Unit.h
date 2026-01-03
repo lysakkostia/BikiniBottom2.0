@@ -70,6 +70,7 @@ public:
     bool canUseMana(double cost) const;
     void consumeMana(double cost);
     virtual void levelUp();
+    virtual void applyUpgrade(const UpgradeOption& option) {};
 
     virtual QJsonObject toJson() const;
     virtual void fromJson(const QJsonObject& json);
@@ -114,7 +115,7 @@ public:
     void decrementLevelUpPending() { if(pendingLevelUps > 0) pendingLevelUps--; }
     int getPendingLevelUpsCount() const { return pendingLevelUps; }
 
-    void applyUpgrade(const UpgradeOption& option);
+    virtual void applyUpgrade(const UpgradeOption& option) override;
 
     bool unlockSkillNode(const std::string& nodeId, int cost);
     bool isNodeUnlocked(const std::string& nodeId) const;
@@ -131,9 +132,13 @@ public:
 
 class Enemy : public Unit
 {
+private:
+    QMap<SpellType, double> dmgMultipliers;
+
 public:
     Enemy(UnitType type, double level);
     virtual void recalculateStats() override;
+    virtual void applyUpgrade(const UpgradeOption& option) override;
 };
 
 class Friend : public Unit
