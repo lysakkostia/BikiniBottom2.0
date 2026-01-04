@@ -31,7 +31,7 @@ private:
     UnitType chooseRandomEnemyType() const;
 
 public:
-    HexMap(int radius);
+    HexMap(int radius, unsigned int seed = 0);
     int getRadius() const;
     const Hex& getLocation(int q, int r) const;
     const Hex& getQPointLoc(const QPoint& OHex) const;

@@ -22,9 +22,13 @@ int HexMap::getRadius() const { return radiusInner; }
 const std::vector<std::vector<Hex>>& HexMap::getMap() const { return mapGrid; }
 
 
-HexMap::HexMap(int radius) : radiusInner(radius), enemyCounter(0)
+HexMap::HexMap(int radius, unsigned int seed) : radiusInner(radius), enemyCounter(0)
 {
-    mapSeed = static_cast<unsigned int>(QDateTime::currentMSecsSinceEpoch());
+    if (seed != 0) {
+        mapSeed = seed;
+    } else {
+        mapSeed = static_cast<unsigned int>(QDateTime::currentMSecsSinceEpoch());
+    }
 
     for(int q = -radius; q <=radius; q++)
     {

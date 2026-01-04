@@ -16,6 +16,7 @@ class GameScene : public QGraphicsScene
 private:
     HexMap mapInner;
     MainHero heroInner;
+    QString currentSaveFilePath;
     QHash<QPoint, HexItem*> hexItemsMap;
     bool isPanning = false;
     bool isPaused = false;
@@ -43,13 +44,14 @@ private:
     void highlightPath();
 
 public:
-    explicit GameScene(int NRadius, QObject *parent = nullptr);
+    explicit GameScene(int NRadius, unsigned int seed = 0, QObject *parent = nullptr);
 
     void handleHexClick(HexItem* item);
 
     Hex* getHeroHex();
 
-    void saveMapToFile(const QString& filePath);
+    void setSaveFilePath(const QString& path) { currentSaveFilePath = path; }
+    void saveMapToFile();
     bool loadMapFromFile(const QString& filePath);
 
     struct HeroStats {

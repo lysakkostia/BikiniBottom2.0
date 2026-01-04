@@ -41,12 +41,11 @@ private slots:
 
     void handleBackToMenu();
 
-    void startNewGame();
-    void loadSavedGame();
+    void startNewGame(const QString& worldName, const QString& seed, int radius);
+    void loadSavedGame(const QString& filePath);
     void handleGameOver();
     void handleVictory();
 
-    void handleMapRadiusChanged(int NewRadius);
     void handleVolumeChanged(int volume);
 
     void handleLevelUp();
@@ -86,8 +85,6 @@ private:
 
     QMediaPlayer* mediaPlayer;
     QAudioOutput* audioOutput;
-
-    int mapRadius = 10;
 
     void cleanupGame();
     void setupPauseWidget();

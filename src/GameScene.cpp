@@ -11,8 +11,8 @@
 
 namespace Const_Scale = GlobalConst::TextureScale;
 
-GameScene::GameScene(int NRadius, QObject *parent)
-    : QGraphicsScene(parent), mapInner(NRadius > 0 ? NRadius : 10), heroInner(QPoint(0,0))
+GameScene::GameScene(int NRadius, unsigned int seed, QObject *parent)
+    : QGraphicsScene(parent), mapInner(NRadius > 0 ? NRadius : 10, seed), heroInner(QPoint(0,0))
 {
     mapInner.updateVisibility(heroInner.getPosition());
     generateMapItems();
@@ -269,9 +269,13 @@ Hex* GameScene::getHeroHex()
     return const_cast<Hex*>(&mapInner.getQPointLoc(heroInner.getPosition()));
 }
 
-void GameScene::saveMapToFile(const QString& filePath)
+void GameScene::saveMapToFile()
 {
-    mapInner.saveToFile(filePath, heroInner);
+    if (currentSaveFilePath.isEmpty()) {
+        qDebug() << "Error: No save file path set!";
+        return;
+    }
+    mapInner.saveToFile(currentSaveFilePath, heroInner);
 }
 
 bool GameScene::loadMapFromFile(const QString& filePath)

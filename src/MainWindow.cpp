@@ -11,7 +11,6 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , menuWidget(nullptr)
     , settingsWidget(nullptr)
-    , mapRadius(10)
     , heroWidget(nullptr)
 {
     this->setFixedSize(1280, 720);
@@ -40,13 +39,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     stackedWidget->setCurrentWidget(menuWidget);
 
-    connect(settingsWidget, &SettingsWidget::mapRadChanged, this, &MainWindow::handleMapRadiusChanged);
     connect(settingsWidget, &SettingsWidget::volumeChanged, this, &MainWindow::handleVolumeChanged);
     connect(settingsWidget, &SettingsWidget::backClicked, this, &MainWindow::handleBackToMenu);
 
-    connect(gameSelectWidget, &GameSelectionWidget::startNewGameClicked, this, &MainWindow::startNewGame);
-    connect(gameSelectWidget, &GameSelectionWidget::loadGameClicked, this, &MainWindow::loadSavedGame);
-    connect(gameSelectWidget, &GameSelectionWidget::backClicked, this, &MainWindow::handleBackToMenu);
+    connect(gameSelectWidget, &GameSelectionWidget::createNewGameRequested, this, &MainWindow::startNewGame);
+    connect(gameSelectWidget, &GameSelectionWidget::loadGameRequested, this, &MainWindow::loadSavedGame);
+    connect(gameSelectWidget, &GameSelectionWidget::backRequested, this, &MainWindow::handleBackToMenu);
 
     connect(btnPlay, &QPushButton::clicked, this, &MainWindow::onBtnPlayClicked);
     connect(btnSettings, &QPushButton::clicked, this, &MainWindow::onBtnSettingsClicked);
@@ -143,13 +141,6 @@ void MainWindow::initializeMenuUI()
     lblFooter->raise();
 }
 
-//радіус гри
-void MainWindow::handleMapRadiusChanged(int NewRadius)
-{
-    if(NewRadius > 0)
-        mapRadius = NewRadius;
-}
-
 //кнопка виходу
 void MainWindow::onBtnExitClicked()
 {
@@ -159,7 +150,6 @@ void MainWindow::onBtnExitClicked()
 //кнопка налаштування
 void MainWindow::onBtnSettingsClicked()
 {
-    settingsWidget->setCurrentRadius(mapRadius);
     stackedWidget->setCurrentWidget(settingsWidget);
 }
 
@@ -183,14 +173,32 @@ void MainWindow::handleVolumeChanged(int volume)
 //кнопка гри
 void MainWindow::onBtnPlayClicked()
 {
+    gameSelectWidget->refreshSaveList();
     stackedWidget->setCurrentWidget(gameSelectWidget);
 }
 
-void MainWindow::startNewGame()
+void MainWindow::startNewGame(const QString& worldName, const QString& seedStr, int radius)
 {
     cleanupGame();
 
-    gameScene = new GameScene(mapRadius, this);
+    QString savesDir = QCoreApplication::applicationDirPath() + "/saves";
+    QDir dir(savesDir);
+    if (!dir.exists()) dir.mkpath(".");
+
+    QString saveFilePath = savesDir + "/" + worldName + ".json";
+
+    unsigned int seed = 0;
+    if (!seedStr.isEmpty()) {
+        bool ok;
+        seed = seedStr.toUInt(&ok);
+        if (!ok) {
+            seed = qHash(seedStr);
+        }
+    }
+
+    gameScene = new GameScene(radius, seed, this);
+    gameScene->setSaveFilePath(saveFilePath);
+
     mapView = new GameView(gameScene, this);
 
     stackedWidget->addWidget(mapView);
@@ -242,15 +250,19 @@ void MainWindow::startNewGame()
     heroWidget->show();
 
     connect(gameScene, &GameScene::heroStatsChanged, heroWidget, &HeroWidget::updateStats);
+
+    gameScene->saveMapToFile();
 }
 
-void MainWindow::loadSavedGame()
+void MainWindow::loadSavedGame(const QString& filePath)
 {
     cleanupGame();
 
-    gameScene = new GameScene(mapRadius, this);
+    gameScene = new GameScene(1, 0, this);
 
-    if (!gameScene->loadMapFromFile("map.dat")) {
+    gameScene->setSaveFilePath(filePath);
+
+    if (!gameScene->loadMapFromFile(filePath)) {
         QMessageBox::warning(this, tr("Помилка"), tr("Не вдалося завантажити збереження."));
         delete gameScene;
         gameScene = nullptr;
@@ -394,9 +406,10 @@ void MainWindow::onPauseContinue()
 void MainWindow::onPauseExit()
 {
     if (gameScene) {
-        gameScene->saveMapToFile("map.dat");
+        gameScene->saveMapToFile();
     }
     cleanupGame();
+    gameSelectWidget->refreshSaveList();
     stackedWidget->setCurrentWidget(menuWidget);
 }
 

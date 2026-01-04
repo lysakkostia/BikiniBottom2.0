@@ -1,4 +1,4 @@
-#include "SettingsWidget.h".h"
+#include "SettingsWidget.h"
 
 #include <QLabel>
 #include <QSlider>
@@ -13,14 +13,6 @@ SettingsWidget::SettingsWidget(QWidget *parent)
     : QWidget(parent)
 {
     setupUi();
-
-    if(sldMapSize)
-    {
-        sldMapSize->setMinimum(0);
-        sldMapSize->setMaximum(mapRads.size() - 1);
-        sldMapSize->setTickInterval(1);
-        sldMapSize->setPageStep(1);
-    }
 }
 
 SettingsWidget::~SettingsWidget(){}
@@ -129,20 +121,6 @@ void SettingsWidget::setupUi()
     sldVolume->setMinimumHeight(40);
     settingsGrid->addWidget(sldVolume, 0, 1);
 
-    labelMapSize = new QLabel("Map Size", containerFrame);
-    labelMapSize->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    settingsGrid->addWidget(labelMapSize, 1, 0);
-
-    sldMapSize = new QSlider(Qt::Horizontal, containerFrame);
-    sldMapSize->setCursor(Qt::PointingHandCursor);
-    sldMapSize->setMinimumHeight(40);
-    settingsGrid->addWidget(sldMapSize, 1, 1);
-
-    labelCurrentMapSizeName = new QLabel("Small", containerFrame);
-    labelCurrentMapSizeName->setAlignment(Qt::AlignCenter);
-    labelCurrentMapSizeName->setStyleSheet("color: #0277BD; font-size: 14pt;");
-    settingsGrid->addWidget(labelCurrentMapSizeName, 2, 1);
-
     containerLayout->addLayout(settingsGrid);
 
     containerLayout->addStretch();
@@ -160,7 +138,6 @@ void SettingsWidget::setupUi()
 
     connect(btnClose, &QPushButton::clicked, this, &SettingsWidget::onBtnCloseClicked);
     connect(sldVolume, &QSlider::valueChanged, this, &SettingsWidget::onVolumeValueChanged);
-    connect(sldMapSize, &QSlider::valueChanged, this, &SettingsWidget::onMapSizeValueChanged);
 }
 
 void SettingsWidget::onBtnCloseClicked()
@@ -172,35 +149,4 @@ void SettingsWidget::onBtnCloseClicked()
 void SettingsWidget::onVolumeValueChanged(int value)
 {
     emit volumeChanged(value);
-}
-
-void SettingsWidget::updateMapSizeLabel(int sliderValue)
-{
-    if(labelCurrentMapSizeName && sliderValue >= 0 && sliderValue < mapSizeNames.size())
-        labelCurrentMapSizeName->setText(mapSizeNames.at(sliderValue));
-}
-
-void SettingsWidget::setCurrentRadius(int Radius)
-{
-    int sliderValue = mapRads.indexOf(Radius);
-    if(sliderValue == -1)
-        sliderValue = 1;
-
-    if(sldMapSize)
-    {
-        bool OldSignalState = sldMapSize->blockSignals(true);
-        sldMapSize->setValue(sliderValue);
-        sldMapSize->blockSignals(OldSignalState);
-    }
-    updateMapSizeLabel(sliderValue);
-}
-
-void SettingsWidget::onMapSizeValueChanged(int sliderValue)
-{
-    if(sliderValue >= 0 && sliderValue < mapRads.size())
-    {
-        int ActualRadius = mapRads.at(sliderValue);
-        emit mapRadChanged(ActualRadius);
-        updateMapSizeLabel(sliderValue);
-    }
 }
