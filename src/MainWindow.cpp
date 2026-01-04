@@ -210,6 +210,7 @@ void MainWindow::startNewGame(const QString& worldName, const QString& seedStr, 
     skillTreeWidget->hide();
 
     setupPauseWidget();
+    setupTutorialWidget();
 
     btnTree = new QPushButton(this);
     btnTree->setIcon(QIcon(":/textures/icon.png"));
@@ -219,11 +220,13 @@ void MainWindow::startNewGame(const QString& worldName, const QString& seedStr, 
 
     connect(btnTree, &QPushButton::clicked, [this]() {
         if (gameScene) gameScene->setPaused(true);
+        if (btnTutorial) btnTutorial->hide();
         if (skillTreeWidget) skillTreeWidget->show();
     });
 
     connect(skillTreeWidget, &SkillTreeWidget::closed, [this]() {
         if (gameScene) gameScene->setPaused(false);
+        if (btnTutorial) btnTutorial->show();
     });
 
     campfireWidget = new CampfireWidget(this);
@@ -280,6 +283,7 @@ void MainWindow::loadSavedGame(const QString& filePath)
     skillTreeWidget->hide();
 
     setupPauseWidget();
+    setupTutorialWidget();
 
     btnTree = new QPushButton(this);
     btnTree->setIcon(QIcon(":/textures/icon.png"));
@@ -289,11 +293,13 @@ void MainWindow::loadSavedGame(const QString& filePath)
 
     connect(btnTree, &QPushButton::clicked, [this]() {
         if (gameScene) gameScene->setPaused(true);
+        if (btnTutorial) btnTutorial->hide();
         if (skillTreeWidget) skillTreeWidget->show();
     });
 
     connect(skillTreeWidget, &SkillTreeWidget::closed, [this]() {
         if (gameScene) gameScene->setPaused(false);
+        if (btnTutorial) btnTutorial->show();
     });
 
     campfireWidget = new CampfireWidget(this);
@@ -371,6 +377,14 @@ void MainWindow::cleanupGame()
         npcWidget->deleteLater();
         npcWidget = nullptr;
     }
+    if (tutorialWidget) {
+        tutorialWidget->deleteLater();
+        tutorialWidget = nullptr;
+    }
+    if (btnTutorial) {
+        btnTutorial->deleteLater();
+        btnTutorial = nullptr;
+    }
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -391,6 +405,7 @@ void MainWindow::onBtnPauseClicked()
     if (!gameScene) return;
 
     gameScene->setPaused(true);
+    if (btnTutorial) btnTutorial->hide();
     pauseWidget->resize(this->size());
     pauseWidget->raise();
     pauseWidget->show();
@@ -399,6 +414,7 @@ void MainWindow::onBtnPauseClicked()
 void MainWindow::onPauseContinue()
 {
     if (pauseWidget) pauseWidget->hide();
+    if (btnTutorial) btnTutorial->show();
     if (gameScene) gameScene->setPaused(false);
     if (mapView) mapView->setFocus();
 }
@@ -430,6 +446,7 @@ void MainWindow::handleLevelUp()
     if (!gameScene) return;
 
     gameScene->setPaused(true);
+    if (btnTutorial) btnTutorial->hide();
 
     std::vector<UpgradeOption> options = LevelUpGenerator::generateOptions();
 
@@ -467,12 +484,15 @@ void MainWindow::onLevelUpOptionSelected(int index)
     if (mapView) {
         mapView->setFocus();
     }
+
+    if (btnTutorial) btnTutorial->show();
 }
 
 void MainWindow::onCombatStarted()
 {
     if (heroWidget) heroWidget->hide();
     if (btnTree) btnTree->hide();
+    if (btnTutorial) btnTutorial->hide();
 
     if (skillTreeWidget) skillTreeWidget->hide();
 }
@@ -481,6 +501,7 @@ void MainWindow::onCombatEnded()
 {
     if (heroWidget) heroWidget->show();
     if (btnTree) btnTree->show();
+    if (btnTutorial) btnTutorial->show();
 }
 
 void MainWindow::onCombatRequested(Unit* enemy)
@@ -512,6 +533,8 @@ void MainWindow::onCampfireRequested(double oldHP, double newHP, double oldMana,
 {
     if (!campfireWidget) return;
 
+    if (btnTutorial) btnTutorial->hide();
+
     campfireWidget->showRestDetails(oldHP, newHP, oldMana, newMana, charges);
     campfireWidget->raise();
 
@@ -521,12 +544,15 @@ void MainWindow::onCampfireRequested(double oldHP, double newHP, double oldMana,
         if (gameScene) {
             gameScene->finishCampfireInteraction(campfireUnit);
         }
+        if (btnTutorial) btnTutorial->show();
     });
 }
 
 void MainWindow::onNPCInteractionRequested(Unit* npcUnit, const QString& text)
 {
     if (!npcWidget) return;
+
+    if (btnTutorial) btnTutorial->hide();
 
     QString name = "Friendly Villager";
 
@@ -538,6 +564,7 @@ void MainWindow::onNPCInteractionRequested(Unit* npcUnit, const QString& text)
         if (gameScene) {
             gameScene->finishNPCInteraction();
         }
+        if (btnTutorial) btnTutorial->show();
     });
 }
 
@@ -610,4 +637,44 @@ void MainWindow::showEndGameDialog(const QString& title, const QString& message,
     layout->addWidget(dialogFrame);
     overlay->show();
     overlay->raise();
+}
+
+void MainWindow::setupTutorialWidget()
+{
+    tutorialWidget = new TutorialWidget(this);
+    tutorialWidget->hide();
+
+    btnTutorial = new QPushButton(this);
+    btnTutorial->setText("?");
+    btnTutorial->setGeometry(1220, 10, 50, 50);
+    btnTutorial->setCursor(Qt::PointingHandCursor);
+
+    btnTutorial->setStyleSheet(
+        "QPushButton {"
+        "   background-color: #FBC02D;"
+        "   border: 2px solid #3E2723;"
+        "   border-radius: 25px;"
+        "   font-family: 'Unispace';"
+        "   font-size: 24px;"
+        "   font-weight: bold;"
+        "   color: #3E2723;"
+        "}"
+        "QPushButton:hover { background-color: #FFEE58; }"
+        "QPushButton:pressed { background-color: #F9A825; }"
+        );
+
+    btnTutorial->show();
+    btnTutorial->raise();
+
+    connect(btnTutorial, &QPushButton::clicked, [this]() {
+        if (gameScene) gameScene->setPaused(true);
+        if (tutorialWidget) {
+            tutorialWidget->raise();
+            tutorialWidget->show();
+        }
+    });
+
+    connect(tutorialWidget, &TutorialWidget::closed, [this]() {
+        if (gameScene) gameScene->setPaused(false);
+    });
 }

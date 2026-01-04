@@ -21,6 +21,7 @@
 #include "CampfireWidget.h"
 #include "NPCWidget.h"
 #include "TextureManager.h"
+#include "TutorialWidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -68,6 +69,7 @@ private:
     QPushButton* btnTree = nullptr;
     QLabel* lblTitle = nullptr;
     QLabel* lblFooter = nullptr;
+    QPushButton* btnTutorial = nullptr;
 
     QStackedWidget* stackedWidget = nullptr;
 
@@ -82,6 +84,7 @@ private:
     Fight* fightWidget = nullptr;
     CampfireWidget* campfireWidget = nullptr;
     NPCWidget* npcWidget = nullptr;
+    TutorialWidget* tutorialWidget = nullptr;
 
     QMediaPlayer* mediaPlayer;
     QAudioOutput* audioOutput;
@@ -90,5 +93,6 @@ private:
     void setupPauseWidget();
     void initializeMenuUI();
     void showEndGameDialog(const QString& title, const QString& message, bool isVictory);
+    void setupTutorialWidget();
 };
 #endif // MAINWINDOW_H

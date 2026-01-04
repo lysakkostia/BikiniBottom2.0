@@ -32,5 +32,13 @@
 
         <file>data/hero_spells.json</file>
         <file>data/enemy_spells.json</file>
+
+        <file>tutorial/Page_1_map.png</file>
+        <file>tutorial/Page_2_movement.mp4</file>
+        <file>tutorial/Page_3_longdist_movement.mp4</file>
+        <file>tutorial/Page_11_fight.png</file>
+        <file>tutorial/Page_12_level_system.png</file>
+        <file>tutorial/Page_13_skill_tree.png</file>
+        <file>tutorial/tutorial_data.json</file>
     </qresource>
 </RCC>
