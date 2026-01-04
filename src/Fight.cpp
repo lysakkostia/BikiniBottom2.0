@@ -3,7 +3,6 @@
 #include "Unit.h"
 #include "AI.h"
 #include "GameConstants.h"
-
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGraphicsDropShadowEffect>
@@ -118,22 +117,40 @@ void Fight::initUI()
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(20, 20, 20, 20);
 
-    turnLabel = new QLabel(tr("Підготовка до бою..."), this);
+    turnLabel = new QLabel(tr("Preparation for battle..."), this);
     turnLabel->setAlignment(Qt::AlignCenter);
-    turnLabel->setStyleSheet("font-size: 24px; font-weight: bold; color: #FFD54F; text-shadow: 2px 2px #000;");
-    mainLayout->addWidget(turnLabel);
+    turnLabel->setStyleSheet(
+        "font-size: 24px; font-weight: bold; color: #FFD54F;"
+        "background-color: rgba(30, 30, 30, 200);"
+        "border: 2px solid #5D4037;"
+        "border-radius: 10px;"
+        "padding: 5px 20px;"
+        );
+    QHBoxLayout* topLabelLayout = new QHBoxLayout();
+    topLabelLayout->addStretch();
+    topLabelLayout->addWidget(turnLabel);
+    topLabelLayout->addStretch();
+    mainLayout->addLayout(topLabelLayout);
 
     QHBoxLayout* arenaLayout = new QHBoxLayout();
+    arenaLayout->setAlignment(Qt::AlignCenter);
 
-    QVBoxLayout* heroStatsLayout = new QVBoxLayout();
+    QFrame* heroFrame = new QFrame(this);
+    heroFrame->setStyleSheet(
+        "background-color: rgba(30, 30, 30, 200);"
+        "border: 2px solid #5D4037;"
+        "border-radius: 15px;"
+        );
+
+    QVBoxLayout* heroStatsLayout = new QVBoxLayout(heroFrame);
+    heroStatsLayout->setContentsMargins(15, 15, 15, 15);
+
     heroAvatar = new QLabel(this);
     heroAvatar->setFixedSize(120, 120);
     heroAvatar->setAlignment(Qt::AlignCenter);
-
     heroAvatar->setStyleSheet(
         "border: 3px solid #FFD54F;"
         "border-radius: 10px;"
-        "background-color: rgba(0,0,0,100);"
         );
 
     if (!currentHeroTexture.isNull()) {
@@ -143,6 +160,8 @@ void Fight::initUI()
     }
 
     heroStatsLayout->addWidget(heroAvatar, 0, Qt::AlignCenter);
+
+    heroStatsLayout->addSpacing(10);
 
     heroHpBar = new QProgressBar(this);
     heroHpBar->setObjectName("hp");
@@ -156,22 +175,57 @@ void Fight::initUI()
 
     heroStatsLayout->addWidget(heroHpBar, 0, Qt::AlignCenter);
     heroStatsLayout->addWidget(heroManaBar, 0, Qt::AlignCenter);
+
+    heroStatsLayout->addSpacing(15);
+
+    btnEscape = new QPushButton("ESCAPE", this);
+    btnEscape->setCursor(Qt::PointingHandCursor);
+    btnEscape->setFixedHeight(35);
+    btnEscape->setFixedWidth(180);
+
+    btnEscape->setStyleSheet(
+        "QPushButton {"
+        "   background-color: rgba(80, 20, 20, 180);"
+        "   color: #FFEBEE;"
+        "   font-weight: bold;"
+        "   border: 1px solid #E57373;"
+        "   border-radius: 5px;"
+        "   font-size: 13px;"
+        "}"
+        "QPushButton:hover { background-color: rgba(120, 30, 30, 200); border-color: #FFCDD2; }"
+        "QPushButton:pressed { background-color: #B71C1C; }"
+        "QPushButton:disabled { background-color: rgba(50, 50, 50, 150); border-color: #555; color: gray; }"
+        );
+    connect(btnEscape, &QPushButton::clicked, this, &Fight::onEscapeButtonClicked);
+
+    heroStatsLayout->addWidget(btnEscape, 0, Qt::AlignCenter);
+
     heroStatsLayout->addStretch();
 
-    QVBoxLayout* enemyStatsLayout = new QVBoxLayout();
+    QFrame* enemyFrame = new QFrame(this);
+    enemyFrame->setStyleSheet(
+        "background-color: rgba(30, 30, 30, 200);"
+        "border: 2px solid #5D4037;"
+        "border-radius: 15px;"
+        );
+
+    QVBoxLayout* enemyStatsLayout = new QVBoxLayout(enemyFrame);
+    enemyStatsLayout->setContentsMargins(15, 15, 15, 15);
+
     enemyImageLabel = new QLabel(this);
     enemyImageLabel->setFixedSize(120, 120);
     enemyImageLabel->setAlignment(Qt::AlignCenter);
     enemyImageLabel->setStyleSheet(
         "border: 3px solid #EF5350;"
         "border-radius: 10px;"
-        "background-color: rgba(0,0,0,100);"
         );
 
     if (!currentEnemyTexture.isNull()) {
         enemyImageLabel->setPixmap(currentEnemyTexture.scaled(enemyImageLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
     enemyStatsLayout->addWidget(enemyImageLabel, 0, Qt::AlignCenter);
+
+    enemyStatsLayout->addSpacing(10);
 
     enemyHpBar = new QProgressBar(this);
     enemyHpBar->setObjectName("hp");
@@ -187,9 +241,9 @@ void Fight::initUI()
     enemyStatsLayout->addWidget(enemyManaBar, 0, Qt::AlignCenter);
     enemyStatsLayout->addStretch();
 
-    arenaLayout->addLayout(heroStatsLayout, 1);
-    arenaLayout->addSpacing(50);
-    arenaLayout->addLayout(enemyStatsLayout, 1);
+    arenaLayout->addWidget(heroFrame, 1);
+    arenaLayout->addSpacing(10);
+    arenaLayout->addWidget(enemyFrame, 1);
 
     mainLayout->addLayout(arenaLayout, 3);
 
@@ -232,31 +286,7 @@ void Fight::initUI()
 
     spellScrollArea->setWidget(spellContentWidget);
 
-    bottomPanel->addWidget(spellScrollArea, 2);
-
-    QVBoxLayout* centerCtrlLayout = new QVBoxLayout();
-    centerCtrlLayout->setAlignment(Qt::AlignCenter);
-
-    btnEscape = new QPushButton("ESCAPE", this);
-    btnEscape->setFixedSize(120, 60);
-    btnEscape->setCursor(Qt::PointingHandCursor);
-    btnEscape->setStyleSheet(
-        "QPushButton {"
-        "   background-color: #5D4037;"
-        "   color: white;"
-        "   font-weight: bold;"
-        "   border: 2px solid #8D6E63;"
-        "   border-radius: 10px;"
-        "   font-size: 14px;"
-        "}"
-        "QPushButton:hover { background-color: #6D4C41; border-color: #FFD54F; }"
-        "QPushButton:pressed { background-color: #3E2723; }"
-        "QPushButton:disabled { background-color: gray; border-color: #444; }"
-        );
-    connect(btnEscape, &QPushButton::clicked, this, &Fight::onEscapeButtonClicked);
-
-    centerCtrlLayout->addWidget(btnEscape);
-    bottomPanel->addLayout(centerCtrlLayout, 1);
+    bottomPanel->addWidget(spellScrollArea, 1);
 
     combatLog = new QTextEdit(this);
     combatLog->setReadOnly(true);
@@ -270,7 +300,7 @@ void Fight::initUI()
         "   font-size: 12px;"
         "}"
         );
-    bottomPanel->addWidget(combatLog, 2);
+    bottomPanel->addWidget(combatLog, 1);
 
     mainLayout->addLayout(bottomPanel, 2);
 
@@ -282,15 +312,15 @@ void Fight::startBattle()
     determineFirstTurn();
 
     if (isPlayerTurn) {
-        turnLabel->setText(tr("ВАШ ХІД"));
-        turnLabel->setStyleSheet("color: #66BB6A; font-size: 24px; font-weight: bold;");
-        logMessage(tr("Хід Гравця. Оберіть заклинання:"));
+        turnLabel->setText(tr("YOUR TURN"));
+        turnLabel->setStyleSheet("font-size: 24px; font-weight: bold; background-color: rgba(30, 30, 30, 200); border: 2px solid #5D4037; border-radius: 10px; padding: 5px 20px; color: #66BB6A;");
+        logMessage(tr("Player's Turn. Select a spell:"));
         populatePlayerSpellGrid();
         btnEscape->setEnabled(true);
     } else {
-        turnLabel->setText(tr("ХІД ВОРОГА"));
-        turnLabel->setStyleSheet("color: #EF5350; font-size: 24px; font-weight: bold;");
-        logMessage(tr("Хід Ворога."));
+        turnLabel->setText(tr("ENEMY'S TURN"));
+        turnLabel->setStyleSheet("font-size: 24px; font-weight: bold; background-color: rgba(30, 30, 30, 200); border: 2px solid #5D4037; border-radius: 10px; padding: 5px 20px; color: #EF5350;");
+        logMessage(tr("Enemy's Turn."));
         populatePlayerSpellGrid();
         btnEscape->setEnabled(false);
         prepareAiTurn();
@@ -344,7 +374,7 @@ void Fight::populatePlayerSpellGrid()
         if (!isPlayerTurn || !fightingHero->canUseMana(spell.manacost)) {
             btn->setEnabled(false);
             if(isPlayerTurn) {
-                btn->setToolTip(tr("Недостатньо мани"));
+                btn->setToolTip(tr("Not enough mana"));
             }
         } else {
             connect(btn, &QPushButton::clicked, [this, i]() {
@@ -386,7 +416,7 @@ void Fight::logMessage(const QString& message)
 
 void Fight::logCombatAction(const QString& actorName, const QString& actionName, int damage, int manaCost)
 {
-    QString msg = tr("<span style='color: #FFD54F;'>%1</span> використав <b>%2</b>, завдавши <span style='color: #EF5350;'>%3 шкоди</span>. Витрачено <span style='color: #42A5F5;'>%4 мани</span>.")
+    QString msg = tr("<span style='color: #FFD54F;'>%1</span> used <b>%2</b>, dealing <span style='color: #EF5350;'>%3 damage</span>. Spent <span style='color: #42A5F5;'>%4 mana</span>.")
                       .arg(actorName)
                       .arg(actionName)
                       .arg(damage)
@@ -420,14 +450,14 @@ void Fight::executePlayerTurn(const Spell& spell)
     fightingHero->consumeMana(spell.manacost);
     currentEnemy->takeDamage(spell.damage);
 
-    logCombatAction(tr("Гравець"), QString::fromStdString(spell.name), spell.damage, spell.manacost);
+    logCombatAction(tr("Player"), QString::fromStdString(spell.name), spell.damage, spell.manacost);
     updateStatsDisplay();
 
     if (isBattleOver()) return;
 
     isPlayerTurn = false;
-    turnLabel->setText(tr("ХІД ВОРОГА"));
-    turnLabel->setStyleSheet("color: #EF5350; font-size: 24px; font-weight: bold;");
+    turnLabel->setText(tr("ENEMY'S TURN"));
+    turnLabel->setStyleSheet("font-size: 24px; font-weight: bold; background-color: rgba(30, 30, 30, 200); border: 2px solid #5D4037; border-radius: 10px; padding: 5px 20px; color: #EF5350;");
 
     populatePlayerSpellGrid();
     btnEscape->setEnabled(false);
@@ -449,11 +479,11 @@ void Fight::executeAiTurn()
 {
     if (isPlayerTurn || isBattleOver()) return;
 
-    logMessage(tr("Ворог розмірковує..."));
+    logMessage(tr("Enemy is thinking..."));
 
     AI* enemyAI = currentEnemy->getAI();
     if (!enemyAI) {
-        logMessage(tr("Ворог розгублений."));
+        logMessage(tr("Enemy is confused."));
         isPlayerTurn = true;
         return;
     }
@@ -464,9 +494,9 @@ void Fight::executeAiTurn()
         currentEnemy->consumeMana(chosenSpell->manacost);
         fightingHero->takeDamage(chosenSpell->damage);
 
-        logCombatAction(tr("Ворог"), QString::fromStdString(chosenSpell->name), chosenSpell->damage, chosenSpell->manacost);
+        logCombatAction(tr("Enemy"), QString::fromStdString(chosenSpell->name), chosenSpell->damage, chosenSpell->manacost);
     } else {
-        logMessage(tr("Ворог пропускає хід."));
+        logMessage(tr("Enemy skips a turn."));
     }
 
     updateStatsDisplay();
@@ -474,10 +504,10 @@ void Fight::executeAiTurn()
     if (isBattleOver()) return;
 
     isPlayerTurn = true;
-    turnLabel->setText(tr("ВАШ ХІД"));
-    turnLabel->setStyleSheet("color: #66BB6A; font-size: 24px; font-weight: bold;");
+    turnLabel->setText(tr("YOUR TURN"));
+    turnLabel->setStyleSheet("font-size: 24px; font-weight: bold; background-color: rgba(30, 30, 30, 200); border: 2px solid #5D4037; border-radius: 10px; padding: 5px 20px; color: #66BB6A;");
 
-    logMessage(tr("Хід Гравця."));
+    logMessage(tr("Player's Turn."));
     populatePlayerSpellGrid();
     btnEscape->setEnabled(true);
 }
@@ -485,12 +515,12 @@ void Fight::executeAiTurn()
 bool Fight::isBattleOver()
 {
     if (fightingHero->getHP() <= 0) {
-        logMessage(tr("Герой переможений!"));
+        logMessage(tr("Hero is defeated!"));
         endBattle(false);
         return true;
     }
     if (currentEnemy->getHP() <= 0) {
-        logMessage(tr("Ворог переможений!"));
+        logMessage(tr("Enemy is defeated!"));
         endBattle(true);
         return true;
     }
@@ -502,8 +532,8 @@ void Fight::endBattle(bool playerWon)
     if(spellsContainer) spellsContainer->setEnabled(false);
     if(btnEscape) btnEscape->setEnabled(false);
 
-    QString title = playerWon ? tr("Перемога!") : tr("Поразка");
-    QString message = playerWon ? tr("Ви перемогли ворога!") : tr("Вас було переможено...");
+    QString title = playerWon ? tr("Victory!") : tr("Defeat...");
+    QString message = playerWon ? tr("You have defeated the enemy!") : tr("You have been defeated...");
 
     showInternalDialog(title, message, [this, playerWon]() {
         emit battleEnded(playerWon);
@@ -515,7 +545,7 @@ void Fight::onEscapeButtonClicked()
 {
     if (!isPlayerTurn) return;
 
-    logMessage(tr("Спроба втечі..."));
+    logMessage(tr("Attempt to escape..."));
 
     populatePlayerSpellGrid();
     btnEscape->setEnabled(false);
@@ -523,20 +553,20 @@ void Fight::onEscapeButtonClicked()
     bool success = (RandGenerator::randDoubleInInterval(0.0, 1.0) <= 0.5);
 
     if (success) {
-        logMessage(tr("Втеча вдалася!"));
+        logMessage(tr("Escape was successful!"));
         currentEnemy->setHP(currentEnemy->getMaxHP());
         currentEnemy->setMana(currentEnemy->getMaxMana());
-        showInternalDialog(tr("Втеча"), tr("Ви успішно втекли!"), [this]() {
+        showInternalDialog(tr("Success!"), tr("You have successfully escaped!"), [this]() {
             playerEscaped = true;
             emit battleEnded(false);
             this->close();
         });
     } else {
-        logMessage(tr("Втекти не вдалося! Хід втрачено."));
-        showInternalDialog(tr("Невдача"), tr("Втекти не вдалося!"), [this]() {
+        logMessage(tr("Escape failed! You lost your move."));
+        showInternalDialog(tr("Failure"), tr("Escape failed!"), [this]() {
             isPlayerTurn = false;
-            turnLabel->setText(tr("ХІД ВОРОГА"));
-            turnLabel->setStyleSheet("color: #EF5350; font-size: 24px; font-weight: bold;");
+            turnLabel->setText(tr("ENEMY'S TURN"));
+            turnLabel->setStyleSheet("font-size: 24px; font-weight: bold; background-color: rgba(30, 30, 30, 200); border: 2px solid #5D4037; border-radius: 10px; padding: 5px 20px; color: #EF5350;");
 
             QTimer::singleShot(GlobalConst::FightAI::AI_AFTER_PLAYER_DELAY_MS, this, &Fight::onAiTurnTimeout);
         });

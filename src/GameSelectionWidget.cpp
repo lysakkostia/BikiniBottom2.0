@@ -93,7 +93,7 @@ void GameSelectionWidget::setupUI()
     mainLayout->setContentsMargins(50, 30, 50, 50);
     mainLayout->setSpacing(20);
 
-    QLabel* title = new QLabel("ВИБІР СВІТУ", this);
+    QLabel* title = new QLabel("WORLD SELECTION", this);
     title->setAlignment(Qt::AlignCenter);
     title->setStyleSheet("font-size: 32px; font-weight: bold; color: #FFD54F; font-family: 'Times New Roman'; text-shadow: 2px 2px #000;");
     mainLayout->addWidget(title);
@@ -113,10 +113,10 @@ void GameSelectionWidget::setupUI()
     QHBoxLayout* btnLayout = new QHBoxLayout();
     btnLayout->setSpacing(20);
 
-    btnPlay = new QPushButton("ГРАТИ", this);
-    btnCreateNew = new QPushButton("НОВИЙ СВІТ", this);
-    btnDelete = new QPushButton("ВИДАЛИТИ", this);
-    btnBack = new QPushButton("НАЗАД", this);
+    btnPlay = new QPushButton("PLAY", this);
+    btnCreateNew = new QPushButton("NEW WORLD", this);
+    btnDelete = new QPushButton("REMOVE", this);
+    btnBack = new QPushButton("RETURN", this);
 
     btnPlay->setCursor(Qt::PointingHandCursor);
     btnCreateNew->setCursor(Qt::PointingHandCursor);
@@ -178,29 +178,29 @@ void GameSelectionWidget::setupCreationOverlay()
     formLayout->setSpacing(10);
     formLayout->setContentsMargins(40, 30, 40, 30);
 
-    QLabel* lblTitle = new QLabel("СТВОРЕННЯ СВІТУ", dialogFrame);
+    QLabel* lblTitle = new QLabel("WORLD CREATION", dialogFrame);
     lblTitle->setAlignment(Qt::AlignCenter);
     lblTitle->setStyleSheet("font-size: 24px; font-weight: bold; color: #FFD54F; border: none; background: transparent;");
     formLayout->addWidget(lblTitle);
 
-    QLabel* lblName = new QLabel("Назва світу:", dialogFrame);
+    QLabel* lblName = new QLabel("World's name:", dialogFrame);
     lblName->setStyleSheet("color: #E0E0E0; font-size: 16px; border: none; background: transparent;");
     editWorldName = new QLineEdit(dialogFrame);
     editWorldName->setStyleSheet(INPUT_STYLE);
-    editWorldName->setPlaceholderText("Введіть назву...");
+    editWorldName->setPlaceholderText("Enter the name...");
 
-    QLabel* lblSeed = new QLabel("Сід генерації (опціонально):", dialogFrame);
+    QLabel* lblSeed = new QLabel("Generation seed (optional):", dialogFrame);
     lblSeed->setStyleSheet("color: #E0E0E0; font-size: 16px; border: none; background: transparent;");
     editSeed = new QLineEdit(dialogFrame);
     editSeed->setStyleSheet(INPUT_STYLE);
-    editSeed->setPlaceholderText("Порожньо = Випадковий");
+    editSeed->setPlaceholderText("Empty = Random");
 
     formLayout->addWidget(lblName);
     formLayout->addWidget(editWorldName);
     formLayout->addWidget(lblSeed);
     formLayout->addWidget(editSeed);
 
-    QLabel* lblSizeTitle = new QLabel("Розмір карти:", dialogFrame);
+    QLabel* lblSizeTitle = new QLabel("Map size:", dialogFrame);
     lblSizeTitle->setStyleSheet("color: #E0E0E0; font-size: 16px; border: none; background: transparent; margin-top: 5px;");
     formLayout->addWidget(lblSizeTitle);
 
@@ -214,7 +214,7 @@ void GameSelectionWidget::setupCreationOverlay()
     sldMapSize->setTickInterval(1);
     sldMapSize->setValue(1);
 
-    lblMapSizeName = new QLabel("Середня", dialogFrame);
+    lblMapSizeName = new QLabel("Medium", dialogFrame);
     lblMapSizeName->setFixedWidth(100);
     lblMapSizeName->setAlignment(Qt::AlignCenter);
     lblMapSizeName->setStyleSheet("color: #FFD54F; font-size: 16px; font-weight: bold; border: none; background: transparent;");
@@ -228,8 +228,8 @@ void GameSelectionWidget::setupCreationOverlay()
     formLayout->addStretch();
 
     QHBoxLayout* btnBox = new QHBoxLayout();
-    btnConfirmCreate = new QPushButton("СТВОРИТИ", dialogFrame);
-    btnCancelCreate = new QPushButton("СКАСУВАТИ", dialogFrame);
+    btnConfirmCreate = new QPushButton("CREATE", dialogFrame);
+    btnCancelCreate = new QPushButton("CANCEL", dialogFrame);
 
     btnConfirmCreate->setCursor(Qt::PointingHandCursor);
     btnCancelCreate->setCursor(Qt::PointingHandCursor);
@@ -312,19 +312,19 @@ void GameSelectionWidget::onCreateNewClicked()
 {
     QString name = editWorldName->text().trimmed();
     if (name.isEmpty()) {
-        showCustomMessage("ПОМИЛКА", "Введіть назву світу!", false);
+        showCustomMessage("ERROR", "Enter world's name!", false);
         return;
     }
 
     QRegularExpression re("[\\\\/:*?\"<>|]");
     if (name.contains(re)) {
-        showCustomMessage("ПОМИЛКА", "Назва містить заборонені символи!\n( \\ / : * ? \" < > | )", false);
+        showCustomMessage("ERROR", "Name contains invalid characters!\n( \\ / : * ? \" < > | )", false);
         return;
     }
 
     QString filename = savesDir + "/" + name + ".json";
     if (QFile::exists(filename)) {
-        showCustomMessage("ПОМИЛКА", "Світ з такою назвою вже існує!", false);
+        showCustomMessage("ERROR", "World with this name already exists!", false);
         return;
     }
 
@@ -341,7 +341,7 @@ void GameSelectionWidget::onPlayClicked()
 {
     QListWidgetItem* current = worldsList->currentItem();
     if (!current) {
-        showCustomMessage("УВАГА", "Оберіть світ зі списку, щоб почати гру.", false);
+        showCustomMessage("WARNING", "Select a world from the list to start the game.", false);
         return;
     }
 
@@ -356,7 +356,7 @@ void GameSelectionWidget::onDeleteClicked()
 
     QString filePath = current->data(Qt::UserRole).toString();
 
-    showCustomMessage("ВИДАЛЕННЯ", "Ви впевнені, що хочете назавжди видалити цей світ?", true, [this, filePath](){
+    showCustomMessage("REMOVAL", "Are you sure you want to permanently delete this world?", true, [this, filePath](){
         QFile::remove(filePath);
         refreshSaveList();
     });
@@ -413,8 +413,8 @@ void GameSelectionWidget::showCustomMessage(const QString& title, const QString&
     QHBoxLayout* btnLayout = new QHBoxLayout();
 
     if (isQuestion) {
-        QPushButton* btnYes = new QPushButton("ТАК", box);
-        QPushButton* btnNo = new QPushButton("НІ", box);
+        QPushButton* btnYes = new QPushButton("YES", box);
+        QPushButton* btnNo = new QPushButton("NO", box);
         btnYes->setStyleSheet(BUTTON_STYLE);
         btnNo->setStyleSheet(BUTTON_STYLE);
         btnYes->setCursor(Qt::PointingHandCursor);

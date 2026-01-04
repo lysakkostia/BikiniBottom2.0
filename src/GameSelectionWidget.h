@@ -51,7 +51,7 @@ private:
 
     QString savesDir;
     const QList<int> mapRads = {10, 15, 20};
-    const QList<QString> mapSizeNames = {"Маленька", "Середня", "Велика"};
+    const QList<QString> mapSizeNames = {"Small", "Medium", "Big"};
 
     void setupUI();
     void setupCreationOverlay();

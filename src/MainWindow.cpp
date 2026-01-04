@@ -263,7 +263,7 @@ void MainWindow::loadSavedGame(const QString& filePath)
     gameScene->setSaveFilePath(filePath);
 
     if (!gameScene->loadMapFromFile(filePath)) {
-        QMessageBox::warning(this, tr("Помилка"), tr("Не вдалося завантажити збереження."));
+        QMessageBox::warning(this, tr("Error"), tr("Failed to load game save."));
         delete gameScene;
         gameScene = nullptr;
         return;
@@ -416,13 +416,13 @@ void MainWindow::onPauseExit()
 //подія програшу
 void MainWindow::handleGameOver()
 {
-    showEndGameDialog(tr("Гру завершено"), tr("На жаль, ваш герой загинув..."), false);
+    showEndGameDialog(tr("Game over"), tr("Unfortunately, your hero has been defeated...."), false);
 }
 
 //подія перемоги
 void MainWindow::handleVictory()
 {
-    showEndGameDialog(tr("ПЕРЕМОГА!"), tr("Вітаємо! Ви успішно пройшли гру!"), true);
+    showEndGameDialog(tr("VICTORY!"), tr("Congratulations! You have successfully completed the game!"), true);
 }
 
 void MainWindow::handleLevelUp()
@@ -579,7 +579,7 @@ void MainWindow::showEndGameDialog(const QString& title, const QString& message,
     lblMsg->setWordWrap(true);
     lblMsg->setStyleSheet("font-size: 16px; color: #E0E0E0; border: none; background: transparent;");
 
-    QPushButton* btnMenu = new QPushButton(tr("У ГОЛОВНЕ МЕНЮ"), dialogFrame);
+    QPushButton* btnMenu = new QPushButton(tr("RETURN TO MENU"), dialogFrame);
     btnMenu->setCursor(Qt::PointingHandCursor);
     btnMenu->setFixedSize(200, 50);
     btnMenu->setStyleSheet(
