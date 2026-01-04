@@ -31,7 +31,7 @@ CampfireWidget::CampfireWidget(QWidget *parent) : QWidget(parent) {
     contentLayout->setSpacing(15);
 
     titleLabel = new QLabel("Campfire Rest", container);
-    titleLabel->setStyleSheet("border: none; font-size: 28px; font-weight: bold; color: #FF8C00;"); // DarkOrange
+    titleLabel->setStyleSheet("border: none; font-size: 28px; font-weight: bold; color: #FF8C00;");
     titleLabel->setAlignment(Qt::AlignCenter);
     contentLayout->addWidget(titleLabel);
 

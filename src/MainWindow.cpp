@@ -452,6 +452,8 @@ void MainWindow::onLevelUpOptionSelected(int index)
     UpgradeOption option = levelUpWidget->getOption(index);
     hero->applyUpgrade(option);
 
+    heroWidget->updateStats();
+
     hero->decrementLevelUpPending();
 
     if (hero->isLevelUpPending()) {

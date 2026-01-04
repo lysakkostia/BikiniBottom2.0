@@ -156,6 +156,7 @@ void GameScene::finishCombat(bool playerWon, bool playerEscaped, Unit* enemy)
             qDebug() << (playerEscaped ? "Hero escaped" : "Dialog closed unexpectedly");
             this->tryMoveHeroTo(lastPreCombatPos);
             mapInner.updateVisibility(heroInner.getPosition());
+            emit heroStatsChanged();
         }
     }
 
@@ -192,6 +193,8 @@ void GameScene::finishCampfireInteraction(Unit* campfireUnit)
         this->update();
     }
 
+    emit heroStatsChanged();
+
     QWidget* view = getViewWidget();
     if (view) view->setFocus();
 }
@@ -221,6 +224,8 @@ void GameScene::processTreasure(Unit* treasureUnit)
     } else {
         heroInner.addXP(1);
     }
+
+    emit heroStatsChanged();
 
     mapInner.clearUnitAt(heroInner.getPosition());
     if (heroInner.isLevelUpPending()) {
