@@ -15,7 +15,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools Mul
 include_directories(src)
 
 set(TS_FILES src/BikiniBottom2_uk_UA.ts)
-set(RESOURCES resourсes/resources.qrc)
+set(RESOURCES resources/resources.qrc)
 
 set(PROJECT_SOURCES
         src/main.cpp
