@@ -4,8 +4,8 @@
 <img src="./resources/tutorial/Page_1_map.png" alt="Game Map" width="600">
 Upon starting the game, you are greeted by a hexagonal map with the main character located in the center.
 
-#### **Visibility**: The six immediate hexes around the hero are visible, while the rest are covered by the fog of war.
-#### **Exploration**: Hexes that have been explored but are currently outside the hero's visibility range become visually darker to indicate their status.
+* **Visibility**: The six immediate hexes around the hero are visible, while the rest are covered by the fog of war.
+* **Exploration**: Hexes that have been explored but are currently outside the hero's visibility range become visually darker to indicate their status.
 
 ## **Movement**
 #### **Basic Movement**
@@ -55,6 +55,5 @@ Battle is an essential part of the game, presented as a turn-based exchange of s
 <img src="./resources/tutorial/Page_12_level_system.png" alt="Level Up" width="600">
 
 #### **Skill Tree**
-Players use Skill Points to purchase upgrades from the skill tree. Each branch is associated with a specific spell type and provides: Increased damage, Reduced mana consumption and Unlocking new spells.
-
 <img src="./resources/tutorial/Page_13_skill_tree.png" alt="Skill Tree" width="600">
+Players use Skill Points to purchase upgrades from the skill tree. Each branch is associated with a specific spell type and provides: Increased damage, Reduced mana consumption and Unlocking new spells.
