@@ -177,6 +177,62 @@ void MainWindow::onBtnPlayClicked()
     stackedWidget->setCurrentWidget(gameSelectWidget);
 }
 
+void MainWindow::setupGameSession()
+{
+    mapView = new GameView(gameScene, this);
+
+    stackedWidget->addWidget(mapView);
+    stackedWidget->setCurrentWidget(mapView);
+    mapView->setFocus();
+
+    MainHero* hero = gameScene->getHero();
+    skillTreeWidget = new SkillTreeWidget(hero, this);
+    skillTreeWidget->hide();
+
+    setupPauseWidget();
+    setupTutorialWidget();
+
+    btnTree = new QPushButton(this);
+    btnTree->setIcon(QIcon(":/textures/icon.png"));
+    btnTree->setGeometry(10, height() - 150, 50, 50);
+    btnTree->show();
+    btnTree->raise();
+
+    connect(btnTree, &QPushButton::clicked, [this]() {
+        if (gameScene) gameScene->setPaused(true);
+        if (btnTutorial) btnTutorial->hide();
+        if (skillTreeWidget) skillTreeWidget->show();
+    });
+
+    connect(skillTreeWidget, &SkillTreeWidget::closed, [this]() {
+        if (gameScene) gameScene->setPaused(false);
+        if (btnTutorial) btnTutorial->show();
+    });
+
+    campfireWidget = new CampfireWidget(this);
+    campfireWidget->hide();
+
+    npcWidget = new NPCWidget(this);
+    npcWidget->hide();
+
+    connect(gameScene, &GameScene::npcInteractionRequested, this, &MainWindow::onNPCInteractionRequested);
+    connect(gameScene, &GameScene::combatRequested, this, &MainWindow::onCombatRequested);
+    connect(gameScene, &GameScene::campfireRequested, this, &MainWindow::onCampfireRequested);
+    connect(gameScene, &GameScene::combatStarted, this, &MainWindow::onCombatStarted);
+    connect(gameScene, &GameScene::combatEnded, this, &MainWindow::onCombatEnded);
+    connect(gameScene, &GameScene::gameOver, this, &MainWindow::handleGameOver);
+    connect(gameScene, &GameScene::victory, this, &MainWindow::handleVictory);
+    connect(gameScene, &GameScene::levelUpTriggered, this, &MainWindow::handleLevelUp);
+
+    heroWidget = new HeroWidget(TextureManager::getInstance().getUnitTexture(UnitType::MainHero, false), gameScene, this);
+    heroWidget->setFixedSize(200, 100);
+    heroWidget->move(10, height() - heroWidget->height() - 10);
+    heroWidget->raise();
+    heroWidget->show();
+
+    connect(gameScene, &GameScene::heroStatsChanged, heroWidget, &HeroWidget::updateStats);
+}
+
 void MainWindow::startNewGame(const QString& worldName, const QString& seedStr, int radius)
 {
     cleanupGame();
@@ -199,60 +255,7 @@ void MainWindow::startNewGame(const QString& worldName, const QString& seedStr, 
     gameScene = new GameScene(radius, seed, this);
     gameScene->setSaveFilePath(saveFilePath);
 
-    mapView = new GameView(gameScene, this);
-
-    stackedWidget->addWidget(mapView);
-    stackedWidget->setCurrentWidget(mapView);
-    mapView->setFocus();
-
-    MainHero* hero = gameScene->getHero();
-    skillTreeWidget = new SkillTreeWidget(hero, this);
-    skillTreeWidget->hide();
-
-    setupPauseWidget();
-    setupTutorialWidget();
-
-    btnTree = new QPushButton(this);
-    btnTree->setIcon(QIcon(":/textures/icon.png"));
-    btnTree->setGeometry(10, height() - 150, 50, 50);
-    btnTree->show();
-    btnTree->raise();
-
-    connect(btnTree, &QPushButton::clicked, [this]() {
-        if (gameScene) gameScene->setPaused(true);
-        if (btnTutorial) btnTutorial->hide();
-        if (skillTreeWidget) skillTreeWidget->show();
-    });
-
-    connect(skillTreeWidget, &SkillTreeWidget::closed, [this]() {
-        if (gameScene) gameScene->setPaused(false);
-        if (btnTutorial) btnTutorial->show();
-    });
-
-    campfireWidget = new CampfireWidget(this);
-    campfireWidget->hide();
-
-    npcWidget = new NPCWidget(this);
-    npcWidget->hide();
-
-    connect(gameScene, &GameScene::npcInteractionRequested, this, &MainWindow::onNPCInteractionRequested);
-    connect(gameScene, &GameScene::combatRequested, this, &MainWindow::onCombatRequested);
-    connect(gameScene, &GameScene::campfireRequested, this, &MainWindow::onCampfireRequested);
-    connect(gameScene, &GameScene::combatStarted, this, &MainWindow::onCombatStarted);
-    connect(gameScene, &GameScene::combatEnded, this, &MainWindow::onCombatEnded);
-    connect(gameScene, &GameScene::combatStarted, this, &MainWindow::onCombatStarted);
-    connect(gameScene, &GameScene::combatEnded, this, &MainWindow::onCombatEnded);
-    connect(gameScene, &GameScene::gameOver, this, &MainWindow::handleGameOver);
-    connect(gameScene, &GameScene::victory, this, &MainWindow::handleVictory);
-    connect(gameScene, &GameScene::levelUpTriggered, this, &MainWindow::handleLevelUp);
-
-    heroWidget = new HeroWidget(TextureManager::getInstance().getUnitTexture(UnitType::MainHero, false), gameScene, this);
-    heroWidget->setFixedSize(200, 100);
-    heroWidget->move(10, height() - heroWidget->height() - 10);
-    heroWidget->raise();
-    heroWidget->show();
-
-    connect(gameScene, &GameScene::heroStatsChanged, heroWidget, &HeroWidget::updateStats);
+    setupGameSession();
 
     gameScene->saveMapToFile();
 }
@@ -262,7 +265,6 @@ void MainWindow::loadSavedGame(const QString& filePath)
     cleanupGame();
 
     gameScene = new GameScene(1, 0, this);
-
     gameScene->setSaveFilePath(filePath);
 
     if (!gameScene->loadMapFromFile(filePath)) {
@@ -272,59 +274,11 @@ void MainWindow::loadSavedGame(const QString& filePath)
         return;
     }
 
-    mapView = new GameView(gameScene, this);
+    setupGameSession();
 
-    stackedWidget->addWidget(mapView);
-    stackedWidget->setCurrentWidget(mapView);
-    mapView->setFocus();
-
-    MainHero* hero = gameScene->getHero();
-    skillTreeWidget = new SkillTreeWidget(hero, this);
-    skillTreeWidget->hide();
-
-    setupPauseWidget();
-    setupTutorialWidget();
-
-    btnTree = new QPushButton(this);
-    btnTree->setIcon(QIcon(":/textures/icon.png"));
-    btnTree->setGeometry(10, height() - 150, 50, 50);
-    btnTree->show();
-    btnTree->raise();
-
-    connect(btnTree, &QPushButton::clicked, [this]() {
-        if (gameScene) gameScene->setPaused(true);
-        if (btnTutorial) btnTutorial->hide();
-        if (skillTreeWidget) skillTreeWidget->show();
-    });
-
-    connect(skillTreeWidget, &SkillTreeWidget::closed, [this]() {
-        if (gameScene) gameScene->setPaused(false);
-        if (btnTutorial) btnTutorial->show();
-    });
-
-    campfireWidget = new CampfireWidget(this);
-    campfireWidget->hide();
-
-    npcWidget = new NPCWidget(this);
-    npcWidget->hide();
-
-    connect(gameScene, &GameScene::npcInteractionRequested, this, &MainWindow::onNPCInteractionRequested);
-    connect(gameScene, &GameScene::combatRequested, this, &MainWindow::onCombatRequested);
-    connect(gameScene, &GameScene::campfireRequested, this, &MainWindow::onCampfireRequested);
-    connect(gameScene, &GameScene::combatStarted, this, &MainWindow::onCombatStarted);
-    connect(gameScene, &GameScene::combatEnded, this, &MainWindow::onCombatEnded);
-    connect(gameScene, &GameScene::gameOver, this, &MainWindow::handleGameOver);
-    connect(gameScene, &GameScene::victory, this, &MainWindow::handleVictory);
-    connect(gameScene, &GameScene::levelUpTriggered, this, &MainWindow::handleLevelUp);
-
-    heroWidget = new HeroWidget(TextureManager::getInstance().getUnitTexture(UnitType::MainHero, false), gameScene, this);
-    heroWidget->setFixedSize(200, 100);
-    heroWidget->move(10, height() - heroWidget->height() - 10);
-    heroWidget->raise();
-    heroWidget->show();
-
-    connect(gameScene, &GameScene::heroStatsChanged, heroWidget, &HeroWidget::updateStats);
-    heroWidget->updateStats();
+    if (heroWidget) {
+        heroWidget->updateStats();
+    }
 }
 
 void MainWindow::setupPauseWidget()
@@ -340,51 +294,26 @@ void MainWindow::setupPauseWidget()
 
 void MainWindow::cleanupGame()
 {
-    if (mapView) {
-        stackedWidget->removeWidget(mapView);
-        mapView->deleteLater();
-        mapView = nullptr;
-    }
-    if (gameScene) {
-        gameScene->deleteLater();
-        gameScene = nullptr;
-    }
-    if (heroWidget) {
-        heroWidget->deleteLater();
-        heroWidget = nullptr;
-    }
-    if (skillTreeWidget) {
-        skillTreeWidget->deleteLater();
-        skillTreeWidget = nullptr;
-    }
-    if (btnTree) {
-        btnTree->deleteLater();
-        btnTree = nullptr;
-    }
-    if (pauseWidget) {
-        pauseWidget->deleteLater();
-        pauseWidget = nullptr;
-    }
-    if (fightWidget) {
-        fightWidget->deleteLater();
-        fightWidget = nullptr;
-    }
-    if (campfireWidget) {
-        campfireWidget->deleteLater();
-        campfireWidget = nullptr;
-    }
-    if (npcWidget) {
-        npcWidget->deleteLater();
-        npcWidget = nullptr;
-    }
-    if (tutorialWidget) {
-        tutorialWidget->deleteLater();
-        tutorialWidget = nullptr;
-    }
-    if (btnTutorial) {
-        btnTutorial->deleteLater();
-        btnTutorial = nullptr;
-    }
+    auto safeDelete = [](auto*& widget) {
+        if (widget) {
+            widget->deleteLater();
+            widget = nullptr;
+        }
+    };
+
+    if (mapView) stackedWidget->removeWidget(mapView);
+
+    safeDelete(mapView);
+    safeDelete(gameScene);
+    safeDelete(heroWidget);
+    safeDelete(skillTreeWidget);
+    safeDelete(btnTree);
+    safeDelete(pauseWidget);
+    safeDelete(fightWidget);
+    safeDelete(campfireWidget);
+    safeDelete(npcWidget);
+    safeDelete(tutorialWidget);
+    safeDelete(btnTutorial);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)

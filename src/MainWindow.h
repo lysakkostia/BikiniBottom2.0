@@ -90,6 +90,7 @@ private:
     QAudioOutput* audioOutput;
 
     void cleanupGame();
+    void setupGameSession();
     void setupPauseWidget();
     void initializeMenuUI();
     void showEndGameDialog(const QString& title, const QString& message, bool isVictory);
