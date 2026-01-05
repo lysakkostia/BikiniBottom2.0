@@ -1,0 +1,242 @@
+[
+    {
+        "id": "fireball",
+        "name": "Fireball",
+        "type": "fire_spell",
+        "base_mana": 18.0,
+        "base_damage": 45.0,
+        "dmg_growth": 0.09,
+        "mana_growth": -0.01,
+        "required_level": 1
+    },
+    {
+        "id": "ember",
+        "name": "Ember",
+        "type": "fire_spell",
+        "base_mana": 5.0,
+        "base_damage": 15.0,
+        "dmg_growth": 0.05,
+        "mana_growth": 0.0,
+        "required_level": 1
+    },
+    {
+        "id": "spark",
+        "name": "Spark",
+        "type": "electric_spell",
+        "base_mana": 6.0,
+        "base_damage": 18.0,
+        "dmg_growth": 0.06,
+        "mana_growth": 0.0,
+        "required_level": 1
+    },
+    {
+        "id": "icicle",
+        "name": "Icicle",
+        "type": "ice_spell",
+        "base_mana": 8.0,
+        "base_damage": 22.0,
+        "dmg_growth": 0.06,
+        "mana_growth": -0.02,
+        "required_level": 2
+    },
+    {
+        "id": "ice_blast",
+        "name": "Ice Blast",
+        "type": "ice_spell",
+        "base_mana": 25.0,
+        "base_damage": 60.0,
+        "dmg_growth": 0.10,
+        "mana_growth": -0.02,
+        "required_level": 1
+    },
+    {
+        "id": "thunder_strike",
+        "name": "Thunder Strike",
+        "type": "electric_spell",
+        "base_mana": 45.0,
+        "base_damage": 85.0,
+        "dmg_growth": 0.12,
+        "mana_growth": -0.03,
+        "required_level": 5
+    },
+    {
+        "id": "acid_spray",
+        "name": "Acid Spray",
+        "type": "poison_spell",
+        "base_mana": 35.0,
+        "base_damage": 85.0,
+        "dmg_growth": 0.11,
+        "mana_growth": -0.02,
+        "required_level": 4
+    },
+    {
+        "id": "shadow_bolt",
+        "name": "Shadow Bolt",
+        "type": "dark_spell",
+        "base_mana": 50.0,
+        "base_damage": 125.0,
+        "dmg_growth": 0.13,
+        "mana_growth": -0.04,
+        "required_level": 6
+    },
+    {
+        "id": "holy_smite",
+        "name": "Holy Smite",
+        "type": "holy_spell",
+        "base_mana": 55.0,
+        "base_damage": 140.0,
+        "dmg_growth": 0.12,
+        "mana_growth": -0.03,
+        "required_level": 7
+    },
+    {
+        "id": "frost_nova",
+        "name": "Frost Nova",
+        "type": "ice_spell",
+        "base_mana": 70.0,
+        "base_damage": 180.0,
+        "dmg_growth": 0.14,
+        "mana_growth": -0.04,
+        "required_level": 9
+    },
+    {
+        "id": "chain_lightning",
+        "name": "Chain Lightning",
+        "type": "electric_spell",
+        "base_mana": 80.0,
+        "base_damage": 210.0,
+        "dmg_growth": 0.15,
+        "mana_growth": -0.06,
+        "required_level": 10
+    },
+    {
+        "id": "magma_eruption",
+        "name": "Magma Eruption",
+        "type": "fire_spell",
+        "base_mana": 95.0,
+        "base_damage": 260.0,
+        "dmg_growth": 0.18,
+        "mana_growth": -0.05,
+        "required_level": 12
+    },
+    {
+        "id": "void_crush",
+        "name": "Void Crush",
+        "type": "dark_spell",
+        "base_mana": 110.0,
+        "base_damage": 320.0,
+        "dmg_growth": 0.20,
+        "mana_growth": -0.05,
+        "required_level": 15
+    },
+    {
+        "id": "divine_wrath",
+        "name": "Divine Wrath",
+        "type": "holy_spell",
+        "base_mana": 120.0,
+        "base_damage": 250.0,
+        "dmg_growth": 0.22,
+        "mana_growth": -0.08,
+        "required_level": 18
+    },
+    {
+        "id": "armageddon",
+        "name": "Armageddon",
+        "type": "fire_spell",
+        "base_mana": 180.0,
+        "base_damage": 650.0,
+        "dmg_growth": 0.30,
+        "mana_growth": -0.08,
+        "required_level": 25
+    },
+    {
+        "id": "meteor",
+        "name": "Meteor",
+        "type": "fire_spell",
+        "base_mana": 140.0,
+        "base_damage": 450.0,
+        "dmg_growth": 0.25,
+        "mana_growth": -0.08,
+        "required_level": 20
+    },
+    {
+        "id": "absolute_zero",
+        "name": "Absolute Zero",
+        "type": "ice_spell",
+        "base_mana": 150.0,
+        "base_damage": 500.0,
+        "dmg_growth": 0.28,
+        "mana_growth": -0.07,
+        "required_level": 24
+    },
+    {
+        "id": "plasma_cannon",
+        "name": "Plasma Cannon",
+        "type": "electric_spell",
+        "base_mana": 115.0,
+        "base_damage": 340.0,
+        "dmg_growth": 0.19,
+        "mana_growth": -0.06,
+        "required_level": 16
+    },
+    {
+        "id": "poison_dart",
+        "name": "Poison Dart",
+        "type": "poison_spell",
+        "base_mana": 12.0,
+        "base_damage": 25.0,
+        "dmg_growth": 0.07,
+        "mana_growth": -0.02,
+        "required_level": 2
+    },
+    {
+        "id": "venom_nova",
+        "name": "Venom Nova",
+        "type": "poison_spell",
+        "base_mana": 90.0,
+        "base_damage": 240.0,
+        "dmg_growth": 0.16,
+        "mana_growth": -0.05,
+        "required_level": 13
+    },
+    {
+        "id": "dark_orb",
+        "name": "Dark Orb",
+        "type": "dark_spell",
+        "base_mana": 30.0,
+        "base_damage": 70.0,
+        "dmg_growth": 0.09,
+        "mana_growth": -0.02,
+        "required_level": 4
+    },
+    {
+        "id": "soul_reap",
+        "name": "Soul Reap",
+        "type": "dark_spell",
+        "base_mana": 130.0,
+        "base_damage": 400.0,
+        "dmg_growth": 0.23,
+        "mana_growth": -0.07,
+        "required_level": 21
+    },
+    {
+        "id": "purify",
+        "name": "Purify",
+        "type": "holy_spell",
+        "base_mana": 30.0,
+        "base_damage": 65.0,
+        "dmg_growth": 0.10,
+        "mana_growth": -0.03,
+        "required_level": 5
+    },
+    {
+        "id": "sunray",
+        "name": "Sunray",
+        "type": "holy_spell",
+        "base_mana": 100.0,
+        "base_damage": 300.0,
+        "dmg_growth": 0.18,
+        "mana_growth": -0.06,
+        "required_level": 15
+    }
+]

@@ -1,0 +1,67 @@
+[
+    {
+        "title": "Map",
+        "text": "After creating the game, you are greeted by a map. The main character is located in the center. Six hexes around him are visible, while the rest are covered by the fog of war. When you have explored a hex, but it is not within the hero's visibility range, it is considered explored and becomes visually darker.",
+        "media": ":/tutorial/Page_1_map.png"
+    },
+    {
+        "title": "Movement",
+        "text": "You can move by clicking the left mouse button on the hexes neighboring the heroes, which are highlighted with a gold border.",
+        "media": "qrc:/tutorial/Page_2_movement.mp4"
+    },
+    {
+        "title": "Long-distance movements",
+        "text": "If you have already visited the hexes, but it takes you a long time to get there, you can double-click on them and take the shortest route, bypassing all obstacles.",
+        "media": "qrc:/tutorial/Page_3_longdist_movement.mp4"
+    },
+    {
+        "title": "Units: Mountain",
+        "text": "This type of unit prevents the hero from moving. They are highlighted with a red outline and the hero cannot interact with them.",
+        "media": ":/textures/Mountain.png"
+    },
+    {
+        "title": "Units: Treasure",
+        "text": "This unit allows the player to gain 1 level. When interacted with, the level up occurs and the treasure disappears.",
+        "media": ":/textures/Treasure.png"
+    },
+    {
+        "title": "Units: Friendly NPC",
+        "text": "This unit poses no threat to the hero. The hero can interact with friendly NPCs.",
+        "media": ":/textures/FriendlyNPC.png"
+    },
+    {
+        "title": "Units: Campfire",
+        "text": "The campfire is the main hero's best friend. It heals injuries and restores mana. You'll need to use it after tough battles. But unfortunately, nothing lasts forever, and this campfire will also go out.",
+        "media": ":/textures/Campfire.png"
+    },
+    {
+        "title": "Units: Barbarian",
+        "text": "This enemy is very aggressive and deals a lot of damage, but it runs out of mana quickly.",
+        "media": ":/textures/Barbarian.png"
+    },
+    {
+        "title": "Units: Warrior",
+        "text": "This enemy seems very confused. Sometimes he can use deadly spells, and then use the weakest ones he has. It seems he doesn't quite know how to use spells :)",
+        "media": ":/textures/Warrior.png"
+    },
+    {
+        "title": "Units: Wizard",
+        "text": "Wizard is extremely intelligent, he is excellent at casting spells and will act very cautiously, but if he realizes that he can win quickly, he will do everything in his power.",
+        "media": ":/textures/Wizard.png"
+    },
+    {
+        "title": "Fight",
+        "text": "Battle is an essential part of RPGs. Here, it is presented as a turn-based exchange of spells. There are different types and levels of spells. Whoever calculates all the options better wins.",
+        "media": ":/tutorial/Page_11_fight.png"
+    },
+    {
+        "title": "Level system",
+        "text": "Levels are gained by earning experience from enemies or chests. When a level is gained, the player can choose 1 of 3 random improvements: HP, mana, or damage. The player also receives skill points.",
+        "media": ":/tutorial/Page_12_level_system.png"
+    },
+    {
+        "title": "Skill Tree",
+        "text": "Players can use skill points to purchase upgrades from the skill tree. Each branch is associated with one type of spell and includes: increased damage, reduced mana consumption, or unlocking a new spell.",
+        "media": ":/tutorial/Page_13_skill_tree.png"
+    }
+]

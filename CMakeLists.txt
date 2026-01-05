@@ -9,50 +9,72 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools Multimedia MultimediaWidgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools Multimedia MultimediaWidgets)
 
-set(TS_FILES BikiniBottom2_uk_UA.ts)
+include_directories(src)
+
+set(TS_FILES src/BikiniBottom2_uk_UA.ts)
+set(RESOURCES resources/resources.qrc)
 
 set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
+        src/main.cpp
+        src/MainWindow.h
+        src/MainWindow.cpp
+        src/AI.h
+        src/AI.cpp
+        src/Cell.h
+        src/Cell.cpp
+        src/Unit.h
+        src/Unit.cpp
+        src/Map.h
+        src/Map.cpp
+        src/UnitFabric.h
+        src/UnitFabric.cpp
+        src/GameConstants.h
+        src/HexItem.h
+        src/HexItem.cpp
+        src/GameScene.h
+        src/GameScene.cpp
+        src/GameView.h
+        src/GameView.cpp
+        src/TextureManager.h
+        src/TextureManager.cpp
+        src/SpellManager.h
+        src/SpellManager.cpp
+        src/PerlinNoise.h
+        src/RandomGenerator.h
+        src/Fight.h
+        src/Fight.cpp
+        src/SettingsWidget.h
+        src/SettingsWidget.cpp
+        src/PauseWidget.h
+        src/PauseWidget.cpp
+        src/GameSelectionWidget.h
+        src/GameSelectionWidget.cpp
+        src/HeroWidget.h
+        src/HeroWidget.cpp
+        src/LevelUpSystem.h
+        src/LevelUpWidget.h
+        src/LevelUpWidget.cpp
+        src/SkillTreeSystem.h
+        src/SkillTreeWidget.h
+        src/SkillTreeWidget.cpp
+        src/CampfireWidget.h
+        src/CampfireWidget.cpp
+        src/NPCWidget.h
+        src/NPCWidget.cpp
+        src/TutorialWidget.h
+        src/TutorialWidget.cpp
+
         ${TS_FILES}
+        ${RESOURCES}
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(BikiniBottom2
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        AI.h
-        Cell.h
-        Unit.h
-        Map.h
-
-        UnitFabric.h
-
-
-        AI.cpp
-        Cell.cpp
-
-
-        Map.cpp
-
-        Unit.cpp
-        UnitFabric.cpp
-
-        settingswindow.h settingswindow.cpp settingswindow.ui
-        HexWidget.h
-        HexWidget.cpp
-
-        Pause.h Pause.cpp Pause.ui
-        Fight.h Fight.cpp Fight.ui
-        new_or_old_game.h new_or_old_game.cpp new_or_old_game.ui
-        RandomGenerator.h
-        RandomGenerator.cpp
-        herowidget.h herowidget.cpp herowidget.ui
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET BikiniBottom2 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -76,7 +98,11 @@ else()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_link_libraries(BikiniBottom2 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(BikiniBottom2 PRIVATE
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Multimedia
+    Qt${QT_VERSION_MAJOR}::MultimediaWidgets
+)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
@@ -102,5 +128,3 @@ install(TARGETS BikiniBottom2
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(BikiniBottom2)
 endif()
-find_package(Qt6 REQUIRED COMPONENTS Multimedia)
-target_link_libraries(BikiniBottom2 PRIVATE Qt6::Multimedia)

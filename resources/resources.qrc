@@ -1,0 +1,44 @@
+<RCC>
+    <qresource prefix="/">
+        <file>textures/icon.png</file>
+        <file>textures/background1.jpg</file>
+        <file>textures/background_main.png</file>
+        <file>textures/background_additional1.png</file>
+        <file>textures/background_additional2.png</file>
+        <file>textures/btn_continue.png</file>
+        <file>textures/btn_exit.png</file>
+        <file>textures/btn_newgame.png</file>
+        <file>textures/btn_options.png</file>
+        <file>textures/btn_play.png</file>
+        <file>textures/btn_return.png</file>
+        <file>textures/FogTexture.png</file>
+        <file>textures/StandartHex.jpg</file>
+        <file>textures/MainHero.png</file>
+        <file>textures/Barbarian.png</file>
+        <file>textures/Wizard.png</file>
+        <file>textures/Warrior.png</file>
+        <file>textures/Treasure.png</file>
+        <file>textures/Mountain.png</file>
+        <file>textures/FriendlyNPC.png</file>
+        <file>textures/Campfire.png</file>
+        <file>textures/HeroWithBarbarianTexture.png</file>
+        <file>textures/HeroWithCampfireTexture.png</file>
+        <file>textures/HeroWithFriendTexture.png</file>
+        <file>textures/HeroWithTreasureTexture.png</file>
+        <file>textures/HeroWithWarriorTexture.png</file>
+        <file>textures/HeroWithWizardTexture.png</file>
+
+        <file>sounds/background_music.mp3</file>
+
+        <file>data/hero_spells.json</file>
+        <file>data/enemy_spells.json</file>
+
+        <file>tutorial/Page_1_map.png</file>
+        <file>tutorial/Page_2_movement.mp4</file>
+        <file>tutorial/Page_3_longdist_movement.mp4</file>
+        <file>tutorial/Page_11_fight.png</file>
+        <file>tutorial/Page_12_level_system.png</file>
+        <file>tutorial/Page_13_skill_tree.png</file>
+        <file>tutorial/tutorial_data.json</file>
+    </qresource>
+</RCC>
